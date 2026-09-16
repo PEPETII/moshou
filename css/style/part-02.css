@@ -1,0 +1,554 @@
+
+
+.level-item {
+  background: #1a1a1a;
+  border: 2px solid #2d2d2d;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.level-item:hover {
+  border-color: #4a4a4a;
+  background: #1f1f1f;
+  transform: translateX(-3px);
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.3),
+    3px 0 10px rgba(255,255,255,0.02);
+}
+
+.level-item.current {
+  border-color: #d4af37;
+  background: #242420;
+  box-shadow:
+    0 0 15px rgba(212, 175, 55, 0.2),
+    inset 0 0 10px rgba(212, 175, 55, 0.05);
+}
+
+.level-item.current .level-name {
+  color: #d4af37;
+}
+
+.level-id {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.level-name {
+  font-size: 18px;
+  color: #e8e8e8;
+  font-family: "Ma Shan Zheng", cursive;
+}
+
+.level-info {
+  font-size: 11px;
+  color: #666;
+  margin-top: 6px;
+}
+
+/* 主菜单隐藏状态 */
+#main-container.hidden {
+    display: none;
+}
+
+/* ========================================
+   移动端适配 - 整体缩放
+   ======================================== */
+
+/* 游戏容器缩放 wrapper */
+#game-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  z-index: var(--z-base);
+}
+
+/* 缩放容器 - 居中显示 */
+#scale-container {
+  transform-origin: center center;
+  transition: transform 0.1s ease-out;
+}
+
+/* ========================================
+   横屏适配 - 游戏内UI
+   ======================================== */
+
+/* 横屏时优化游戏容器布局 */
+@media (max-height: 500px) and (orientation: landscape) {
+  #game-container {
+    width: 100%;
+    max-width: 800px;
+  }
+
+  #top-bar {
+    padding: 8px 16px;
+  }
+
+  .stat .label {
+    font-size: 12px;
+  }
+
+  .stat .value {
+    font-size: 16px;
+  }
+
+  #wave-btn-small #start-wave,
+  #start-wave {
+    padding: 4px 12px;
+    font-size: 12px;
+  }
+
+  #fusion-encyclopedia-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  #bottom-bar {
+    padding: 6px 12px;
+    gap: 8px;
+  }
+
+  .tower-select {
+    width: 56px;
+    height: 70px;
+  }
+
+  .tower-char {
+    font-size: 24px;
+  }
+
+  .tower-cost {
+    font-size: 11px;
+    margin-top: 4px;
+  }
+}
+
+/* 超小屏幕横屏 */
+@media (max-height: 400px) and (orientation: landscape) {
+  #game-container {
+    width: 100%;
+    max-width: 700px;
+  }
+
+  #top-bar {
+    padding: 6px 12px;
+  }
+
+  .stat {
+    gap: 6px;
+  }
+
+  .stat .label {
+    font-size: 10px;
+  }
+
+  .stat .value {
+    font-size: 14px;
+  }
+
+  #wave-btn-small #start-wave,
+  #start-wave {
+    padding: 3px 10px;
+    font-size: 11px;
+  }
+
+  #fusion-encyclopedia-btn {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+
+  #bottom-bar {
+    padding: 4px 8px;
+    gap: 6px;
+  }
+
+  .tower-select {
+    width: 48px;
+    height: 60px;
+  }
+
+  .tower-char {
+    font-size: 20px;
+  }
+
+  .tower-cost {
+    font-size: 10px;
+    margin-top: 2px;
+  }
+}
+
+/* 触摸优化 - 增大点击区域 */
+@media (pointer: coarse) {
+  .tower-select {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  #start-wave {
+    min-height: 44px;
+    min-width: 80px;
+  }
+
+  .menu-btn {
+    min-height: 44px;
+    min-width: 120px;
+  }
+
+  .menu-level-item {
+    min-height: 44px;
+  }
+
+  #back-to-menu-btn,
+  #sound-toggle {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* 触摸反馈 */
+  .tower-select:active,
+  .menu-btn:active,
+  .menu-level-item:active {
+    background: #242424 !important;
+  }
+
+  .tower-select.selected {
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3) !important;
+  }
+}
+
+/* ========================================
+   响应式断点定义
+   - 移动端：max-width: 768px
+   - 平板：min-width: 769px and max-width: 1024px
+   - 桌面：min-width: 1025px
+   ======================================== */
+
+/* 移动端适配 (max-width: 768px) */
+@media screen and (max-width: 768px) {
+  #main-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  #theme-select-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .theme-card {
+    width: 280px;
+  }
+  
+  .level-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  
+  .level-item {
+    padding: 8px;
+  }
+}
+
+/* 平板适配 (769px - 1024px) */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  #main-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+}
+
+/* 炮塔选中状态优化 */
+.tower-select.selected {
+  border-color: #ffd700 !important;
+}
+
+/* ========================================
+   征服模式样式
+   ======================================== */
+
+#conquest-container {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+#conquest-container.hidden {
+  display: none;
+}
+
+/* 横屏适配 - 征服模式 */
+@media (max-height: 500px) and (orientation: landscape) {
+  #conquest-container {
+    gap: 16px;
+  }
+
+  #conquest-side-panel {
+    width: 220px;
+    padding: 15px;
+  }
+
+  .conquest-title {
+    font-size: 22px;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+  }
+
+  .summon-section {
+    margin-bottom: 12px;
+  }
+
+  .summon-btn {
+    padding: 14px 20px;
+    font-size: 22px;
+    letter-spacing: 6px;
+  }
+
+  .summon-cost {
+    font-size: 12px;
+    margin-top: 6px;
+  }
+
+  .conquest-divider {
+    margin: 12px 0;
+  }
+
+  .conquest-stats {
+    gap: 8px;
+  }
+
+  .conquest-stat {
+    padding: 6px 10px;
+  }
+
+  .conquest-label {
+    font-size: 12px;
+  }
+
+  .conquest-value {
+    font-size: 16px;
+  }
+
+  .conquest-wave-btn {
+    padding: 10px;
+    font-size: 16px;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+
+  .conquest-menu-btn {
+    padding: 8px;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  #conquest-fusion-encyclopedia-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  .conquest-rules {
+    padding: 10px;
+  }
+
+  .rules-title {
+    font-size: 12px;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+  }
+
+  .rules-text {
+    font-size: 11px;
+    line-height: 1.6;
+    padding-left: 6px;
+  }
+
+  #conquest-game-container {
+    width: 100%;
+    max-width: 700px;
+  }
+}
+
+@media (max-height: 400px) and (orientation: landscape) {
+  #conquest-container {
+    gap: 12px;
+  }
+
+  #conquest-side-panel {
+    width: 180px;
+    padding: 12px;
+  }
+
+  .conquest-title {
+    font-size: 18px;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+  }
+
+  .summon-btn {
+    padding: 10px 16px;
+    font-size: 18px;
+    letter-spacing: 4px;
+  }
+
+  .summon-cost {
+    font-size: 11px;
+    margin-top: 4px;
+  }
+
+  .conquest-divider {
+    margin: 10px 0;
+  }
+
+  .conquest-stats {
+    gap: 6px;
+  }
+
+  .conquest-stat {
+    padding: 5px 8px;
+  }
+
+  .conquest-label {
+    font-size: 11px;
+  }
+
+  .conquest-value {
+    font-size: 14px;
+  }
+
+  .conquest-wave-btn {
+    padding: 8px;
+    font-size: 14px;
+    letter-spacing: 2px;
+  }
+
+  .conquest-menu-btn {
+    padding: 6px;
+    font-size: 11px;
+  }
+
+  #conquest-fusion-encyclopedia-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .conquest-rules {
+    padding: 8px;
+  }
+
+  .rules-title {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  .rules-text {
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  #conquest-game-container {
+    max-width: 600px;
+  }
+}
+
+#conquest-side-panel {
+  width: 280px;
+  background: #141414;
+  border: 2px solid #2a2a2a;
+  padding: 20px;
+  box-shadow:
+    0 0 20px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  position: relative;
+}
+
+#conquest-side-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #3a3a3a, transparent);
+}
+
+.conquest-title {
+  font-size: 28px;
+  font-family: "Ma Shan Zheng", cursive;
+  color: #e8e8e8;
+  text-align: center;
+  letter-spacing: 6px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.summon-section {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.summon-btn {
+  width: 100%;
+  padding: 18px 24px;
+  font-size: 28px;
+  font-family: "Ma Shan Zheng", cursive;
+  letter-spacing: 8px;
+  background: #1a1a1a;
+  border: 2px solid #3a3a3a;
+  color: #d4af37;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.summon-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s, height 0.4s;
+}
+
+.summon-btn:hover {
+  background: #1f1f1f;
+  border-color: #d4af37;
+  color: #ffd700;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+}
+
+.summon-btn:hover::before {
+  width: 250%;
+  height: 250%;
+}
+
+.summon-btn:active {
+  transform: scale(0.97);
+}
+
+.summon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: #2d2d2d;
+  color: #666;
+}
+
+.summon-btn:disabled::before {
+  display: none;
+}

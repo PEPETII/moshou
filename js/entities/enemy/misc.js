@@ -1,17 +1,8 @@
-class Enemy {
-  constructor(type, path, game) {
-    // 支持对象池模式：无参数构造函数
-    if (type === undefined) {
-      this._pooled = true;
-      return;
-    }
-
-    this._pooled = false;
-    this.reset(type, path, game);
-  
-  }
-
-  reset(type, path, game) {
+// 未归类兼容方法
+/**
+   * 重置对象状态（用于对象池）
+   */
+Enemy.prototype.reset = function(type, path, game) {
     this.type = type;
     this.path = path;
     this.game = game;
@@ -175,9 +166,8 @@ class Enemy {
     // 全屏爆炸
     this.globalExplosion = config.globalExplosion || false;
   
-  }
-
-  update(now, deltaTime) {
+};
+Enemy.prototype.update = function(now, deltaTime) {
     if (this.dead) return;
 
     // 基准帧率 60fps 对应的时间步长（约 16.67ms）
@@ -385,6 +375,4 @@ class Enemy {
     this.x += (dx / dist) * moveSpeed;
     this.y += (dy / dist) * moveSpeed;
   
-  }
-}
-
+};

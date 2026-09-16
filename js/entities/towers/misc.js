@@ -1,16 +1,8 @@
-class Tower {
-  constructor(type, gx, gy, game) {
-    // 支持对象池模式：无参数构造函数
-    if (type === undefined) {
-      this._pooled = true;
-      return;
-    }
-
-    this.reset(type, gx, gy, game);
-  
-  }
-
-  reset(type, gx, gy, game) {
+// 未归类兼容方法
+/**
+   * 重置对象状态（用于对象池）
+   */
+Tower.prototype.reset = function(type, gx, gy, game) {
     this.type = type;
     this.gx = gx;
     this.gy = gy;
@@ -139,9 +131,8 @@ class Tower {
     // 风链弹射效果
     this.chainEffects = [];
   
-  }
-
-  upgrade() {
+};
+Tower.prototype.upgrade = function() {
     if (this.level >= this.maxLevel) return false;
     if (this.game.gold < this.upgradeCost * this.level) return false;
 
@@ -211,14 +202,12 @@ class Tower {
 
     return true;
   
-  }
-
-  getSellValue() {
+};
+Tower.prototype.getSellValue = function() {
     return Math.floor(this.cost * 0.7);
   
-  }
-
-  update(now, deltaTime, enemies) {
+};
+Tower.prototype.update = function(now, deltaTime, enemies) {
     // 使用 deltaTime 累积冷却时间，实现帧率独立的攻击冷却
     if (!this._cooldownAccum) this._cooldownAccum = 0;
     this._cooldownAccum += deltaTime;
@@ -289,9 +278,9 @@ class Tower {
     this.updateChainEffects();
     this.updateFrostGrounds();
   
-  }
-
-  updateShake() {
+};
+// 更新山塔震动效果
+Tower.prototype.updateShake = function() {
     if (Date.now() < this.shakeEndTime) {
       const progress = 1 - (this.shakeEndTime - Date.now()) / this.shakeDuration;
       const currentMagnitude = this.shakeMagnitude * (1 - progress);
@@ -304,14 +293,13 @@ class Tower {
       this.shakeOffset.y = 0;
     }
   
-  }
-
-  triggerShake() {
+};
+// 触发山塔震动
+Tower.prototype.triggerShake = function() {
     this.shakeEndTime = Date.now() + this.shakeDuration;
   
-  }
-
-  findTarget(enemies) {
+};
+Tower.prototype.findTarget = function(enemies) {
     let closest = null;
     let closestDistSq = Infinity;
     const rangePx = this.range * CONFIG.CELL_SIZE;
@@ -329,6 +317,20 @@ class Tower {
 
     return closest;
   
-  }
-}
-
+};
+Tower.prototype.drawSummons = function(ctx) {
+    for (const s of this.activeSummons) {
+      const alpha = 0.6;
+      ctx.globalAlpha = alpha;
+      ctx.font = 'bold 20px "Ma Shan Zheng", cursive';
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = CONFIG.COLORS.soul;
+      ctx.fillText('灵', s.x, s.y);
+      ctx.font = '10px Microsoft YaHei';
+      ctx.fillStyle = '#aaa';
+      ctx.fillText(`${s.hp}/${s.maxHp}`, s.x, s.y - 14);
+      ctx.globalAlpha = 1;
+    }
+  
+};

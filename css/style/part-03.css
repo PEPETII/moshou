@@ -1,0 +1,534 @@
+
+
+.summon-btn:disabled:hover {
+  background: #1a1a1a;
+  border-color: #2d2d2d;
+  color: #666;
+  box-shadow: none;
+}
+
+.summon-cost {
+  font-size: 14px;
+  color: #8a8a8a;
+  margin-top: 8px;
+  font-family: "ZCOOL XiaoWei", serif;
+  letter-spacing: 2px;
+}
+
+.conquest-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #2a2a2a, transparent);
+  margin: 16px 0;
+}
+
+.conquest-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.conquest-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #1a1a1a;
+  border: 1px solid #2d2d2d;
+}
+
+.conquest-label {
+  font-size: 14px;
+  color: #666;
+  font-family: "ZCOOL XiaoWei", serif;
+}
+
+.conquest-value {
+  font-size: 20px;
+  font-family: "Ma Shan Zheng", cursive;
+  color: #e8e8e8;
+}
+
+#conquest-gold {
+  color: #d4af37;
+}
+
+#conquest-wave {
+  color: #b0b0b0;
+}
+
+#conquest-enemies {
+  color: #c45c48;
+}
+
+.conquest-wave-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 18px;
+  font-family: "Ma Shan Zheng", cursive;
+  letter-spacing: 4px;
+  background: #1a1a1a;
+  border: 2px solid #3a3a3a;
+  color: #d4d4d4;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.conquest-wave-btn:hover {
+  background: #1f1f1f;
+  border-color: #5a5a5a;
+  color: #f5f5f5;
+}
+
+.conquest-wave-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.conquest-wave-btn:disabled:hover {
+  background: #1a1a1a;
+  border-color: #3a3a3a;
+  color: #d4d4d4;
+}
+
+.conquest-menu-btn {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  font-family: "ZCOOL XiaoWei", serif;
+  background: transparent;
+  border: 1px solid #2d2d2d;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-bottom: 16px;
+}
+
+.conquest-menu-btn:hover {
+  border-color: #4a4a4a;
+  color: #999;
+}
+
+.conquest-rules {
+  background: #1a1a1a;
+  border: 1px solid #2d2d2d;
+  padding: 12px;
+}
+
+.rules-title {
+  font-size: 14px;
+  color: #d4d4d4;
+  font-family: "Ma Shan Zheng", cursive;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.rules-text {
+  font-size: 12px;
+  color: #666;
+  font-family: "ZCOOL XiaoWei", serif;
+  line-height: 1.8;
+  padding-left: 8px;
+}
+
+.rules-text::before {
+  content: "· ";
+  color: #3a3a3a;
+}
+
+#conquest-game-container {
+  width: 800px;
+  background: #0c0c0c;
+  border: 2px solid #1f1f1f;
+  box-shadow:
+    0 0 30px rgba(0, 0, 0, 0.6),
+    inset 0 0 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+}
+
+#conquest-canvas {
+  display: block;
+}
+
+#conquest-tower-info {
+  position: absolute;
+  background: #141414;
+  border: 2px solid #2d2d2d;
+  padding: 14px;
+  z-index: var(--z-tooltip);
+  min-width: 160px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(0, 0, 0, 0.2);
+}
+
+#conquest-tower-info.hidden {
+  display: none;
+}
+
+/* ========================================
+   游戏内融合图鉴模态窗口样式
+   ======================================== */
+
+#game-fusion-encyclopedia-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--z-modal);
+}
+
+#game-fusion-encyclopedia-modal.hidden {
+  display: none;
+}
+
+.game-fusion-modal-content {
+  background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+  border: 2px solid #3a3a3a;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.8);
+}
+
+.game-fusion-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #2d2d2d;
+}
+
+.game-fusion-modal-header h2 {
+  font-size: 28px;
+  font-family: "Ma Shan Zheng", cursive;
+  color: #e8e8e8;
+  letter-spacing: 4px;
+  margin: 0;
+}
+
+.close-modal-btn {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid #3a3a3a;
+  color: #666;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.close-modal-btn:hover {
+  border-color: #c45c48;
+  color: #c45c48;
+}
+
+.game-fusion-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  max-height: calc(80vh - 80px);
+}
+
+.game-fusion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.game-fusion-item {
+  background: #1a1a1a;
+  border: 2px solid #2d2d2d;
+  border-radius: 8px;
+  padding: 16px 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  position: relative;
+}
+
+.game-fusion-item:hover {
+  border-color: #4a4a4a;
+  background: #1f1f1f;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.game-fusion-item .fusion-result-char {
+  font-size: 32px;
+  font-family: "Ma Shan Zheng", cursive;
+  color: #e8e8e8;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.game-fusion-item .fusion-components {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 6px;
+  font-family: "ZCOOL XiaoWei", serif;
+}
+
+.game-fusion-item .fusion-cost {
+  font-size: 12px;
+  color: #d4af37;
+  font-family: "ZCOOL XiaoWei", serif;
+}
+
+.game-fusion-item .fusion-rarity-tag {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: "ZCOOL XiaoWei", serif;
+  font-weight: bold;
+}
+
+.game-fusion-item .fusion-rarity-tag.common {
+  background: #9e9e9e;
+  color: #000;
+}
+
+.game-fusion-item .fusion-rarity-tag.rare {
+  background: #448aff;
+  color: #fff;
+}
+
+.game-fusion-item .fusion-rarity-tag.epic {
+  background: #ab47bc;
+  color: #fff;
+}
+
+.game-fusion-item .fusion-rarity-tag.legendary {
+  background: #ffd700;
+  color: #000;
+}
+
+/* 游戏内融合详情面板 */
+#game-fusion-detail-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: calc(var(--z-modal) + 10);
+}
+
+#game-fusion-detail-panel.hidden {
+  display: none;
+}
+
+.game-fusion-detail-content {
+  background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+  border: 2px solid #3a3a3a;
+  border-radius: 12px;
+  padding: 32px;
+  max-width: 450px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.game-fusion-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #2d2d2d;
+}
+
+.game-fusion-detail-char {
+  font-size: 48px;
+  font-family: "Ma Shan Zheng", cursive;
+  color: #e8e8e8;
+  line-height: 1;
+}
+
+.game-fusion-detail-name {
+  font-size: 24px;
+  font-family: "Ma Shan Zheng", cursive;
+  color: #c45c48;
+  letter-spacing: 3px;
+}
+
+.game-fusion-detail-stats {
+  margin-bottom: 16px;
+}
+
+.game-fusion-detail-stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #2d2d2d;
+}
+
+.game-fusion-detail-stat-row:last-child {
+  border-bottom: none;
+}
+
+.game-fusion-detail-stat-label {
+  color: #888;
+  font-family: "ZCOOL XiaoWei", serif;
+  font-size: 14px;
+}
+
+.game-fusion-detail-stat-value {
+  color: #e8e8e8;
+  font-family: "ZCOOL XiaoWei", serif;
+  font-size: 14px;
+}
+
+.game-fusion-detail-desc {
+  background: #151515;
+  padding: 15px;
+  border-radius: 8px;
+  color: #aaa;
+  font-family: "ZCOOL XiaoWei", serif;
+  font-size: 14px;
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+
+.game-fusion-materials {
+  background: #151515;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.game-fusion-materials-title {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 10px;
+  font-family: "ZCOOL XiaoWei", serif;
+}
+
+.game-fusion-materials-list {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.game-fusion-material-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.game-fusion-material-char {
+  font-size: 28px;
+  font-family: "Ma Shan Zheng", cursive;
+  color: #e8e8e8;
+}
+
+.game-fusion-material-name {
+  font-size: 12px;
+  color: #888;
+  font-family: "ZCOOL XiaoWei", serif;
+}
+
+.game-fusion-detail-close-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  background: #2d2d2d;
+  border: 1px solid #3a3a3a;
+  color: #e8e8e8;
+  cursor: pointer;
+  font-family: "Ma Shan Zheng", cursive;
+  letter-spacing: 3px;
+  transition: all 0.3s;
+  border-radius: 6px;
+}
+
+.game-fusion-detail-close-btn:hover {
+  background: #3a3a3a;
+  border-color: #5a5a5a;
+}
+
+/* ========================================
+   自定义功能样式
+   ======================================== */
+
+/* 自定义主界面 */
+#custom-container {
+  position: relative;
+  z-index: var(--z-base);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+#custom-container.hidden {
+  display: none;
+}
+
+/* 横屏适配 - 自定义界面 */
+@media (max-height: 500px) and (orientation: landscape) {
+  #custom-container {
+    padding: 20px 15px;
+  }
+
+  .custom-title {
+    font-size: 32px;
+    margin-bottom: 25px;
+    letter-spacing: 4px;
+  }
+
+  .custom-buttons {
+    gap: 20px;
+  }
+
+  .custom-card {
+    width: 180px;
+    padding: 25px 20px;
+  }
+
+  .custom-card .custom-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+
+  .custom-card .custom-card-name {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+
+  .custom-card .custom-card-desc {
+    font-size: 12px;
+  }
+
+  #back-to-menu-from-custom {
+    margin-top: 25px;
+    padding: 10px 30px;
+  }
+}

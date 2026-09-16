@@ -1,104 +1,12 @@
-class ConquestEnemy extends Enemy {
-  constructor(type, path, game) {
-    super(type, path, game);
-    this.speed *= 1.5;
-    this.baseSpeed = this.speed;
-  }
-
-  reachCore() {
-    this.game.coreHp -= this.damage;
-    if (this.game.coreHp <= 0) {
-      this.game.gameOver(false);
-    }
-    this.dead = true;
-  }
-}
-
-class ConquestGame {
-  constructor(levelConfig = null) {
-    this.canvas = document.getElementById("conquest-canvas");
-    this.ctx = this.canvas.getContext("2d");
-
-    this.COLS = 16;
-    this.ROWS = 9;
-    this.CELL_SIZE = CONFIG.CELL_SIZE;
-
-    this.canvas.width = this.COLS * this.CELL_SIZE;
-    this.canvas.height = this.ROWS * this.CELL_SIZE;
-
-    this.inkRenderer = new InkRenderer(this.ctx);
-    this.particleSystem = new ParticleSystem();
-
-    // 保存关卡配置
-    this.levelConfig = levelConfig || this.getDefaultLevelConfig();
-    this.currentLevelId = this.levelConfig.id || 1;
-
-    // 使用关卡配置初始化游戏参数
-    this.gold = this.levelConfig.startGold || 300;
-    this.summonCost = this.levelConfig.summonCost || 80;
-    this.maxWave = this.levelConfig.maxWave || 3;
-    this.maxAliveEnemies = this.levelConfig.maxAliveEnemies || 50;
-
-    this.towers = [];
-    this.enemies = [];
-    this.gameEnded = false;
-    this.victory = false;
-
-    this.coreHp = this.levelConfig.coreHp || 20;
-
-    this.wave = 0;
-    this.waveInProgress = false;
-    this.spawnQueue = [];
-    this._autoWaveStarted = false;
-
-    this.path = this.buildPath();
-    this.placementGrid = this.buildPlacementGrid();
-    this._placementGridSet = new Set(
-      this.placementGrid.map((c) => `${c.x},${c.y}`)
-    );
-    this.nextPlacementIndex = 0;
-
-    this.lastTime = 0;
-    this.animationId = null;
-    this.spawnTimerId = null;
-    this.gameStarted = false;
-
-    this.summonFlashTime = 0;
-    this.summonFlashType = null;
-
-    this.draggingTower = null;
-    this.dragStartPos = null;
-    this.dragCurrentPos = null;
-    this.isDragging = false;
-    this.dragThreshold = 5;
-
-    this.hoveredCell = null;
-
-    // 炮塔位置索引 Map，用于 O(1) 查询
-    this._towerIndex = new Map();
-
-    // 融合模态框事件处理器引用（用于清理）
-    this._fusionModalHandler = null;
-
-    // 键盘事件处理器引用
-    this._keyboardHandler = null;
-
-    // 事件监听器追踪数组，用于清理事件监听
-    this._eventListeners = [];
-
-    // 绑定UI事件处理方法（确保多次调用setupUI时防重复检查有效）
-    this._boundSummonTower = this.summonTower.bind(this);
-    this._boundStartWave = this.startWave.bind(this);
-    this._boundReturnToLevelSelect = this.returnToLevelSelect.bind(this);
-    this._boundShowFusionEncyclopedia = this.showFusionEncyclopedia.bind(this);
-
-    this._uiEventsActive = false;
-    this.setupUI();
-    this.setupKeyboardShortcuts();
-  
-  }
-
-  addTrackedEventListener(target, type, listener, options) {
+// 未归类兼容方法
+/**
+   * 添加受追踪的事件监听器
+   * @param {EventTarget} target - 事件目标
+   * @param {string} type - 事件类型
+   * @param {Function} listener - 事件监听器
+   * @param {Object|boolean} options - 事件选项
+   */
+ConquestGame.prototype.addTrackedEventListener = function(target, type, listener, options) {
     if (!target) {
       console.warn(`[征服模式] UI事件绑定失败: 目标元素不存在 (事件类型: ${type})`);
       return;
@@ -116,9 +24,11 @@ class ConquestGame {
     target.addEventListener(type, listener, options);
     this._eventListeners.push({ target, type, listener, options });
   
-  }
-
-  destroy() {
+};
+/**
+   * 销毁游戏对象，清理所有事件监听器
+   */
+ConquestGame.prototype.destroy = function() {
     // 停止游戏循环
     this.stop();
 
@@ -158,9 +68,8 @@ class ConquestGame {
     this.isDragging = false;
     this._clearDragCache();
   
-  }
-
-  getDefaultLevelConfig() {
+};
+ConquestGame.prototype.getDefaultLevelConfig = function() {
     return {
       id: 1,
       startGold: 300,
@@ -174,9 +83,8 @@ class ConquestGame {
       ],
     };
   
-  }
-
-  buildPath() {
+};
+ConquestGame.prototype.buildPath = function() {
     const path = [];
     for (let x = 0; x < this.COLS; x++) path.push({ x, y: 0 });
     for (let y = 1; y < this.ROWS; y++) path.push({ x: this.COLS - 1, y });
@@ -185,9 +93,8 @@ class ConquestGame {
     path.push({ x: 0, y: 0 });
     return path;
   
-  }
-
-  buildPlacementGrid() {
+};
+ConquestGame.prototype.buildPlacementGrid = function() {
     const grid = [];
     for (let x = 1; x < this.COLS - 1; x++) {
       for (let y = 1; y < this.ROWS - 1; y++) {
@@ -196,9 +103,8 @@ class ConquestGame {
     }
     return grid;
   
-  }
-
-  setupUI() {
+};
+ConquestGame.prototype.setupUI = function() {
     this.addTrackedEventListener(document.getElementById("conquest-summon-btn"), "click", this._boundSummonTower);
 
     this.addTrackedEventListener(document.getElementById("conquest-wave-btn"), "click", this._boundStartWave);
@@ -385,9 +291,8 @@ class ConquestGame {
 
     this._uiEventsActive = true;
   
-  }
-
-  setupKeyboardShortcuts() {
+};
+ConquestGame.prototype.setupKeyboardShortcuts = function() {
     this._keyboardHandler = (e) => {
       // 如果游戏已结束，不响应快捷键
       if (this.gameEnded) return;
@@ -452,16 +357,14 @@ class ConquestGame {
 
     this.addTrackedEventListener(document, "keydown", this._keyboardHandler);
   
-  }
-
-  cleanupKeyboardShortcuts() {
+};
+ConquestGame.prototype.cleanupKeyboardShortcuts = function() {
     // 键盘事件监听器现在由 _eventListeners 数组统一管理
     // 此方法保留用于兼容性，实际清理在 destroy() 中完成
     this._keyboardHandler = null;
   
-  }
-
-  canPlaceAt(gx, gy) {
+};
+ConquestGame.prototype.canPlaceAt = function(gx, gy) {
     if (this._placementGridSet.has(`${gx},${gy}`)) {
       for (const t of this.towers) {
         if (t.gx === gx && t.gy === gy) return false;
@@ -470,9 +373,8 @@ class ConquestGame {
     }
     return false;
   
-  }
-
-  moveTower(tower, gx, gy) {
+};
+ConquestGame.prototype.moveTower = function(tower, gx, gy) {
     if (!this.canPlaceAt(gx, gy)) return;
     // 更新索引：删除旧位置，添加新位置
     this._towerIndex.delete(`${tower.gx},${tower.gy}`);
@@ -485,14 +387,12 @@ class ConquestGame {
     this.particleSystem.createExplosion(pos.x, pos.y, 8, CONFIG.COLORS.towerShadow);
     this.updateUI();
   
-  }
-
-  getFusionType(type1, type2) {
+};
+ConquestGame.prototype.getFusionType = function(type1, type2) {
     return fusionSystem.getFusionType(type1, type2);
   
-  }
-
-  canFuse(tower1, tower2) {
+};
+ConquestGame.prototype.canFuse = function(tower1, tower2) {
     const result = fusionSystem.canFuse(tower1.type, tower2.type, {
       tower1,
       tower2,
@@ -500,15 +400,84 @@ class ConquestGame {
     });
     return result.canFuse;
   
-  }
-}
+};
+ConquestGame.prototype.showTowerInfo = function(tower, x, y) {
+    const info = document.getElementById("conquest-tower-info");
+    if (!info) return;
 
+    const config = tower.isFusion
+      ? CONFIG.FUSION_TOWERS[tower.fusionType]
+      : CONFIG.TOWERS[tower.type];
 
-let conquestGame = null;
-window.addEventListener("load", () => {
-  conquestGame = new ConquestGame();
-  window.conquestGame = conquestGame;
+    info.querySelector(".info-char").textContent = tower.char;
+    info.querySelector(".info-level").textContent = tower.isFusion ? "融合 Lv.1" : `Lv.${tower.level}`;
 
-  // 注意：征服模式按钮的事件监听器在 ui.js 中设置
-  // 这里不再重复添加，以避免覆盖主题选择界面
-});
+    let stats = "";
+    if (tower.isFusion) {
+      stats += `组合: ${tower.components.map((c) => CONFIG.TOWERS[c]?.char || c).join("+")}<br>`;
+    }
+    if (tower.damage > 0) stats += `伤害: ${tower.damage}<br>`;
+    if (tower.range) stats += `范围: ${tower.range}格<br>`;
+    if (tower.cooldown) stats += `攻速: ${(tower.cooldown / 1000).toFixed(1)}秒<br>`;
+    if (tower.slow) stats += `减速: ${Math.round(tower.slow * 100)}%<br>`;
+    if (tower.hp) stats += `生命: ${tower.hp}/${tower.maxHp}<br>`;
+    if (tower.burn) stats += `灼烧: 是<br>`;
+    if (tower.pierce) stats += `穿透: 是<br>`;
+    info.querySelector(".info-stats").innerHTML = stats;
+
+    const sellBtn = info.querySelector(".sell-btn");
+    sellBtn.textContent = `出售 +${tower.getSellValue()}金`;
+    sellBtn.onclick = () => {
+      this.sellTower(tower);
+      this.hideTowerInfo();
+    };
+
+    // 添加右键取消选择提示
+    let rightClickHint = info.querySelector(".right-click-hint");
+    if (!rightClickHint) {
+      rightClickHint = document.createElement("div");
+      rightClickHint.className = "right-click-hint";
+      rightClickHint.style.cssText = "font-size:11px;color:#666;text-align:center;margin-top:8px;font-family:'ZCOOL XiaoWei',serif;";
+      info.appendChild(rightClickHint);
+    }
+    rightClickHint.textContent = "右键取消选择";
+
+    const upgradeBtn = info.querySelector(".upgrade-btn");
+    if (tower.isFusion || tower.level >= tower.maxLevel) {
+      upgradeBtn.textContent = tower.isFusion ? "融合不可升级" : "已满级";
+      upgradeBtn.disabled = true;
+    } else {
+      upgradeBtn.textContent = `升级 ${tower.upgradeCost * tower.level}金`;
+      upgradeBtn.disabled = this.gold < tower.upgradeCost * tower.level;
+      upgradeBtn.onclick = () => {
+        const upgraded = tower.upgrade();
+        if (upgraded) {
+          this.updateUI();
+          this.showTowerInfo(tower, x, y);
+        }
+      };
+    }
+
+    // 使用游戏容器尺寸计算面板位置，避免页面缩放或键盘弹出导致计算错误
+    const container = document.getElementById('game-container');
+    const rect = container.getBoundingClientRect();
+    const maxX = rect.width - 180;
+    const maxY = rect.height - 150;
+    info.style.left = Math.min(x, maxX) + "px";
+    info.style.top = Math.min(y, maxY) + "px";
+    info.classList.remove("hidden");
+
+    tower.selected = true;
+    for (const t of this.towers) {
+      if (t !== tower) t.selected = false;
+    }
+  
+};
+ConquestGame.prototype.hideTowerInfo = function() {
+    const info = document.getElementById("conquest-tower-info");
+    if (info) info.classList.add("hidden");
+    for (const t of this.towers) {
+      t.selected = false;
+    }
+  
+};

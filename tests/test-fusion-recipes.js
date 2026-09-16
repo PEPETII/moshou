@@ -1,8 +1,10 @@
 const fs = require('fs');
+const path = require('path');
 const vm = require('vm');
 
 function loadConfig() {
-  const source = fs.readFileSync('js/config.js', 'utf8');
+  const configFiles = ["js/config.js","js/config/domain-01.js","js/config/domain-02.js","js/config/domain-03.js","js/config/fusion.js"];
+  const source = configFiles.map((file) => fs.readFileSync(path.join(__dirname, '..', file), 'utf8')).join('\n');
   const sandbox = {};
   vm.createContext(sandbox);
   vm.runInContext(`${source}\nthis.__CONFIG__ = CONFIG;`, sandbox);

@@ -1,0 +1,543 @@
+
+
+        /* 横屏适配 - 融合图鉴 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #fusion-encyclopedia-container {
+                padding: 15px 10px;
+            }
+
+            #fusion-encyclopedia-container .encyclopedia-header {
+                padding-bottom: 10px;
+                margin-bottom: 15px;
+            }
+
+            #fusion-encyclopedia-container .encyclopedia-title {
+                font-size: 28px;
+            }
+
+            .guide-btn {
+                padding: 6px 14px;
+                font-size: 12px;
+            }
+
+            #fusion-encyclopedia-container .encyclopedia-grid {
+                max-height: 50vh;
+            }
+
+            .fusion-item {
+                padding: 10px 8px;
+            }
+
+            .fusion-item .fusion-result-char {
+                font-size: 20px;
+            }
+
+            .fusion-item .fusion-components {
+                font-size: 12px;
+            }
+
+            #back-to-encyclopedia-from-fusion {
+                margin-top: 15px;
+                padding: 8px 24px;
+            }
+        }
+
+        .guide-btn {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 8px 20px;
+            font-size: 14px;
+            background: #2d2d2d;
+            border: 1px solid #c45c48;
+            color: #c45c48;
+            cursor: pointer;
+            font-family: "ZCOOL XiaoWei", serif;
+            transition: all 0.3s;
+            border-radius: 4px;
+        }
+
+        .guide-btn:hover {
+            background: #c45c48;
+            color: #fff;
+        }
+
+        /* 融合配方卡片 */
+        .fusion-item {
+            aspect-ratio: 1;
+            padding: 15px 10px;
+            background: #1a1a1a;
+            border: 2px solid #2d2d2d;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .fusion-item:hover {
+            border-color: #4a4a4a;
+            background: #1f1f1f;
+            transform: scale(1.05);
+        }
+
+        .fusion-item .fusion-result-char {
+            font-size: 28px;
+            font-family: "Ma Shan Zheng", cursive;
+            color: #e8e8e8;
+            margin-bottom: 6px;
+            line-height: 1.2;
+        }
+
+        .fusion-item .fusion-components {
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+
+        .fusion-item .fusion-cost {
+            font-size: 12px;
+            color: #ffd700;
+            font-family: "ZCOOL XiaoWei", serif;
+        }
+
+        .fusion-item .fusion-rarity-tag {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: "ZCOOL XiaoWei", serif;
+            font-weight: bold;
+        }
+
+        .fusion-item .fusion-rarity-tag.common {
+            background: #9e9e9e;
+            color: #000;
+        }
+
+        .fusion-item .fusion-rarity-tag.rare {
+            background: #448aff;
+            color: #fff;
+        }
+
+        .fusion-item .fusion-rarity-tag.epic {
+            background: #ab47bc;
+            color: #fff;
+        }
+
+        .fusion-item .fusion-rarity-tag.legendary {
+            background: #ffd700;
+            color: #000;
+        }
+
+        #back-to-encyclopedia-from-fusion {
+            margin-top: 30px;
+            padding: 10px 30px;
+            font-size: 16px;
+            background: transparent;
+            border: 1px solid #3a3a3a;
+            color: #666;
+            cursor: pointer;
+            font-family: "ZCOOL XiaoWei", serif;
+            transition: all 0.3s;
+        }
+
+        #back-to-encyclopedia-from-fusion:hover {
+            border-color: #5a5a5a;
+            color: #999;
+        }
+
+        /* 融合详情面板 */
+        #fusion-detail-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        #fusion-detail-panel.hidden {
+            display: none;
+        }
+
+        .fusion-detail-content {
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .fusion-title-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fusion-rarity {
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-family: "ZCOOL XiaoWei", serif;
+        }
+
+        .fusion-rarity.common {
+            background: #9e9e9e;
+            color: #000;
+        }
+
+        .fusion-rarity.rare {
+            background: #448aff;
+            color: #fff;
+        }
+
+        .fusion-rarity.epic {
+            background: #ab47bc;
+            color: #fff;
+        }
+
+        .fusion-rarity.legendary {
+            background: #ffd700;
+            color: #000;
+        }
+
+        .fusion-materials {
+            background: #151515;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .materials-title {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 10px;
+            font-family: "ZCOOL XiaoWei", serif;
+        }
+
+        .materials-list {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .material-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .material-char {
+            font-size: 32px;
+            font-family: "Ma Shan Zheng", cursive;
+            color: #e8e8e8;
+        }
+
+        .material-name {
+            font-size: 12px;
+            color: #888;
+            font-family: "ZCOOL XiaoWei", serif;
+        }
+
+        .fusion-comparison {
+            background: #151515;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .comparison-title {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 10px;
+            font-family: "ZCOOL XiaoWei", serif;
+            text-align: center;
+        }
+
+        .comparison-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #2d2d2d;
+        }
+
+        .comparison-row:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-label {
+            color: #888;
+            font-family: "ZCOOL XiaoWei", serif;
+            font-size: 13px;
+        }
+
+        .comparison-values {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comparison-material {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .comparison-arrow {
+            color: #c45c48;
+            font-size: 14px;
+        }
+
+        .comparison-result {
+            color: #ffd700;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* 融合指南面板 */
+        #fusion-guide-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        #fusion-guide-panel.hidden {
+            display: none;
+        }
+
+        .guide-content {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border: 2px solid #3a3a3a;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .guide-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #2d2d2d;
+        }
+
+        .guide-title {
+            font-size: 32px;
+            font-family: "Ma Shan Zheng", cursive;
+            color: #c45c48;
+            letter-spacing: 4px;
+        }
+
+        .guide-steps {
+            margin-bottom: 25px;
+        }
+
+        .guide-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #2d2d2d;
+        }
+
+        .guide-step:last-child {
+            border-bottom: none;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: #c45c48;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Ma Shan Zheng", cursive;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-size: 16px;
+            color: #e8e8e8;
+            font-family: "Ma Shan Zheng", cursive;
+            margin-bottom: 4px;
+        }
+
+        .step-desc {
+            font-size: 13px;
+            color: #888;
+            font-family: "ZCOOL XiaoWei", serif;
+            line-height: 1.5;
+        }
+
+        .guide-notices {
+            background: #151515;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .notice-title {
+            font-size: 16px;
+            color: #c45c48;
+            font-family: "Ma Shan Zheng", cursive;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+        }
+
+        .notice-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .notice-list li {
+            font-size: 13px;
+            color: #aaa;
+            font-family: "ZCOOL XiaoWei", serif;
+            padding: 6px 0;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .notice-list li::before {
+            content: '•';
+            position: absolute;
+            left: 5px;
+            color: #c45c48;
+        }
+
+        /* 征服模式主题选择样式 */
+        #conquest-theme-select-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        #conquest-theme-select-container.hidden {
+            display: none;
+        }
+
+        /* 横屏适配 - 征服模式主题选择 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #conquest-theme-select-container {
+                padding: 20px 15px;
+            }
+
+            .conquest-theme-header {
+                padding-bottom: 15px;
+                margin-bottom: 15px;
+            }
+
+            .conquest-theme-title {
+                font-size: 26px;
+                letter-spacing: 4px;
+            }
+
+            .conquest-theme-grid {
+                gap: 15px;
+                max-height: 60vh;
+                overflow-y: auto;
+            }
+
+            .conquest-theme-card {
+                padding: 18px 12px;
+                min-height: 110px;
+            }
+
+            .conquest-theme-card .theme-icon {
+                font-size: 28px;
+                margin-bottom: 8px;
+            }
+
+            .conquest-theme-card .theme-name {
+                font-size: 16px;
+                margin-bottom: 6px;
+            }
+
+            .conquest-theme-card .theme-desc {
+                font-size: 11px;
+                margin-bottom: 6px;
+            }
+
+            #back-to-menu-from-conquest-theme {
+                margin-top: 20px;
+                padding: 10px 30px;
+            }
+        }
+
+        .conquest-theme-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #2d2d2d;
+            margin-bottom: 30px;
+        }
+
+        .conquest-theme-title {
+            font-size: 36px;
+            color: #e8e8e8;
+            font-family: "Ma Shan Zheng", cursive;
+            letter-spacing: 6px;
+        }
+
+        .conquest-theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            width: 100%;
+            padding: 0 20px;
+            max-width: 800px;
+        }
+
+        .conquest-theme-card {
+            padding: 24px 16px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border: 2px solid #2d2d2d;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }

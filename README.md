@@ -102,24 +102,25 @@
 
 ```
 .
-├── README.md              # 你正在阅读的文档
-├── index.html             # 游戏主页面
+├── index.html                 # 页面骨架与资源装配
 ├── css/
-│   └── style.css          # 游戏样式（水墨主题字体）
+│   ├── style.css              # 级联兼容入口
+│   ├── style/part-*.css       # 主界面样式片段
+│   └── inline/part-*.css      # 原入口内联样式片段
 ├── js/
-│   ├── game.js            # 游戏主逻辑（含融合系统）
-│   ├── config.js          # 配置数据（炮塔、敌人、融合）
-│   ├── tower.js           # 炮塔逻辑（Tower、FusionTower）
-│   ├── enemy.js           # 敌人逻辑
-│   ├── level.js           # 关卡配置（6个关卡）
-│   ├── inkRenderer.js     # 水墨渲染器
-│   ├── particle.js        # 粒子系统
-│   ├── soundManager.js    # 音效管理
-│   ├── ui.js              # UI交互
-│   └── utils.js           # 工具函数
-└── docs/
-    └── GDD.md             # 游戏设计文档 (Game Design Document)
+│   ├── bootstrap/              # 资源、视口、DOM 模板和初始化
+│   ├── config/                 # 配置领域与融合构建
+│   ├── core/                   # Game 编排子模块
+│   ├── data/levels/            # 普通模式关卡数据
+│   ├── entities/               # Tower、Enemy 及其职责模块
+│   ├── modes/conquest/         # 征服模式子模块
+│   └── ui/                     # UI 菜单、图鉴、输入和面板
+├── scripts/                    # 海报等开发工具
+├── tests/                      # 平衡与融合测试
+└── docs/                       # 设计、架构、工单和完成报告
 ```
+
+所有资源仍由 `index.html` 通过普通 `<script>`/stylesheet 顺序加载，未引入构建工具。
 
 ## 💡 核心系统
 

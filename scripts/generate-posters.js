@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 const W = 1920, H = 1080;
-const DIR = path.join(__dirname, 'store-posters');
+const DIR = path.join(__dirname, '..', 'store-posters');
 
 async function screenshot(browser, htmlFile, pngFile) {
   const page = await browser.newPage();
