@@ -37,3 +37,16 @@
 - 入口仍采用同步 classic script，拆分文件必须保持 `index.html` 中的依赖顺序。
 - `window.CONFIG`、`CONFIG`、`THEMES`、`LEVELS_DATA`、`Tower`、`Enemy`、`Game`、`UI` 和 `ConquestGame` 继续作为兼容访问点。
 - 本轮不改变玩法数值、不迁移 ES Modules、不引入构建链。
+
+
+## 5. 扩展注册点
+
+| 扩展内容 | 注册/维护位置 | 约束 |
+|---|---|---|
+| 炮塔、敌人及领域配置 | `js/config/domain-*.js` | 继续写入 `CONFIG` 兼容容器，不改变全局访问名 |
+| 融合和二阶段进化 | `js/config/fusion.js` | 通过现有配方构建器和白名单添加，保持普通脚本顺序 |
+| 普通模式关卡 | `js/data/levels/part-*.js`，由 `js/data/levels/export.js` 汇总 | 只新增注册块，不修改 `LEVELS_DATA` 的兼容入口 |
+| 征服模式规则 | `js/modes/conquest/` 与既有征服数据文件 | 只放征服独有流程，复用实体和公共系统 |
+| 自动检查与开发工具 | `tests/`、`scripts/`、`package.json` | 新增脚本也必须保持不超过600行，并接入可重复命令 |
+
+新增职责优先落在对应注册点和子模块中；不得恢复超长单体文件，不在本边界内引入 ES Modules、TypeScript 或构建链。
