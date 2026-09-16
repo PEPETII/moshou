@@ -29,10 +29,19 @@ function collectFiles(directory) {
   return files;
 }
 
+function countLines(filePath) {
+  const content = fs.readFileSync(filePath, "utf8");
+  if (content.length === 0) {
+    return 0;
+  }
+
+  const lines = content.split(/\r?\n/);
+  return content.endsWith("\n") ? lines.length - 1 : lines.length;
+}
+
 const results = collectFiles(ROOT).map((absolutePath) => {
   const relativePath = path.relative(ROOT, absolutePath).split(path.sep).join("/");
-  const lineCount = fs.readFileSync(absolutePath, "utf8").split(/\r?\n/).length;
-  return { path: relativePath, lineCount };
+  return { path: relativePath, lineCount: countLines(absolutePath) };
 });
 
 const violations = results.filter(({ lineCount }) => lineCount > MAX_LINES);
