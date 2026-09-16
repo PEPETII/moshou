@@ -1,5 +1,11 @@
 {
   "devDependencies": {
     "@playwright/test": "^1.59.1"
+  },
+  "scripts": {
+    "test:balance": "node tests/test-balance.js",
+    "test:fusion": "node tests/test-fusion-recipes.js",
+    "test": "npm run test:balance && npm run test:fusion",
+    "posters": "node scripts/generate-posters.js"
   }
 }
