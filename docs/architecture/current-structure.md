@@ -12,7 +12,7 @@
 - `CONFIG` 通过 `js/config.js` 建立兼容容器，再由 `js/config/domain-*.js` 和 `js/config/fusion.js` 注册。
 - `LEVELS_DATA` 由 `js/levelsData.js` 建立容器，再由 `js/data/levels/part-*.js` 注册。
 - `Tower`、`Enemy`、`Game`、`ConquestGame`、`UI` 保留原公开类名和构造方式；职责方法通过 prototype 子模块装配。
-- 测试和开发工具分别归档到 `tests/`、`scripts/`，并由 `package.json` 提供命令入口。
+- 测试和开发工具分别归档到 `tests/`、`scripts/`，并由 `package.json` 提供命令入口；`scripts/check-line-count.js` 作为 600 行自动门禁接入 `npm test`。
 
 ## 2. 主要目录责任
 
@@ -30,7 +30,7 @@
 
 ## 3. 600 行检查结果
 
-本轮生成和修改的 HTML/CSS/JS 文件最高为 598 行（`tests/test-balance.js`）。分支级全量扫描已完成：75 个 HTML/CSS/JS 文件中超 600 行文件为 0 个，最大文件为 598 行。数据文件按注册块拆分，未删除数据、注释或错误处理。
+本轮生成和修改的 HTML/CSS/JS 文件最高为 598 行（`tests/test-balance.js`）。分支级全量扫描已完成：76 个 HTML/CSS/JS 文件中超 600 行文件为 0 个，最大文件为 598 行。数据文件按注册块拆分，未删除数据、注释或错误处理。
 
 ## 4. 兼容约束
 
