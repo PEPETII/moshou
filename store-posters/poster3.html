@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>*{margin:0;padding:0;}body{background:#0a0a0c;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow:hidden;}canvas{display:block;}</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+(function(){
+var c=document.getElementById('c'),x=c.getContext('2d'),W=1920,H=1080;
+var BG='#0a0a0c',DK='#141418',MD='#1e1e24',LM='#2a2a32',LL='#3d3d48',PL='#5a5a66';
+var FW='#d8d8e0',PW='#f0f0f5',VR='#c45c48',VD='#8b3a2f',ED='#70707a';
+
+x.fillStyle=BG;x.fillRect(0,0,W,H);
+for(var i=0;i<W*H*0.28;i++){
+  x.fillStyle='rgba(215,215,228,'+(Math.random()*0.013)+')';
+  x.fillRect((Math.random()*W)|0,(Math.random()*H)|0,1,1);
+}
+function mt(px,py,r,col,a,l){
+  for(var k=l;k>0;k--){var rr=r*(0.4+Math.random()*0.7);
+  x.save();x.globalAlpha=a/k;x.fillStyle=col;x.beginPath();
+  for(var j=0;j<=360;j+=6){var A=j*Math.PI/180,v=rr*(0.88+Math.random()*0.24);
+  x.lineTo(px+Math.cos(A)*v,py+Math.sin(A)*v);}x.closePath();x.fill();x.restore();}
+}
+for(var row=0;row<3;row++)for(var col=0;col<5;col++)
+  mt(W*(0.12+col*0.19),H*(0.2+row*0.26),55,MD,0.025,3);
+
+x.save();x.strokeStyle=LL;x.lineWidth=1.5;x.globalAlpha=0.1;
+for(i=0;i<20;i++){x.beginPath();var px=60+Math.random()*(W-120),py=60+Math.random()*(H-120);
+x.moveTo(px,py);for(var j=0;j<5;j++){px+=(Math.random()-0.5)*280;py+=(Math.random()-0.5)*200;x.lineTo(px,py);}
+x.stroke();}x.restore();
+
+var bgCh=['征','服','波','次','召','唤','战','斗','生','存','挑','战','无','尽','墨','韵','极','限'];
+for(i=0;i<50;i++){x.save();x.globalAlpha=0.012+Math.random()*0.038;
+x.font=(20+Math.random()*75)+'px SimSun,serif';x.fillStyle=FW;
+x.textAlign='center';x.textBaseline='middle';
+x.fillText(bgCh[(Math.random()*bgCh.length)|0],Math.random()*W,Math.random()*H);x.restore();}
+
+var waves=[
+  {n:'壹',tw:['火','水'],en:['尸','尸','鬼']},
+  {n:'贰',tw:['山','火','木'],en:['甲','甲','鬼','尸']},
+  {n:'叁',tw:['金','土','火','水'],en:['巨','甲','鬼','尸','尸']},
+  {n:'肆',tw:['山','金','土','木'],en:['巨','巨','甲','鬼','尸','尸']},
+  {n:'伍',tw:['心炎','金','山'],en:['霸','巨','巨','甲','鬼']},
+  {n:'陆',tw:['如风','金','土','火'],en:['霸','霸','巨','巨','甲']}
+];
+waves.forEach(function(wd,idx){
+  var gx=idx%3,gy=(idx/3)|0,bx=W*(0.1+gx*0.32),by=H*(0.16+gy*0.38);
+  x.save();x.strokeStyle=PL;x.lineWidth=1.2;x.globalAlpha=0.18;
+  x.strokeRect(bx-105,by-115,270,290);x.restore();
+  x.save();x.font='bold 42px SimSun,serif';x.fillStyle=VD;
+  x.textAlign='left';x.textBaseline='top';x.fillText(wd.n,bx-95,by-105);x.restore();
+  wd.tw.forEach(function(ti,ii){
+    var tx=bx-80+ii*68,ty=by-25;mt(tx,ty,32,DK,0.03,2);
+    x.save();x.font='bold 48px SimSun,serif';
+    var tc=['#e05040','#5099bb','#ddd8cc','#70aa60','#bb9950','#dd6644'][ii]||FW;
+    x.fillStyle=tc;x.shadowColor='rgba(0,0,0,0.55)';x.shadowBlur=10;
+    x.textAlign='center';x.textBaseline='middle';x.fillText(ti,tx,ty);x.restore();});
+  wd.en.forEach(function(ei,ii){
+    var ex=bx-62+ii*54,ey=by+75;x.save();x.globalAlpha=0.45+Math.random()*0.35;
+    x.font='bold 38px SimSun,serif';
+    x.fillStyle=ei==='霸'||ii===wd.en.length-1?VR:ED;
+    x.textAlign='center';x.textBaseline='middle';x.fillText(ei,ex,ey);x.restore();});
+  x.save();x.strokeStyle=VR;x.lineWidth=1.8;x.globalAlpha=0.28;
+  x.setLineDash([4,6]);x.beginPath();x.moveTo(bx-80,by+48);x.lineTo(bx+155,by+48);
+  x.stroke();x.setLineDash([]);x.restore();
+});
+
+x.save();var rg=x.createRadialGradient(W*0.5,H*0.5,60,W*0.5,H*0.5,650);
+rg.addColorStop(0,'rgba(196,92,72,0.07)');rg.addColorStop(1,'rgba(196,92,72,0)');
+x.fillStyle=rg;x.fillRect(0,0,W,H);x.restore();
+
+x.save();x.font='bold 130px SimHei,"Microsoft YaHei","Noto Sans SC",sans-serif';
+var ttl='墨守成规';x.shadowColor='rgba(196,92,72,0.35)';x.shadowBlur=60;
+var lg=x.createLinearGradient(W-120,H*0.93-65,60,H*0.93+65);
+lg.addColorStop(0,FW);lg.addColorStop(0.5,PW);lg.addColorStop(1,FW);
+x.fillStyle=lg;x.textAlign='right';x.textBaseline='middle';
+x.fillText(ttl,W-90,H*0.93);
+x.shadowColor='rgba(0,0,0,0.85)';x.shadowBlur=12;
+x.fillText(ttl,W-90+4,H*0.93+4);x.restore();
+document.title='poster3-ready';
+})();
+</script>
+</body>
+</html>

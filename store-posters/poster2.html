@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>*{margin:0;padding:0;}body{background:#0a0a0c;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow:hidden;}canvas{display:block;}</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+(function(){
+var c=document.getElementById('c'),x=c.getContext('2d'),W=1920,H=1080;
+var BG='#0a0a0c',DK='#141418',MD='#1e1e24',LM='#2a2a32',LL='#3d3d48';
+var FW='#d8d8e0',PW='#f0f0f5',VR='#c45c48',VD='#8b3a2f';
+
+x.fillStyle=BG;x.fillRect(0,0,W,H);
+for(var i=0;i<W*H*0.25;i++){
+  x.fillStyle='rgba(210,210,225,'+(Math.random()*0.012)+')';
+  x.fillRect((Math.random()*W)|0,(Math.random()*H)|0,1,1);
+}
+function mt(px,py,r,col,a,l){
+  for(var k=l;k>0;k--){var rr=r*(0.4+Math.random()*0.7);
+  x.save();x.globalAlpha=a/k;x.fillStyle=col;x.beginPath();
+  for(var j=0;j<=360;j+=6){var A=j*Math.PI/180,v=rr*(0.88+Math.random()*0.24);
+  x.lineTo(px+Math.cos(A)*v,py+Math.sin(A)*v);}x.closePath();x.fill();x.restore();}
+}
+
+mt(W*0.5,H*0.46,340,MD,0.04,7);
+for(var r=300;r>0;r-=18){
+  x.save();x.strokeStyle=r%50===0?LL:LM;x.lineWidth=1.2;x.globalAlpha=0.03+r/9000;
+  x.beginPath();x.arc(W*0.5,H*0.46,r+(Math.random()-0.5)*10,0,Math.PI*2);x.stroke();x.restore();
+}
+
+var bgCh=['融','合','炎','淋','灿','崮','森','鋆','垚','淼','焱','鑫','磊','圭','岩','梵'];
+for(i=0;i<40;i++){x.save();x.globalAlpha=0.012+Math.random()*0.035;
+x.font=(26+Math.random()*95)+'px SimSun,serif';x.fillStyle=FW;
+x.textAlign='center';x.textBaseline='middle';
+x.fillText(bgCh[(Math.random()*bgCh.length)|0],Math.random()*W,Math.random()*H);x.restore();}
+
+var fps=[
+  {l:{ch:'火',c:'#e05040'},r:{ch:'山',c:'#ddd8cc'},res:'火山',rc:'#ff7744'},
+  {l:{ch:'水',c:'#5099bb'},r:{ch:'木',c:'#70aa60'},res:'淋',rc:'#33aa88'},
+  {l:{ch:'金',c:'#bb9950'},r:{ch:'火',c:'#e05040'},res:'钬',rc:'#ddaa33'}
+];
+fps.forEach(function(fp,idx){
+  var sy=H*(0.24+idx*0.24),lx=W*0.26,rx=W*0.74;
+  mt(lx,sy,70,DK,0.035,3);mt(rx,sy,70,DK,0.035,3);
+  [fp.l,fp.r].forEach(function(side,si){var sx=si===0?lx:rx;
+  x.save();x.font='bold 100px SimSun,"Noto Serif SC",serif';x.fillStyle=side.c;
+  x.shadowColor='rgba(0,0,0,0.6)';x.shadowBlur=18;
+  x.textAlign='center';x.textBaseline='middle';x.fillText(side.ch,sx,sy);x.restore();});
+  x.save();x.strokeStyle=VR;x.lineWidth=3;x.shadowColor='rgba(196,92,72,0.5)';
+  x.shadowBlur=15;x.globalAlpha=0.7;x.setLineDash([10,7]);
+  x.beginPath();x.moveTo(lx+70,sy);x.lineTo(rx-70,sy);x.stroke();x.setLineDash([]);
+  var mx=(lx+rx)/2;x.beginPath();x.arc(mx,sy,55,0,Math.PI*2);
+  var pg=x.createRadialGradient(mx,sy,8,mx,sy,60);
+  pg.addColorStop(0,'rgba(196,92,72,0.35)');pg.addColorStop(1,'rgba(196,92,72,0)');
+  x.fillStyle=pg;x.fill();
+  x.font='bold 80px SimHei,"Microsoft YaHei",sans-serif';
+  x.fillStyle=fp.rc;x.shadowBlur=22;x.shadowColor=fp.rc;x.globalAlpha=0.92;
+  x.fillText(fp.res,mx,sy);x.restore();
+});
+
+x.save();x.font='bold 130px SimHei,"Microsoft YaHei","Noto Sans SC",sans-serif';
+var ttl='墨守成规';x.shadowColor='rgba(196,92,72,0.35)';x.shadowBlur=60;
+var lg=x.createLinearGradient(W-120,H*0.91-65,60,H*0.91+65);
+lg.addColorStop(0,FW);lg.addColorStop(0.5,PW);lg.addColorStop(1,FW);
+x.fillStyle=lg;x.textAlign='right';x.textBaseline='middle';
+x.fillText(ttl,W-90,H*0.91);
+x.shadowColor='rgba(0,0,0,0.85)';x.shadowBlur=12;
+x.fillText(ttl,W-90+4,H*0.91+4);x.restore();
+document.title='poster2-ready';
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,2627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>墨守成规</title>
+    <script>
+    // 资源预加载管理器
+    window.ResourceLoader = {
+      resources: [],
+      loaded: 0,
+      failed: 0,
+      onProgress: null,
+      onComplete: null,
+
+      add(url, type = 'script') {
+        this.resources.push({ url, type });
+        return this;
+      },
+
+      load() {
+        const total = this.resources.length;
+        if (total === 0) {
+          this.onComplete && this.onComplete();
+          return Promise.resolve();
+        }
+
+        const promises = this.resources.map(res => {
+          return new Promise((resolve, reject) => {
+            if (res.type === 'font') {
+              // 字体预加载
+              document.fonts.load('1em "Ma Shan Zheng"').then(() => {
+                this.loaded++;
+                this._reportProgress(total);
+                resolve();
+              }).catch(() => {
+                this.failed++;
+                this._reportProgress(total);
+                resolve(); // 字体失败不阻塞
+              });
+            } else if (res.type === 'script') {
+              // 脚本通过创建临时 script 标签预加载
+              const script = document.createElement('script');
+              script.src = res.url;
+              script.async = true;
+              script.onload = () => {
+                this.loaded++;
+                this._reportProgress(total);
+                resolve();
+              };
+              script.onerror = () => {
+                this.failed++;
+                this._reportProgress(total);
+                reject(new Error(`Failed to load: ${res.url}`));
+              };
+              document.head.appendChild(script);
+            }
+          });
+        });
+
+        return Promise.all(promises).then(() => {
+          this.onComplete && this.onComplete();
+        }).catch(err => {
+          console.warn('资源加载失败:', err);
+          this.onComplete && this.onComplete();
+        });
+      },
+
+      _reportProgress(total) {
+        const progress = Math.round(((this.loaded + this.failed) / total) * 100);
+        this.onProgress && this.onProgress(progress, this.loaded, this.failed, total);
+      }
+    };
+    </script>
+    <script>
+    // 移动端适配
+    (function() {
+        // 游戏原始尺寸
+        const GAME_WIDTH = 960;  // 画布宽度960px (20列 x 48px)
+        const GAME_HEIGHT = 480;
+        const SIDE_PANEL_WIDTH = 280;
+        const GAP = 24;
+        const TOTAL_GAME_WIDTH = SIDE_PANEL_WIDTH + GAP + GAME_WIDTH; // 1264px
+
+        // 响应式断点定义（与 CSS 保持一致）
+        // 移动端：max-width: 768px
+        // 平板：min-width: 769px and max-width: 1024px
+        // 桌面：min-width: 1025px
+        const BREAKPOINTS = {
+            MOBILE: 768,
+            TABLET: 1024
+        };
+
+        // 根据屏幕宽度获取设备类型（与 CSS 媒体查询保持一致）
+        function getDeviceType() {
+            const width = window.innerWidth;
+            if (width <= BREAKPOINTS.MOBILE) {
+                return 'mobile';
+            } else if (width >= 769 && width <= BREAKPOINTS.TABLET) {
+                return 'tablet';
+            }
+            return 'desktop';
+        }
+
+        // 计算并应用缩放
+        function applyScale() {
+            const container = document.getElementById('scale-container');
+            if (!container) return;
+
+            const wrapperWidth = window.innerWidth;
+            const wrapperHeight = window.innerHeight;
+
+            // 使用与 CSS 一致的断点检测设备类型
+            const deviceType = getDeviceType();
+            const isMobile = deviceType === 'mobile';
+            const isTablet = deviceType === 'tablet';
+
+            // 检测是否为横屏（宽度大于高度）
+            const isLandscape = wrapperWidth > wrapperHeight;
+
+            // 计算最大允许缩放（考虑边距）
+            const padding = isMobile ? 10 : 20;
+            const maxScaleX = (wrapperWidth - padding * 2) / TOTAL_GAME_WIDTH;
+            const maxScaleY = (wrapperHeight - padding * 2) / GAME_HEIGHT;
+
+            // 移动端和平板允许更小的缩放比例，确保内容可见
+            // 横屏时进一步降低最小缩放比例
+            let minScale;
+            if (isMobile && isLandscape) {
+                minScale = 0.3; // 手机横屏时允许更小缩放
+            } else if (isMobile) {
+                minScale = 0.4;
+            } else if (isTablet) {
+                minScale = 0.45;
+            } else {
+                minScale = 0.5;
+            }
+
+            let scale = Math.min(maxScaleX, maxScaleY, 1);
+            scale = Math.max(scale, minScale); // 确保最小缩放
+
+            container.style.transform = 'scale(' + scale + ')';
+
+            // 移动端和平板优化：调整容器位置
+            if (isMobile || isTablet) {
+                container.style.transformOrigin = 'center center';
+            }
+
+            // 调试信息仅在 ?debug=1 时输出，避免移动端默认产生日志开销。
+            if (new URLSearchParams(window.search).get('debug') === '1') {
+                console.log('Scale:', scale, 'Device:', deviceType, 'Landscape:', isLandscape, 'Available:', wrapperWidth, 'x', wrapperHeight);
+            }
+        }
+
+        // 横屏检测 - 使用与 CSS 一致的断点
+        function checkOrientation() {
+            const wrapperWidth = window.innerWidth;
+            const wrapperHeight = window.innerHeight;
+            const deviceType = getDeviceType();
+            
+            // 根据设备类型设置最小宽度阈值
+            // 移动端：768px, 平板：769px, 桌面：800px
+            const minWidth = deviceType === 'mobile' ? BREAKPOINTS.MOBILE : 
+                            (deviceType === 'tablet' ? 769 : 800);
+            
+            if (wrapperHeight > wrapperWidth && wrapperWidth < minWidth) {
+                document.body.classList.add('show-rotate-tip');
+            } else {
+                document.body.classList.remove('show-rotate-tip');
+                setTimeout(applyScale, 100);
+            }
+        }
+
+        // 初始化
+        function init() {
+            applyScale();
+        }
+
+        window.addEventListener('load', function() {
+            init();
+            checkOrientation();
+        });
+        window.addEventListener('resize', function() {
+            checkOrientation();
+        });
+        window.addEventListener('orientationchange', function() {
+            setTimeout(function() {
+                checkOrientation();
+            }, 200); // 增加延迟确保方向变化完成
+        });
+        
+        // 添加触摸事件支持
+        document.addEventListener('touchstart', function() {}, {passive: true});
+    })();
+    </script>
+    <!-- 毛笔字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* 主菜单样式 */
+        #main-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0c0c0c;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        #main-menu.hidden {
+            display: none;
+        }
+
+        #menu-ink-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #main-menu h1,
+        #main-menu .menu-buttons,
+        #main-menu #menu-level-select,
+        #main-menu #back-to-menu {
+            position: relative;
+            z-index: 1;
+        }
+
+        #main-menu h1 {
+            font-size: 72px;
+            font-family: "Ma Shan Zheng", cursive;
+            color: #e8e8e8;
+            margin-bottom: 60px;
+            letter-spacing: 12px;
+            text-shadow: 0 0 40px rgba(255,255,255,0.1);
+        }
+
+        /* 加载进度条 */
+        #loading-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0c0c0c;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            transition: opacity 0.5s ease;
+        }
+
+        #loading-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #loading-text {
+            font-size: 24px;
+            font-family: "Ma Shan Zheng", cursive;
+            color: #888;
+            margin-bottom: 20px;
+            letter-spacing: 4px;
+        }
+
+        #loading-bar {
+            width: 300px;
+            height: 4px;
+            background: #1f1f1f;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        #loading-progress {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #c45c48, #e8e8e8);
+            transition: width 0.3s ease;
+        }
+
+        #loading-percent {
+            font-size: 14px;
+            font-family: "ZCOOL XiaoWei", serif;
+            color: #666;
+            margin-top: 10px;
+            text-shadow: 0 0 40px rgba(255,255,255,0.1);
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .menu-btn {
+            padding: 18px 60px;
+            font-size: 24px;
+            background: #1a1a1a;
+            border: 2px solid #3a3a3a;
+            color: #d4d4d4;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: "Ma Shan Zheng", cursive;
+            letter-spacing: 6px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* 横屏适配 - 主菜单 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #main-menu h1 {
+                font-size: 36px;
+                margin-bottom: 20px;
+                letter-spacing: 6px;
+            }
+
+            .menu-buttons {
+                gap: 10px;
+                max-height: 70vh;
+            }
+
+            .menu-btn {
+                padding: 10px 40px;
+                font-size: 18px;
+                letter-spacing: 4px;
+            }
+        }
+
+        @media (max-height: 400px) and (orientation: landscape) {
+            #main-menu h1 {
+                font-size: 28px;
+                margin-bottom: 10px;
+                letter-spacing: 4px;
+            }
+
+            .menu-buttons {
+                gap: 8px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                max-height: 75vh;
+            }
+
+            .menu-btn {
+                padding: 8px 24px;
+                font-size: 14px;
+                letter-spacing: 2px;
+                min-width: 100px;
+            }
+        }
+
+        .menu-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            transition: width 0.4s, height 0.4s;
+        }
+
+        .menu-btn:hover {
+            background: #1f1f1f;
+            border-color: #5a5a5a;
+            color: #f5f5f5;
+        }
+
+        .menu-btn:hover::before {
+            width: 250%;
+            height: 250%;
+        }
+
+        /* 主题选择界面 */
+        #theme-select-container {
+            margin-top: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            max-width: 800px;
+            padding: 0 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        #theme-select-container.hidden {
+            display: none;
+        }
+
+        /* 横屏适配 - 主题选择 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #theme-select-container {
+                margin-top: 20px;
+                gap: 15px;
+                max-height: 65vh;
+            }
+
+            .theme-card {
+                width: 180px;
+                padding: 18px 15px;
+            }
+
+            .theme-card .theme-icon {
+                font-size: 28px;
+                margin-bottom: 8px;
+            }
+
+            .theme-card .theme-name {
+                font-size: 18px;
+                margin-bottom: 6px;
+            }
+
+            .theme-card .theme-desc {
+                font-size: 11px;
+            }
+
+            .theme-card .theme-progress {
+                margin-top: 8px;
+                font-size: 11px;
+            }
+        }
+
+        @media (max-height: 400px) and (orientation: landscape) {
+            #theme-select-container {
+                margin-top: 10px;
+                gap: 10px;
+            }
+
+            .theme-card {
+                width: 150px;
+                padding: 12px 10px;
+            }
+
+            .theme-card .theme-icon {
+                font-size: 24px;
+                margin-bottom: 6px;
+            }
+
+            .theme-card .theme-name {
+                font-size: 16px;
+                margin-bottom: 4px;
+            }
+
+            .theme-card .theme-desc {
+                font-size: 10px;
+                line-height: 1.3;
+            }
+        }
+
+        .theme-card {
+            width: 220px;
+            padding: 24px 20px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border: 2px solid #2d2d2d;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--theme-color, #666), transparent);
+            opacity: 0.6;
+        }
+
+        .theme-card:hover {
+            border-color: var(--theme-color, #4a4a4a);
+            background: linear-gradient(135deg, #1f1f1f 0%, #151515 100%);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .theme-card .theme-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .theme-card .theme-name {
+            font-size: 24px;
+            color: #e8e8e8;
+            font-family: "Ma Shan Zheng", cursive;
+            margin-bottom: 8px;
+            letter-spacing: 4px;
+        }
+
+        .theme-card .theme-desc {
+            font-size: 13px;
+            color: #888;
+            font-family: "ZCOOL XiaoWei", serif;
+            line-height: 1.5;
+        }
+
+        .theme-card .theme-progress {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .theme-card.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+            filter: grayscale(0.5);
+        }
+
+        .theme-card.locked:hover {
+            transform: none;
+            border-color: #2d2d2d;
+            box-shadow: none;
+        }
+
+        .theme-card .theme-progress.locked {
+            color: #c45c48;
+        }
+
+        /* 关卡列表界面 */
+        #level-list-container {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 700px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #level-list-container.hidden {
+            display: none;
+        }
+
+        /* 横屏适配 - 关卡列表 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #level-list-container {
+                margin-top: 15px;
+                max-height: 75vh;
+            }
+
+            .level-list-header {
+                padding: 0 15px 15px;
+                margin-bottom: 15px;
+            }
+
+            .level-list-title {
+                font-size: 22px;
+                letter-spacing: 4px;
+            }
+
+            .level-grid {
+                gap: 10px;
+                padding: 0 15px;
+            }
+
+            .level-item {
+                padding: 8px;
+            }
+
+            .level-item .level-name {
+                font-size: 14px;
+            }
+
+            #back-to-themes {
+                margin-top: 15px;
+                padding: 8px 24px;
+            }
+        }
+
+        .level-list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #2d2d2d;
+            margin-bottom: 20px;
+        }
+
+        .level-list-title {
+            font-size: 28px;
+            color: #e8e8e8;
+            font-family: "Ma Shan Zheng", cursive;
+            letter-spacing: 6px;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        .level-item {
+            aspect-ratio: 1;
+            padding: 12px;
+            background: #1a1a1a;
+            border: 2px solid #2d2d2d;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .level-item:hover {
+            border-color: #4a4a4a;
+            background: #1f1f1f;
+            transform: scale(1.05);
+        }
+
+        .level-item .level-num {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .level-item .level-name {
+            font-size: 16px;
+            color: #e8e8e8;
+            font-family: "Ma Shan Zheng", cursive;
+        }
+
+        .level-item.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .level-item.locked:hover {
+            transform: none;
+            border-color: #2d2d2d;
+        }
+
+        .level-item.completed {
+            border-color: #4a6741;
+        }
+
+        .level-item.completed::after {
+            content: '✓';
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            font-size: 10px;
+            color: #4a6741;
+        }
+
+        #back-to-themes,
+        #back-to-menu {
+            margin-top: 30px;
+            padding: 10px 30px;
+            font-size: 16px;
+            background: transparent;
+            border: 1px solid #3a3a3a;
+            color: #666;
+            cursor: pointer;
+            font-family: "ZCOOL XiaoWei", serif;
+            transition: all 0.3s;
+        }
+
+        #back-to-themes:hover,
+        #back-to-menu:hover {
+            border-color: #5a5a5a;
+            color: #999;
+        }
+
+        #back-to-menu.hidden {
+            display: none;
+        }
+
+
+        /* 事件通知容器 */
+        #event-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+
+        .event-notification {
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ffd700;
+            min-width: 300px;
+            text-align: center;
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 10px 0;
+        }
+
+        .event-notification h3 {
+            color: #ffd700;
+            margin: 0 0 10px 0;
+        }
+
+        .event-notification button {
+            background: #ffd700;
+            color: black;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* 横屏提示 */
+        .rotate-tip {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0c0c0c;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: #888;
+            font-family: "Ma Shan Zheng", cursive;
+        }
+
+        .rotate-tip .rotate-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: rotate-hint 1.5s ease-in-out infinite;
+        }
+
+        .rotate-tip .rotate-text {
+            font-size: 24px;
+            letter-spacing: 4px;
+        }
+
+        @keyframes rotate-hint {
+            0%, 100% { transform: rotate(-30deg); }
+            50% { transform: rotate(30deg); }
+        }
+
+        body.show-rotate-tip .rotate-tip {
+            display: flex;
+        }
+
+        @keyframes stamp-press {
+            0% { transform: scale(1.6) rotate(-3deg); opacity: 0.7; }
+            20% { transform: scale(0.85) rotate(2deg); opacity: 1; }
+            35% { transform: scale(1.15) rotate(-1.5deg); }
+            50% { transform: scale(0.95) rotate(1deg); }
+            65% { transform: scale(1.05) rotate(-0.5deg); }
+            80% { transform: scale(0.98) rotate(0.2deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .tower-select.stamp-anim {
+            animation: stamp-press 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+            box-shadow:
+                0 0 20px rgba(255, 255, 255, 0.15),
+                inset 0 0 8px rgba(255, 255, 255, 0.05) !important;
+            border-color: #5a5a5a !important;
+        }
+
+        /* 图鉴界面样式 */
+        #encyclopedia-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        #encyclopedia-container.hidden {
+            display: none;
+        }
+
+        .encyclopedia-title {
+            font-size: 48px;
+            font-family: "Ma Shan Zheng", cursive;
+            color: #e8e8e8;
+            margin-bottom: 50px;
+            letter-spacing: 8px;
+            text-shadow: 0 0 30px rgba(255,255,255,0.1);
+        }
+
+        .encyclopedia-buttons {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .encyclopedia-card {
+            width: 260px;
+            padding: 40px 30px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border: 2px solid #2d2d2d;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 横屏适配 - 图鉴界面 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #encyclopedia-container {
+                padding: 20px 10px;
+            }
+
+            .encyclopedia-title {
+                font-size: 32px;
+                margin-bottom: 20px;
+                letter-spacing: 4px;
+            }
+
+            .encyclopedia-buttons {
+                gap: 20px;
+            }
+
+            .encyclopedia-card {
+                width: 180px;
+                padding: 20px 15px;
+            }
+
+            .encyclopedia-card .encyclopedia-icon {
+                font-size: 32px;
+                margin-bottom: 10px;
+            }
+
+            .encyclopedia-card .encyclopedia-card-name {
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
+
+            .encyclopedia-card .encyclopedia-card-desc {
+                font-size: 12px;
+            }
+
+            #back-to-menu-from-encyclopedia {
+                margin-top: 20px;
+                padding: 8px 30px;
+            }
+        }
+
+        @media (max-height: 400px) and (orientation: landscape) {
+            .encyclopedia-title {
+                font-size: 24px;
+                margin-bottom: 15px;
+            }
+
+            .encyclopedia-buttons {
+                gap: 15px;
+            }
+
+            .encyclopedia-card {
+                width: 140px;
+                padding: 15px 10px;
+            }
+
+            .encyclopedia-card .encyclopedia-icon {
+                font-size: 24px;
+                margin-bottom: 6px;
+            }
+
+            .encyclopedia-card .encyclopedia-card-name {
+                font-size: 16px;
+                margin-bottom: 4px;
+            }
+
+            .encyclopedia-card .encyclopedia-card-desc {
+                font-size: 10px;
+                line-height: 1.4;
+            }
+        }
+
+        .encyclopedia-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #c45c48, transparent);
+            opacity: 0.6;
+        }
+
+        .encyclopedia-card:hover {
+            border-color: #c45c48;
+            background: linear-gradient(135deg, #1f1f1f 0%, #151515 100%);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+        }
+
+        .encyclopedia-card .encyclopedia-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .encyclopedia-card .encyclopedia-card-name {
+            font-size: 28px;
+            color: #e8e8e8;
+            font-family: "Ma Shan Zheng", cursive;
+            margin-bottom: 12px;
+            letter-spacing: 4px;
+        }
+
+        .encyclopedia-card .encyclopedia-card-desc {
+            font-size: 14px;
+            color: #888;
+            font-family: "ZCOOL XiaoWei", serif;
+            line-height: 1.6;
+        }
+
+        #back-to-menu-from-encyclopedia {
+            margin-top: 50px;
+            padding: 12px 40px;
+            font-size: 16px;
+            background: transparent;
+            border: 1px solid #3a3a3a;
+            color: #666;
+            cursor: pointer;
+            font-family: "ZCOOL XiaoWei", serif;
+            transition: all 0.3s;
+        }
+
+        #back-to-menu-from-encyclopedia:hover {
+            border-color: #5a5a5a;
+            color: #999;
+        }
+
+        /* 炮塔/怪物图鉴列表界面 */
+        #tower-encyclopedia-container,
+        #enemy-encyclopedia-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        #tower-encyclopedia-container.hidden,
+        #enemy-encyclopedia-container.hidden {
+            display: none;
+        }
+
+        .encyclopedia-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #2d2d2d;
+            margin-bottom: 25px;
+        }
+
+        /* 横屏适配 - 炮塔/怪物图鉴列表 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #tower-encyclopedia-container,
+            #enemy-encyclopedia-container {
+                padding: 15px 10px;
+            }
+
+            .encyclopedia-header {
+                padding-bottom: 10px;
+                margin-bottom: 15px;
+            }
+
+            .encyclopedia-header .encyclopedia-title {
+                font-size: 28px;
+            }
+
+            .filter-tabs {
+                margin-top: 10px;
+                gap: 6px;
+            }
+
+            .filter-tab {
+                padding: 6px 14px;
+                font-size: 12px;
+            }
+
+            .encyclopedia-grid {
+                max-height: 50vh;
+                gap: 10px;
+            }
+
+            .encyclopedia-item {
+                padding: 10px 8px;
+            }
+
+            .encyclopedia-item .item-char {
+                font-size: 24px;
+            }
+
+            #back-to-encyclopedia-from-towers,
+            #back-to-encyclopedia-from-enemies {
+                margin-top: 15px;
+                padding: 8px 24px;
+            }
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-tab {
+            padding: 8px 20px;
+            font-size: 14px;
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            color: #888;
+            cursor: pointer;
+            font-family: "ZCOOL XiaoWei", serif;
+            transition: all 0.3s;
+            border-radius: 4px;
+        }
+
+        .filter-tab:hover {
+            border-color: #5a5a5a;
+            color: #aaa;
+        }
+
+        .filter-tab.active {
+            background: #2d2d2d;
+            border-color: #c45c48;
+            color: #e8e8e8;
+        }
+
+        .encyclopedia-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 16px;
+            width: 100%;
+            padding: 0 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .encyclopedia-item {
+            aspect-ratio: 1;
+            padding: 15px 10px;
+            background: #1a1a1a;
+            border: 2px solid #2d2d2d;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .encyclopedia-item:hover {
+            border-color: #4a4a4a;
+            background: #1f1f1f;
+            transform: scale(1.05);
+        }
+
+        .encyclopedia-item .item-char {
+            font-size: 32px;
+            font-family: "Ma Shan Zheng", cursive;
+            color: #e8e8e8;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .encyclopedia-item .item-char.small {
+            font-size: 20px;
+        }
+
+        .encyclopedia-item .item-cost {
+            font-size: 12px;
+            color: #ffd700;
+            font-family: "ZCOOL XiaoWei", serif;
+        }
+
+        .encyclopedia-item .item-type-tag {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 10px;
+            padding: 2px 6px;
+            background: #c45c48;
+            color: #fff;
+            border-radius: 3px;
+            font-family: "ZCOOL XiaoWei", serif;
+        }
+
+        #back-to-encyclopedia-from-towers,
+        #back-to-encyclopedia-from-enemies {
+            margin-top: 30px;
+            padding: 10px 30px;
+            font-size: 16px;
+            background: transparent;
+            border: 1px solid #3a3a3a;
+            color: #666;
+            cursor: pointer;
+            font-family: "ZCOOL XiaoWei", serif;
+            transition: all 0.3s;
+        }
+
+        #back-to-encyclopedia-from-towers:hover,
+        #back-to-encyclopedia-from-enemies:hover {
+            border-color: #5a5a5a;
+            color: #999;
+        }
+
+        /* 详情面板样式 */
+        #tower-detail-panel,
+        #enemy-detail-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        #tower-detail-panel.hidden,
+        #enemy-detail-panel.hidden {
+            display: none;
+        }
+
+        .detail-content {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border: 2px solid #3a3a3a;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #2d2d2d;
+        }
+
+        .detail-char {
+            font-size: 56px;
+            font-family: "Ma Shan Zheng", cursive;
+            color: #e8e8e8;
+            line-height: 1;
+        }
+
+        .detail-name {
+            font-size: 28px;
+            font-family: "Ma Shan Zheng", cursive;
+            color: #c45c48;
+            letter-spacing: 3px;
+        }
+
+        .detail-stats {
+            margin-bottom: 20px;
+        }
+
+        .detail-stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #2d2d2d;
+        }
+
+        .detail-stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-stat-label {
+            color: #888;
+            font-family: "ZCOOL XiaoWei", serif;
+            font-size: 14px;
+        }
+
+        .detail-stat-value {
+            color: #e8e8e8;
+            font-family: "ZCOOL XiaoWei", serif;
+            font-size: 14px;
+        }
+
+        .detail-stat-value.highlight {
+            color: #ffd700;
+        }
+
+        .detail-desc {
+            background: #151515;
+            padding: 15px;
+            border-radius: 8px;
+            color: #aaa;
+            font-family: "ZCOOL XiaoWei", serif;
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 25px;
+        }
+
+        .detail-close-btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background: #2d2d2d;
+            border: 1px solid #3a3a3a;
+            color: #e8e8e8;
+            cursor: pointer;
+            font-family: "Ma Shan Zheng", cursive;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+            border-radius: 6px;
+        }
+
+        .detail-close-btn:hover {
+            background: #3a3a3a;
+            border-color: #5a5a5a;
+        }
+
+        /* 融合图鉴样式 */
+        #fusion-encyclopedia-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        #fusion-encyclopedia-container.hidden {
+            display: none;
+        }
+
+        /* 横屏适配 - 融合图鉴 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #fusion-encyclopedia-container {
+                padding: 15px 10px;
+            }
+
+            #fusion-encyclopedia-container .encyclopedia-header {
+                padding-bottom: 10px;
+                margin-bottom: 15px;
+            }
+
+            #fusion-encyclopedia-container .encyclopedia-title {
+                font-size: 28px;
+            }
+
+            .guide-btn {
+                padding: 6px 14px;
+                font-size: 12px;
+            }
+
+            #fusion-encyclopedia-container .encyclopedia-grid {
+                max-height: 50vh;
+            }
+
+            .fusion-item {
+                padding: 10px 8px;
+            }
+
+            .fusion-item .fusion-result-char {
+                font-size: 20px;
+            }
+
+            .fusion-item .fusion-components {
+                font-size: 12px;
+            }
+
+            #back-to-encyclopedia-from-fusion {
+                margin-top: 15px;
+                padding: 8px 24px;
+            }
+        }
+
+        .guide-btn {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 8px 20px;
+            font-size: 14px;
+            background: #2d2d2d;
+            border: 1px solid #c45c48;
+            color: #c45c48;
+            cursor: pointer;
+            font-family: "ZCOOL XiaoWei", serif;
+            transition: all 0.3s;
+            border-radius: 4px;
+        }
+
+        .guide-btn:hover {
+            background: #c45c48;
+            color: #fff;
+        }
+
+        /* 融合配方卡片 */
+        .fusion-item {
+            aspect-ratio: 1;
+            padding: 15px 10px;
+            background: #1a1a1a;
+            border: 2px solid #2d2d2d;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .fusion-item:hover {
+            border-color: #4a4a4a;
+            background: #1f1f1f;
+            transform: scale(1.05);
+        }
+
+        .fusion-item .fusion-result-char {
+            font-size: 28px;
+            font-family: "Ma Shan Zheng", cursive;
+            color: #e8e8e8;
+            margin-bottom: 6px;
+            line-height: 1.2;
+        }
+
+        .fusion-item .fusion-components {
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+
+        .fusion-item .fusion-cost {
+            font-size: 12px;
+            color: #ffd700;
+            font-family: "ZCOOL XiaoWei", serif;
+        }
+
+        .fusion-item .fusion-rarity-tag {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: "ZCOOL XiaoWei", serif;
+            font-weight: bold;
+        }
+
+        .fusion-item .fusion-rarity-tag.common {
+            background: #9e9e9e;
+            color: #000;
+        }
+
+        .fusion-item .fusion-rarity-tag.rare {
+            background: #448aff;
+            color: #fff;
+        }
+
+        .fusion-item .fusion-rarity-tag.epic {
+            background: #ab47bc;
+            color: #fff;
+        }
+
+        .fusion-item .fusion-rarity-tag.legendary {
+            background: #ffd700;
+            color: #000;
+        }
+
+        #back-to-encyclopedia-from-fusion {
+            margin-top: 30px;
+            padding: 10px 30px;
+            font-size: 16px;
+            background: transparent;
+            border: 1px solid #3a3a3a;
+            color: #666;
+            cursor: pointer;
+            font-family: "ZCOOL XiaoWei", serif;
+            transition: all 0.3s;
+        }
+
+        #back-to-encyclopedia-from-fusion:hover {
+            border-color: #5a5a5a;
+            color: #999;
+        }
+
+        /* 融合详情面板 */
+        #fusion-detail-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        #fusion-detail-panel.hidden {
+            display: none;
+        }
+
+        .fusion-detail-content {
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .fusion-title-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fusion-rarity {
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-family: "ZCOOL XiaoWei", serif;
+        }
+
+        .fusion-rarity.common {
+            background: #9e9e9e;
+            color: #000;
+        }
+
+        .fusion-rarity.rare {
+            background: #448aff;
+            color: #fff;
+        }
+
+        .fusion-rarity.epic {
+            background: #ab47bc;
+            color: #fff;
+        }
+
+        .fusion-rarity.legendary {
+            background: #ffd700;
+            color: #000;
+        }
+
+        .fusion-materials {
+            background: #151515;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .materials-title {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 10px;
+            font-family: "ZCOOL XiaoWei", serif;
+        }
+
+        .materials-list {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .material-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .material-char {
+            font-size: 32px;
+            font-family: "Ma Shan Zheng", cursive;
+            color: #e8e8e8;
+        }
+
+        .material-name {
+            font-size: 12px;
+            color: #888;
+            font-family: "ZCOOL XiaoWei", serif;
+        }
+
+        .fusion-comparison {
+            background: #151515;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .comparison-title {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 10px;
+            font-family: "ZCOOL XiaoWei", serif;
+            text-align: center;
+        }
+
+        .comparison-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #2d2d2d;
+        }
+
+        .comparison-row:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-label {
+            color: #888;
+            font-family: "ZCOOL XiaoWei", serif;
+            font-size: 13px;
+        }
+
+        .comparison-values {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comparison-material {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .comparison-arrow {
+            color: #c45c48;
+            font-size: 14px;
+        }
+
+        .comparison-result {
+            color: #ffd700;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* 融合指南面板 */
+        #fusion-guide-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        #fusion-guide-panel.hidden {
+            display: none;
+        }
+
+        .guide-content {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border: 2px solid #3a3a3a;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .guide-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #2d2d2d;
+        }
+
+        .guide-title {
+            font-size: 32px;
+            font-family: "Ma Shan Zheng", cursive;
+            color: #c45c48;
+            letter-spacing: 4px;
+        }
+
+        .guide-steps {
+            margin-bottom: 25px;
+        }
+
+        .guide-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #2d2d2d;
+        }
+
+        .guide-step:last-child {
+            border-bottom: none;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: #c45c48;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Ma Shan Zheng", cursive;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-size: 16px;
+            color: #e8e8e8;
+            font-family: "Ma Shan Zheng", cursive;
+            margin-bottom: 4px;
+        }
+
+        .step-desc {
+            font-size: 13px;
+            color: #888;
+            font-family: "ZCOOL XiaoWei", serif;
+            line-height: 1.5;
+        }
+
+        .guide-notices {
+            background: #151515;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .notice-title {
+            font-size: 16px;
+            color: #c45c48;
+            font-family: "Ma Shan Zheng", cursive;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+        }
+
+        .notice-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .notice-list li {
+            font-size: 13px;
+            color: #aaa;
+            font-family: "ZCOOL XiaoWei", serif;
+            padding: 6px 0;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .notice-list li::before {
+            content: '•';
+            position: absolute;
+            left: 5px;
+            color: #c45c48;
+        }
+
+        /* 征服模式主题选择样式 */
+        #conquest-theme-select-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        #conquest-theme-select-container.hidden {
+            display: none;
+        }
+
+        /* 横屏适配 - 征服模式主题选择 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #conquest-theme-select-container {
+                padding: 20px 15px;
+            }
+
+            .conquest-theme-header {
+                padding-bottom: 15px;
+                margin-bottom: 15px;
+            }
+
+            .conquest-theme-title {
+                font-size: 26px;
+                letter-spacing: 4px;
+            }
+
+            .conquest-theme-grid {
+                gap: 15px;
+                max-height: 60vh;
+                overflow-y: auto;
+            }
+
+            .conquest-theme-card {
+                padding: 18px 12px;
+                min-height: 110px;
+            }
+
+            .conquest-theme-card .theme-icon {
+                font-size: 28px;
+                margin-bottom: 8px;
+            }
+
+            .conquest-theme-card .theme-name {
+                font-size: 16px;
+                margin-bottom: 6px;
+            }
+
+            .conquest-theme-card .theme-desc {
+                font-size: 11px;
+                margin-bottom: 6px;
+            }
+
+            #back-to-menu-from-conquest-theme {
+                margin-top: 20px;
+                padding: 10px 30px;
+            }
+        }
+
+        .conquest-theme-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #2d2d2d;
+            margin-bottom: 30px;
+        }
+
+        .conquest-theme-title {
+            font-size: 36px;
+            color: #e8e8e8;
+            font-family: "Ma Shan Zheng", cursive;
+            letter-spacing: 6px;
+        }
+
+        .conquest-theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            width: 100%;
+            padding: 0 20px;
+            max-width: 800px;
+        }
+
+        .conquest-theme-card {
+            padding: 24px 16px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border: 2px solid #2d2d2d;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 小屏幕适配 - 征服模式主题选择 */
+        @media (max-width: 768px) {
+            .conquest-theme-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+                padding: 0 10px;
+            }
+
+            .conquest-theme-card {
+                padding: 16px 10px;
+                min-height: 120px;
+            }
+
+            .conquest-theme-card .theme-icon {
+                font-size: 28px;
+                margin-bottom: 8px;
+            }
+
+            .conquest-theme-card .theme-name {
+                font-size: 16px;
+                margin-bottom: 4px;
+                letter-spacing: 2px;
+            }
+
+            .conquest-theme-card .theme-desc {
+                font-size: 10px;
+                margin-bottom: 6px;
+                line-height: 1.3;
+            }
+
+            .conquest-theme-card .theme-progress {
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .conquest-theme-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .conquest-theme-card {
+                padding: 14px 10px;
+                min-height: 100px;
+            }
+
+            .conquest-theme-card .theme-icon {
+                font-size: 24px;
+                margin-bottom: 6px;
+            }
+
+            .conquest-theme-card .theme-name {
+                font-size: 14px;
+            }
+
+            .conquest-theme-card .theme-desc {
+                font-size: 9px;
+            }
+        }
+
+        .conquest-theme-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #c45c48, transparent);
+            opacity: 0.6;
+        }
+
+        .conquest-theme-card:hover {
+            border-color: #c45c48;
+            background: linear-gradient(135deg, #1f1f1f 0%, #151515 100%);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .conquest-theme-card .theme-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .conquest-theme-card .theme-name {
+            font-size: 20px;
+            color: #e8e8e8;
+            font-family: "Ma Shan Zheng", cursive;
+            margin-bottom: 8px;
+            letter-spacing: 3px;
+        }
+
+        .conquest-theme-card .theme-desc {
+            font-size: 12px;
+            color: #888;
+            font-family: "ZCOOL XiaoWei", serif;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .conquest-theme-card .theme-progress {
+            font-size: 12px;
+            color: #666;
+            font-family: "ZCOOL XiaoWei", serif;
+        }
+
+        #back-to-menu-from-conquest-theme {
+            margin-top: 40px;
+            padding: 12px 40px;
+            font-size: 16px;
+            background: transparent;
+            border: 1px solid #3a3a3a;
+            color: #666;
+            cursor: pointer;
+            font-family: "ZCOOL XiaoWei", serif;
+            transition: all 0.3s;
+        }
+
+        #back-to-menu-from-conquest-theme:hover {
+            border-color: #5a5a5a;
+            color: #999;
+        }
+
+        /* 征服模式关卡选择样式 */
+        #conquest-level-select-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        #conquest-level-select-container.hidden {
+            display: none;
+        }
+
+        .conquest-level-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #2d2d2d;
+            margin-bottom: 30px;
+        }
+
+        .conquest-level-title {
+            font-size: 32px;
+            color: #e8e8e8;
+            font-family: "Ma Shan Zheng", cursive;
+            letter-spacing: 4px;
+        }
+
+        .conquest-level-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        .conquest-level-item {
+            aspect-ratio: 1;
+            padding: 12px;
+            background: #1a1a1a;
+            border: 2px solid #2d2d2d;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .conquest-level-item:hover {
+            border-color: #4a4a4a;
+            background: #1f1f1f;
+            transform: scale(1.05);
+        }
+
+        .conquest-level-item .level-num {
+            font-size: 14px;
+            color: #e8e8e8;
+            font-family: "Ma Shan Zheng", cursive;
+            margin-bottom: 8px;
+        }
+
+        .conquest-level-item .level-status {
+            font-size: 16px;
+        }
+
+        .conquest-level-item.completed {
+            border-color: #4a6741;
+        }
+
+        .conquest-level-item.completed::after {
+            content: '✓';
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            font-size: 12px;
+            color: #4a6741;
+        }
+
+        .conquest-level-item.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .conquest-level-item.locked:hover {
+            transform: none;
+            border-color: #2d2d2d;
+        }
+
+        #back-to-conquest-themes {
+            margin-top: 40px;
+            padding: 12px 40px;
+            font-size: 16px;
+            background: transparent;
+            border: 1px solid #3a3a3a;
+            color: #666;
+            cursor: pointer;
+            font-family: "ZCOOL XiaoWei", serif;
+            transition: all 0.3s;
+        }
+
+        #back-to-conquest-themes:hover {
+            border-color: #5a5a5a;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <!-- 加载进度界面 -->
+    <div id="loading-container">
+        <div id="loading-text">墨守成规</div>
+        <div id="loading-bar">
+            <div id="loading-progress"></div>
+        </div>
+        <div id="loading-percent">0%</div>
+    </div>
+
+    <!-- 横屏提示 -->
+    <div class="rotate-tip">
+        <div class="rotate-icon">📱</div>
+        <div class="rotate-text">请旋转至横屏</div>
+    </div>
+
+    <!-- 主菜单 -->
+    <div id="main-menu">
+        <canvas id="menu-ink-canvas"></canvas>
+        <h1>墨守成规</h1>
+        <div class="menu-buttons">
+            <button class="menu-btn" id="btn-encyclopedia">图鉴</button>
+            <button class="menu-btn" id="btn-levels">塔防模式</button>
+            <button class="menu-btn" id="btn-conquest">征服模式</button>
+            <button class="menu-btn" id="btn-custom">自定义</button>
+        </div>
+        <div id="theme-select-container" class="hidden"></div>
+        <div id="level-list-container" class="hidden">
+            <div class="level-list-header">
+                <span class="level-list-title"></span>
+            </div>
+            <div class="level-grid"></div>
+            <button id="back-to-themes">主题</button>
+        </div>
+        
+        <!-- 图鉴主界面 -->
+        <div id="encyclopedia-container" class="hidden">
+            <div class="encyclopedia-title">图鉴</div>
+            <div class="encyclopedia-buttons">
+                <div class="encyclopedia-card" id="btn-tower-encyclopedia">
+                    <span class="encyclopedia-icon">🏯</span>
+                    <div class="encyclopedia-card-name">炮塔图鉴</div>
+                    <div class="encyclopedia-card-desc">查看所有防御塔详细信息</div>
+                </div>
+                <div class="encyclopedia-card" id="btn-enemy-encyclopedia">
+                    <span class="encyclopedia-icon">👹</span>
+                    <div class="encyclopedia-card-name">怪物图鉴</div>
+                    <div class="encyclopedia-card-desc">查看所有敌人详细信息</div>
+                </div>
+                <div class="encyclopedia-card" id="btn-fusion-encyclopedia">
+                    <span class="encyclopedia-icon">⚡</span>
+                    <div class="encyclopedia-card-name">融合图鉴</div>
+                    <div class="encyclopedia-card-desc">查看所有融合配方和属性</div>
+                </div>
+            </div>
+            <button id="back-to-menu-from-encyclopedia">主菜单</button>
+        </div>
+        
+        <!-- 炮塔图鉴界面 -->
+        <div id="tower-encyclopedia-container" class="hidden">
+            <div class="encyclopedia-header">
+                <span class="encyclopedia-title">炮塔图鉴</span>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">全部</button>
+                    <button class="filter-tab" data-filter="basic">基础</button>
+                    <button class="filter-tab" data-filter="element">元素</button>
+                    <button class="filter-tab" data-filter="support">辅助</button>
+                    <button class="filter-tab" data-filter="path">路径</button>
+                    <button class="filter-tab" data-filter="special">特殊</button>
+                </div>
+            </div>
+            <div class="encyclopedia-grid" id="tower-encyclopedia-grid"></div>
+            <button id="back-to-encyclopedia-from-towers">图鉴</button>
+        </div>
+        
+        <!-- 怪物图鉴界面 -->
+        <div id="enemy-encyclopedia-container" class="hidden">
+            <div class="encyclopedia-header">
+                <span class="encyclopedia-title">怪物图鉴</span>
+            </div>
+            <div class="encyclopedia-grid" id="enemy-encyclopedia-grid"></div>
+            <button id="back-to-encyclopedia-from-enemies">图鉴</button>
+        </div>
+        
+        <!-- 炮塔详情面板 -->
+        <div id="tower-detail-panel" class="hidden">
+            <div class="detail-content">
+                <div class="detail-header">
+                    <span class="detail-char" id="tower-detail-char"></span>
+                    <span class="detail-name" id="tower-detail-name"></span>
+                </div>
+                <div class="detail-stats" id="tower-detail-stats"></div>
+                <div class="detail-desc" id="tower-detail-desc"></div>
+                <button class="detail-close-btn" id="close-tower-detail">关闭</button>
+            </div>
+        </div>
+        
+        <!-- 怪物详情面板 -->
+        <div id="enemy-detail-panel" class="hidden">
+            <div class="detail-content">
+                <div class="detail-header">
+                    <span class="detail-char" id="enemy-detail-char"></span>
+                    <span class="detail-name" id="enemy-detail-name"></span>
+                </div>
+                <div class="detail-stats" id="enemy-detail-stats"></div>
+                <div class="detail-desc" id="enemy-detail-desc"></div>
+                <button class="detail-close-btn" id="close-enemy-detail">关闭</button>
+            </div>
+        </div>
+        
+        <!-- 融合图鉴界面 -->
+        <div id="fusion-encyclopedia-container" class="hidden">
+            <div class="encyclopedia-header">
+                <span class="encyclopedia-title">融合图鉴</span>
+                <button id="btn-fusion-guide" class="guide-btn">融合指南</button>
+            </div>
+            <div class="encyclopedia-grid" id="fusion-encyclopedia-grid"></div>
+            <button id="back-to-encyclopedia-from-fusion">图鉴</button>
+        </div>
+        
+        <!-- 融合配方详情面板 -->
+        <div id="fusion-detail-panel" class="hidden">
+            <div class="detail-content fusion-detail-content">
+                <div class="detail-header">
+                    <span class="detail-char" id="fusion-detail-char"></span>
+                    <div class="fusion-title-group">
+                        <span class="detail-name" id="fusion-detail-name"></span>
+                        <span class="fusion-rarity" id="fusion-detail-rarity"></span>
+                    </div>
+                </div>
+                <div class="fusion-materials" id="fusion-detail-materials"></div>
+                <div class="fusion-comparison" id="fusion-detail-comparison"></div>
+                <div class="detail-desc" id="fusion-detail-desc"></div>
+                <button class="detail-close-btn" id="close-fusion-detail">关闭</button>
+            </div>
+        </div>
+        
+        <!-- 融合指南面板 -->
+        <div id="fusion-guide-panel" class="hidden">
+            <div class="guide-content">
+                <div class="guide-header">
+                    <span class="guide-title">融合指南</span>
+                </div>
+                <div class="guide-steps">
+                    <div class="guide-step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <div class="step-title">选择材料</div>
+                            <div class="step-desc">在战场上放置两个可以融合的炮塔</div>
+                        </div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <div class="step-title">拖拽融合</div>
+                            <div class="step-desc">按住并拖拽一个炮塔到另一个炮塔上</div>
+                        </div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <div class="step-title">确认融合</div>
+                            <div class="step-desc">消耗金币确认融合操作</div>
+                        </div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <div class="step-title">获得新炮塔</div>
+                            <div class="step-desc">融合成功，获得强大的融合炮塔</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="guide-notices">
+                    <div class="notice-title">注意事项</div>
+                    <ul class="notice-list">
+                        <li>融合后材料炮塔会消失，请谨慎选择</li>
+                        <li>融合炮塔无法再次进行融合</li>
+                        <li>需要足够的金币才能进行融合</li>
+                        <li>并非所有炮塔组合都可以融合</li>
+                        <li>融合后的炮塔继承材料炮塔的位置</li>
+                    </ul>
+                </div>
+                <button class="detail-close-btn" id="close-fusion-guide">关闭</button>
+            </div>
+        </div>
+        
+        <button id="back-to-menu" class="hidden">主菜单</button>
+
+        <!-- 自定义主界面 -->
+        <div id="custom-container" class="hidden">
+            <div class="custom-title">自定义</div>
+            <div class="custom-buttons">
+                <div class="custom-card" id="btn-custom-towers">
+                    <span class="custom-icon">⚔️</span>
+                    <div class="custom-card-name">自定义炮塔</div>
+                    <div class="custom-card-desc">创建和编辑自定义炮塔</div>
+                </div>
+                <div class="custom-card" id="btn-custom-levels">
+                    <span class="custom-icon">🗺️</span>
+                    <div class="custom-card-name">自定义关卡</div>
+                    <div class="custom-card-desc">设计和保存自定义关卡</div>
+                </div>
+                <div class="custom-card" id="btn-custom-export">
+                    <span class="custom-icon">💾</span>
+                    <div class="custom-card-name">导出/导入</div>
+                    <div class="custom-card-desc">分享你的自定义内容</div>
+                </div>
+            </div>
+            <button id="back-to-menu-from-custom">主菜单</button>
+        </div>
+
+        <!-- 自定义炮塔界面（占位） -->
+        <div id="custom-towers-container" class="hidden">
+            <div class="custom-sub-header">
+                <span class="custom-sub-title">自定义炮塔</span>
+            </div>
+            <div class="custom-placeholder">
+                <div class="placeholder-icon">⚔️</div>
+                <div class="placeholder-text">自定义炮塔功能开发中...</div>
+                <div class="placeholder-desc">此功能将允许您创建和编辑自定义炮塔</div>
+            </div>
+            <button id="back-to-custom-from-towers">自定义</button>
+        </div>
+
+        <!-- 自定义关卡界面（占位） -->
+        <div id="custom-levels-container" class="hidden">
+            <div class="custom-sub-header">
+                <span class="custom-sub-title">自定义关卡</span>
+            </div>
+            <div class="custom-placeholder">
+                <div class="placeholder-icon">🗺️</div>
+                <div class="placeholder-text">自定义关卡功能开发中...</div>
+                <div class="placeholder-desc">此功能将允许您设计和保存自定义关卡</div>
+            </div>
+            <button id="back-to-custom-from-levels">自定义</button>
+        </div>
+
+        <!-- 导出/导入界面（占位） -->
+        <div id="custom-export-container" class="hidden">
+            <div class="custom-sub-header">
+                <span class="custom-sub-title">导出/导入</span>
+            </div>
+            <div class="custom-placeholder">
+                <div class="placeholder-icon">💾</div>
+                <div class="placeholder-text">导出/导入功能开发中...</div>
+                <div class="placeholder-desc">此功能将允许您分享自定义内容</div>
+            </div>
+            <button id="back-to-custom-from-export">自定义</button>
+        </div>
+
+        <!-- 征服模式主题选择 -->
+        <div id="conquest-theme-select-container" class="hidden">
+            <div class="conquest-theme-header">
+                <span class="conquest-theme-title">征服模式 - 选择主题</span>
+            </div>
+            <div class="conquest-theme-grid">
+                <div class="conquest-theme-card" data-theme="1">
+                    <span class="theme-icon">🔥</span>
+                    <div class="theme-name">烈焰试炼</div>
+                    <div class="theme-desc">火焰主题的极限挑战</div>
+                    <div class="theme-progress">进度: 0/5</div>
+                </div>
+                <div class="conquest-theme-card" data-theme="2">
+                    <span class="theme-icon">💧</span>
+                    <div class="theme-name">寒霜之路</div>
+                    <div class="theme-desc">冰霜主题的艰难征程</div>
+                    <div class="theme-progress">进度: 0/5</div>
+                </div>
+                <div class="conquest-theme-card" data-theme="3">
+                    <span class="theme-icon">⛰️</span>
+                    <div class="theme-name">山岳考验</div>
+                    <div class="theme-desc">山地主题的坚固防线</div>
+                    <div class="theme-progress">进度: 0/5</div>
+                </div>
+                <div class="conquest-theme-card" data-theme="4">
+                    <span class="theme-icon">🌪️</span>
+                    <div class="theme-name">风暴中心</div>
+                    <div class="theme-desc">风暴主题的混乱战场</div>
+                    <div class="theme-progress">进度: 0/5</div>
+                </div>
+                <div class="conquest-theme-card" data-theme="5">
+                    <span class="theme-icon">⚡</span>
+                    <div class="theme-name">终极挑战</div>
+                    <div class="theme-desc">融合所有元素的终极试炼</div>
+                    <div class="theme-progress">进度: 0/5</div>
+                </div>
+            </div>
+            <button id="back-to-menu-from-conquest-theme">主菜单</button>
+        </div>
+        
+        <!-- 征服模式关卡选择 -->
+        <div id="conquest-level-select-container" class="hidden">
+            <div class="conquest-level-header">
+                <span class="conquest-level-title" id="conquest-current-theme-name">主题名称</span>
+            </div>
+            <div class="conquest-level-grid">
+                <div class="conquest-level-item" data-level="1">
+                    <span class="level-num">关卡 1</span>
+                    <span class="level-status"></span>
+                </div>
+                <div class="conquest-level-item" data-level="2">
+                    <span class="level-num">关卡 2</span>
+                    <span class="level-status"></span>
+                </div>
+                <div class="conquest-level-item" data-level="3">
+                    <span class="level-num">关卡 3</span>
+                    <span class="level-status"></span>
+                </div>
+                <div class="conquest-level-item locked" data-level="4">
+                    <span class="level-num">关卡 4</span>
+                    <span class="level-status">🔒</span>
+                </div>
+                <div class="conquest-level-item locked" data-level="5">
+                    <span class="level-num">关卡 5</span>
+                    <span class="level-status">🔒</span>
+                </div>
+            </div>
+            <button id="back-to-conquest-themes">主题列表</button>
+        </div>
+    </div>
+
+    <!-- 游戏缩放容器 -->
+    <div id="game-wrapper">
+        <div id="scale-container">
+            <div id="main-container" class="hidden">
+                <div id="game-container">
+                    <div id="top-bar">
+                        <div class="stat">
+                            <span class="label">金币</span>
+                            <span id="gold" class="value">300</span>
+                        </div>
+                        <div class="stat">
+                            <span class="label">波次</span>
+                            <span id="wave" class="value">0/3</span>
+                        </div>
+                        <div class="stat">
+                            <span class="label">敌人</span>
+                            <span id="enemies" class="value">0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="label">核心</span>
+                            <span id="core-hp" class="value">20/20</span>
+                        </div>
+                        <div id="wave-btn-small">
+                            <button id="start-wave">波次</button>
+                        </div>
+                        <div class="stat">
+                            <button id="fusion-encyclopedia-btn" title="融合图鉴" style="background:#1a1a1a;border:1px solid #3a3a3a;color:#c45c48;padding:6px 12px;cursor:pointer;font-family:'Ma Shan Zheng','ZCOOL XiaoWei','Microsoft YaHei',serif;transition:all 0.3s;">融合图鉴</button>
+                        </div>
+                        <div class="stat">
+                            <button id="back-to-menu-btn" title="主菜单" style="background:#1a1a1a;border:1px solid #3a3a3a;color:#666;padding:6px 12px;cursor:pointer;font-family:'Ma Shan Zheng','ZCOOL XiaoWei','Microsoft YaHei',serif;">主菜单</button>
+                        </div>
+                    </div>
+
+                    <div id="game-area">
+                        <canvas id="game-canvas"></canvas>
+                    </div>
+
+                    <div id="bottom-bar">
+                        <div class="tower-select" data-type="fire">
+                            <span class="tower-char">火</span>
+                            <span class="tower-cost">120</span>
+                        </div>
+                        <div class="tower-select" data-type="water">
+                            <span class="tower-char">水</span>
+                            <span class="tower-cost">90</span>
+                        </div>
+                        <div class="tower-select" data-type="mountain">
+                            <span class="tower-char">山</span>
+                            <span class="tower-cost">140</span>
+                        </div>
+                        <div class="tower-select locked" data-type="wood">
+                            <span class="tower-char">木</span>
+                            <span class="tower-cost">100</span>
+                        </div>
+                        <div class="tower-select locked" data-type="gold">
+                            <span class="tower-char">金</span>
+                            <span class="tower-cost">180</span>
+                        </div>
+                        <div class="tower-select locked" data-type="earth">
+                            <span class="tower-char">土</span>
+                            <span class="tower-cost">220</span>
+                        </div>
+                        <div class="tower-select locked" data-type="xinZhongYan">
+                            <span class="tower-char"><span>心中</span><span>炎</span></span>
+                            <span class="tower-cost">250</span>
+                        </div>
+                        <div class="tower-select locked" data-type="ruFengSiZhen">
+                            <span class="tower-char"><span>如风</span><span>似真</span></span>
+                            <span class="tower-cost">300</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 征服模式容器 -->
+            <div id="conquest-container" class="hidden">
+                <div id="conquest-side-panel">
+                    <div class="conquest-title">征服模式</div>
+                    <div class="summon-section">
+                        <button id="conquest-summon-btn" class="summon-btn">召唤</button>
+                        <div class="summon-cost">80金</div>
+                    </div>
+                    <div class="conquest-divider"></div>
+                    <div class="conquest-stats">
+                        <div class="conquest-stat">
+                            <span class="conquest-label">金币</span>
+                            <span id="conquest-gold" class="conquest-value">300</span>
+                        </div>
+                        <div class="conquest-stat">
+                            <span class="conquest-label">波次</span>
+                            <span id="conquest-wave" class="conquest-value">0/3</span>
+                        </div>
+                        <div class="conquest-stat">
+                            <span class="conquest-label">现存敌人</span>
+                            <span id="conquest-enemies" class="conquest-value">0</span>
+                        </div>
+                    </div>
+                    <div class="conquest-divider"></div>
+                    <button id="conquest-fusion-encyclopedia-btn" title="融合图鉴" style="background:#1a1a1a;border:1px solid #3a3a3a;color:#c45c48;padding:6px 12px;cursor:pointer;font-family:'Ma Shan Zheng','ZCOOL XiaoWei','Microsoft YaHei',serif;transition:all 0.3s;width:100%;margin-bottom:8px;">融合图鉴</button>
+                    <button id="conquest-wave-btn" class="conquest-wave-btn">开始波次</button>
+                    <button id="conquest-menu-btn" class="conquest-menu-btn">菜单</button>
+                    <div class="conquest-rules">
+                        <div class="rules-title">规则</div>
+                        <div class="rules-text">外圈为敌人循环路径</div>
+                        <div class="rules-text">内圈可放置炮塔</div>
+                        <div class="rules-text">召唤随机生成炮塔</div>
+                        <div class="rules-text">场上50怪即失败</div>
+                    </div>
+                </div>
+                <div id="conquest-game-container">
+                    <canvas id="conquest-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 事件通知容器 -->
+    <div id="event-container"></div>
+
+    <div id="modal" class="hidden">
+        <div id="modal-content">
+            <h2 id="modal-title"></h2>
+            <p id="modal-text"></p>
+            <button id="modal-btn">确定</button>
+        </div>
+    </div>
+
+    <!-- 游戏内融合图鉴模态窗口 -->
+    <div id="game-fusion-encyclopedia-modal" class="hidden">
+        <div class="game-fusion-modal-content">
+            <div class="game-fusion-modal-header">
+                <h2>融合图鉴</h2>
+                <button class="close-modal-btn" id="close-game-fusion-modal">×</button>
+            </div>
+            <div class="game-fusion-modal-body">
+                <div class="game-fusion-grid" id="game-fusion-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏内融合详情面板 -->
+    <div id="game-fusion-detail-panel" class="hidden">
+        <div class="game-fusion-detail-content">
+            <div class="game-fusion-detail-header">
+                <span class="game-fusion-detail-char" id="game-fusion-detail-char"></span>
+                <div class="game-fusion-title-group">
+                    <span class="game-fusion-detail-name" id="game-fusion-detail-name"></span>
+                    <span class="game-fusion-rarity" id="game-fusion-detail-rarity"></span>
+                </div>
+            </div>
+            <div class="game-fusion-materials" id="game-fusion-detail-materials"></div>
+            <div class="game-fusion-detail-stats" id="game-fusion-detail-stats"></div>
+            <div class="game-fusion-detail-desc" id="game-fusion-detail-desc"></div>
+            <button class="game-fusion-detail-close-btn" id="close-game-fusion-detail">关闭</button>
+        </div>
+    </div>
+
+    <div id="tower-info" class="hidden">
+        <div class="info-header">
+            <span class="info-char"></span>
+            <span class="info-level"></span>
+        </div>
+        <div class="info-stats"></div>
+        <div class="info-actions">
+            <button class="upgrade-btn">升级</button>
+            <button class="sell-btn">出售</button>
+        </div>
+    </div>
+
+    <div id="conquest-tower-info" class="hidden">
+        <div class="info-header">
+            <span class="info-char"></span>
+            <span class="info-level"></span>
+        </div>
+        <div class="info-stats"></div>
+        <div class="info-actions">
+            <button class="upgrade-btn">升级</button>
+            <button class="sell-btn">出售</button>
+        </div>
+    </div>
+
+    <!-- 游戏脚本 -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/runtime.js"></script>
+    <script src="js/levelsData.js"></script>
+    <script src="js/inkRenderer.js"></script>
+    <script src="js/particle.js"></script>
+    <script src="js/tower.js"></script>
+    <script src="js/enemy.js"></script>
+    <script src="js/objectPool.js"></script>
+    <script src="js/levelManager.js"></script>
+    <script src="js/fusionSystem.js"></script>
+    <script src="js/menuInkBg.js"></script>
+    <script src="js/inkTrailAnimation.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/conquestLevelsData.js"></script>
+    <script src="js/conquestProgress.js"></script>
+    <script src="js/conquestGame.js"></script>
+
+    <script>
+    // 资源预加载和初始化
+    (function() {
+        const loadingContainer = document.getElementById('loading-container');
+        const loadingProgress = document.getElementById('loading-progress');
+        const loadingPercent = document.getElementById('loading-percent');
+
+        // 配置要预加载的资源
+        // 注意：config.js, utils.js, runtime.js 已通过常规 script 标签加载
+        // 这里只预加载字体，避免重复加载脚本
+        ResourceLoader
+            .add('', 'font'); // 预加载字体
+
+        // 进度回调
+        ResourceLoader.onProgress = (progress, loaded, failed, total) => {
+            loadingProgress.style.width = progress + '%';
+            loadingPercent.textContent = progress + '%';
+        };
+
+        // 完成回调
+        ResourceLoader.onComplete = () => {
+            // 延迟一点让用户看到 100%
+            setTimeout(() => {
+                loadingContainer.classList.add('hidden');
+                // 初始化游戏
+                if (typeof window.initGame === 'function') {
+                    window.initGame();
+                }
+            }, 300);
+        };
+
+        // 开始加载
+        ResourceLoader.load();
+    })();
+    </script>
+</body>
+</html>

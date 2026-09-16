@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>*{margin:0;padding:0;}body{background:#0a0a0c;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow:hidden;}canvas{display:block;}</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+(function(){
+var c=document.getElementById('c'),x=c.getContext('2d'),W=1920,H=1080;
+var BG='#0a0a0c',DK='#141418',MD='#1e1e24',LM='#2a2a32',LL='#3d3d48',PL='#5a5a66';
+var FW='#d8d8e0',PW='#f0f0f5',VR='#c45c48',VD='#8b3a2f',ED='#70707a';
+
+x.fillStyle=BG;x.fillRect(0,0,W,H);
+for(var i=0;i<W*H*0.3;i++){
+  x.fillStyle='rgba(220,220,230,'+(Math.random()*0.015)+')';
+  x.fillRect((Math.random()*W)|0,(Math.random()*H)|0,1,1);
+}
+function mt(px,py,r,col,a,l){
+  for(var k=l;k>0;k--){var rr=r*(0.4+Math.random()*0.7);
+  x.save();x.globalAlpha=a/k;x.fillStyle=col;x.beginPath();
+  for(var j=0;j<=360;j+=6){var A=j*Math.PI/180,v=rr*(0.88+Math.random()*0.24);
+  x.lineTo(px+Math.cos(A)*v,py+Math.sin(A)*v);}x.closePath();x.fill();x.restore();}
+}
+mt(W*0.28,H*0.52,280,MD,0.06,6);mt(W*0.72,H*0.45,320,DK,0.05,7);
+
+x.save();x.globalAlpha=0.08;x.fillStyle=FW;x.beginPath();var pts=[];
+for(i=0;i<=20;i++){var t=i/20;pts.push({x:W*0.05+t*W*0.9,y:H*0.75-Math.sin(t*Math.PI)*220-Math.sin(t*Math.PI*3)*50+(Math.random()-0.5)*15});}
+x.moveTo(pts[0].x,pts[0].y);
+for(i=1;i<pts.length;i++){var mx=(pts[i].x+pts[i-1].x)/2,my=(pts[i].y+pts[i-1].y)/2;x.quadraticCurveTo(pts[i-1].x,pts[i-1].y,mx,my);}
+x.lineTo(pts[pts.length-1].x,H);x.lineTo(pts[0].x,H);x.closePath();x.fill();x.restore();
+
+x.save();x.globalAlpha=0.05;x.fillStyle=FW;x.beginPath();pts=[];
+for(i=0;i<=16;i++){t=i/16;pts.push({x:W*(-0.05)+t*W*0.6,y:H*0.68-Math.sin(t*Math.PI)*140-Math.sin(t*Math.PI*2.5)*35+(Math.random()-0.5)*12});}
+x.moveTo(pts[0].x,pts[0].y);
+for(i=1;i<pts.length;i++){mx=(pts[i].x+pts[i-1].x)/2;my=(pts[i].y+pts[i-1].y)/2;x.quadraticCurveTo(pts[i-1].x,pts[i-1].y,mx,my);}
+x.lineTo(pts[pts.length-1].x,H);x.lineTo(pts[0].x,H);x.closePath();x.fill();x.restore();
+
+var bgs=['墨','守','成','规','火','水','山','木','金','土','尸','鬼','甲','防','攻','阵','势','韵'];
+for(i=0;i<50;i++){x.save();x.globalAlpha=0.015+Math.random()*0.04;
+x.font=(22+Math.random()*85)+'px SimSun,"Noto Serif SC",serif';x.fillStyle=FW;
+x.textAlign='center';x.textBaseline='middle';
+x.fillText(bgs[(Math.random()*bgs.length)|0],Math.random()*W,Math.random()*H);x.restore();}
+
+var tw=[{ch:'火',x:W*0.20,y:H*0.38,s:160,col:'#e05040'},{ch:'水',x:W*0.36,y:H*0.52,s:125,col:'#5099bb'},
+{ch:'山',x:W*0.14,y:H*0.56,s:145,col:'#ddd8cc'},{ch:'木',x:W*0.44,y:H*0.34,s:115,col:'#70aa60'},{ch:'金',x:W*0.28,y:H*0.66,s:100,col:'#bb9950'}];
+tw.forEach(function(t){mt(t.x,t.y,t.s*0.9,DK,0.04,4);
+x.save();x.font='bold '+t.s+'px SimSun,"Noto Serif SC",serif';x.fillStyle=t.col;
+x.shadowColor='rgba(0,0,0,0.65)';x.shadowBlur=t.s*0.18;x.shadowOffsetX=t.s*0.025;x.shadowOffsetY=t.s*0.025;
+x.textAlign='center';x.textBaseline='middle';x.fillText(t.ch,t.x,t.y);x.restore();});
+
+var em=[{ch:'尸',x:W*0.58,y:H*0.30,s:80},{ch:'鬼',x:W*0.70,y:H*0.50,s:68},
+{ch:'甲',x:W*0.64,y:H*0.68,s:85},{ch:'巨',x:W*0.82,y:H*0.36,s:95},{ch:'尸',x:W*0.76,y:H*0.62,s:72}];
+em.forEach(function(e){x.save();x.globalAlpha=0.55+Math.random()*0.3;
+x.font='bold '+e.s+'px SimSun,serif';x.fillStyle=Math.random()>0.5?'#bbb5aa':'#787880';
+x.textAlign='center';x.textBaseline='middle';x.fillText(e.ch,e.x,e.y);x.rendered=true;});
+
+for(i=0;i<10;i++){var s=tw[(Math.random()*tw.length)|0],e2=em[(Math.random()*em.length)|0];
+x.save();x.strokeStyle='#c45c48';x.lineWidth=1.5+Math.random()*2;
+x.globalAlpha=0.15+Math.random()*0.25;x.setLineDash([5,10]);
+x.beginPath();x.moveTo(s.x,s.y);x.lineTo(e2.x+(Math.random()-0.5)*40,e2.y+(Math.random()-0.5)*40);
+x.stroke();x.setLineDash([]);x.restore();}
+
+x.save();var rg=x.createRadialGradient(W*0.28,H*0.48,30,W*0.28,H*0.48,420);
+rg.addColorStop(0,'rgba(196,92,72,0.09)');rg.addColorStop(1,'rgba(196,92,72,0)');
+x.fillStyle=rg;x.fillRect(0,0,W,H);x.restore();
+
+x.save();x.font='bold 130px SimHei,"Microsoft YaHei","Noto Sans SC",sans-serif';
+var ttl='墨守成规';x.shadowColor='rgba(196,92,72,0.35)';x.shadowBlur=60;
+var lg=x.createLinearGradient(W-120,H*0.89-65,60,H*0.89+65);
+lg.addColorStop(0,FW);lg.addColorStop(0.5,PW);lg.addColorStop(1,FW);
+x.fillStyle=lg;x.textAlign='right';x.textBaseline='middle';x.fillText(ttl,W-90,H*0.89);
+x.shadowColor='rgba(0,0,0,0.85)';x.shadowBlur=12;
+x.fillText(ttl,W-90+4,H*0.89+4);x.restore();
+
+x.save();x.strokeStyle=VR;x.lineWidth=3.5;x.globalAlpha=0.55;
+x.beginPath();x.moveTo(W-580,H*0.89+78);x.lineTo(W-70,H*0.89+78);x.stroke();x.restore();
+document.title='poster1-ready';
+})();
+</script>
+</body>
+</html>
