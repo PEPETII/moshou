@@ -155,6 +155,10 @@ Game.prototype.startGame = function(levelId) {
       cancelAnimationFrame(this.animationId);
     }
     this.start();
+
+    // 内容尺寸在这里才确定（塔卡是 loadLevel 里重建的），必须重新计算缩放。
+    // 旧实现只在 window.load 时算一次，进入战斗后缩放与实际内容不符。
+    if (typeof window.applyGameScale === "function") window.applyGameScale();
   
 };
 Game.prototype.returnToMenu = function() {

@@ -364,7 +364,7 @@ class FusionTower extends Tower {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     if (text.length <= 2) {
-      ctx.font = `bold ${28 * scale}px Microsoft YaHei`;
+      ctx.font = `bold ${28 * scale}px ${CONFIG.FONTS.BRUSH}`;
       ctx.fillText(text, x, y);
       return;
     }
@@ -376,7 +376,7 @@ class FusionTower extends Tower {
     const fontSize = baseSize * scale;
     const lineGap = 8 * scale;
 
-    ctx.font = `bold ${fontSize}px Microsoft YaHei`;
+    ctx.font = `bold ${fontSize}px ${CONFIG.FONTS.BRUSH}`;
     ctx.fillText(top, x, y - lineGap);
     ctx.fillText(bottom, x, y + lineGap);
   }

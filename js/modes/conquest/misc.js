@@ -231,7 +231,8 @@ ConquestGame.prototype.setupUI = function() {
         const touch = e.touches[0];
         this.dragCurrentPos = { x: touch.clientX, y: touch.clientY };
         const dist = calculateDragDistance(this.dragStartPos.x, this.dragStartPos.y, this.dragCurrentPos.x, this.dragCurrentPos.y);
-        if (checkDragThreshold(dist, this.dragThreshold)) {
+        // 触摸端使用更宽松的滑点，避免手指自然抖动被判成拖拽
+        if (checkDragThreshold(dist, this.dragThresholdTouch)) {
           this.isDragging = true;
         }
       }

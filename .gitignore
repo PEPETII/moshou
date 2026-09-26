@@ -1,3 +1,5 @@
 node_modules/
 midscene_run/
 .trae/
+.workbuddy/
+scripts/tmp-*

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>玩法创新原型 · 墨守成规</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 20px 72px; background: #e7e1d2; color: #1c1a17;
+    font-family: "Kaiti SC", "KaiTi", "STKaiti", "Songti SC", "SimSun", serif;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  h1 { font-size: 30px; margin: 0 0 6px; letter-spacing: 6px; }
+  .sub { font-size: 14px; color: #6a6459; line-height: 1.9; margin: 0 0 4px; }
+  .sub b { color: #b03a2e; font-weight: normal; }
+  .lead { margin: 22px 0 30px; padding: 16px 20px; background: #f4efe4; border-left: 3px solid #b03a2e; font-size: 14px; line-height: 1.9; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  a.card {
+    display: block; text-decoration: none; color: inherit; padding: 20px 22px 18px;
+    background: #f4efe4; border: 1px solid #cabfa6; transition: background .12s, border-color .12s;
+  }
+  a.card:hover { background: #fbf8f0; border-color: #b03a2e; }
+  .no { font-size: 12px; color: #8f887a; letter-spacing: 2px; }
+  .nm { font-size: 23px; letter-spacing: 5px; margin: 4px 0 8px; }
+  .cl { font-size: 13.5px; line-height: 1.85; color: #3d382f; margin: 0 0 12px; min-height: 50px; }
+  .cl b { color: #b03a2e; font-weight: normal; }
+  .meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 12px; }
+  .pill { padding: 3px 9px; border: 1px solid #cabfa6; color: #6a6459; }
+  .pill.hot { border-color: #b03a2e; color: #b03a2e; }
+  .pill.go { background: #1c1a17; color: #f4efe4; border-color: #1c1a17; }
+  .foot { margin-top: 34px; padding-top: 18px; border-top: 1px solid #cabfa6; font-size: 13px; color: #6a6459; line-height: 1.9; }
+  .foot code { background: #ded5c0; padding: 1px 5px; font-family: Consolas, monospace; font-size: 12px; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 23px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>玩法创新原型</h1>
+  <p class="sub">《墨守成规》· 六个跳出传统塔防框架的玩法思路 · 全部可点击交互</p>
+  <p class="sub">配套设计文档：<b>docs/玩法创新方案.md</b></p>
+
+  <div class="lead">
+    这六个原型用来回答一个具体问题：<b>如果把"文字"当成规则发生器而不是美术皮肤，游戏会长什么样？</b><br>
+    每个页面都是一个可操作的沙盘——鼠标点下去就有反馈，不是静态效果图。建议按 P0 → P3 的顺序看。
+  </div>
+
+  <div class="grid">
+    <a class="card" href="03-语法羁绊.html">
+      <div class="no">方案三 · P0</div>
+      <div class="nm">语法羁绊</div>
+      <p class="cl">相邻的塔自动成词，<b>词性决定增益类型</b>（偏正／动宾／并列），三字成行触发句法技。落字即可看到词浮现出来。</p>
+      <div class="meta">
+        <span class="pill go">先做这个</span>
+        <span class="pill">加权 4.25</span>
+        <span class="pill">可行性最高</span>
+      </div>
+    </a>
+
+    <a class="card" href="04-墨为血.html">
+      <div class="no">方案四 · P1</div>
+      <div class="nm">墨为血</div>
+      <p class="cl">墨量同时是货币与生命。<b>敌人擦掉你的笔画</b>，字缺笔就不再是那个字；浓墨更强但会晕染污染邻格。</p>
+      <div class="meta">
+        <span class="pill">加权 4.05</span>
+        <span class="pill hot">美术即规则</span>
+      </div>
+    </a>
+
+    <a class="card" href="01-字格营造.html">
+      <div class="no">方案一 · P1</div>
+      <div class="nm">字格营造</div>
+      <p class="cl">塔不是"一格一个字"，而是"<b>几格共构一个字</b>"。左右／上下／包围／品字，<b>结构就是防御拓扑</b>。</p>
+      <div class="meta">
+        <span class="pill">加权 4.15</span>
+        <span class="pill hot">契合度 5.0</span>
+      </div>
+    </a>
+
+    <a class="card" href="02-句读改径.html">
+      <div class="no">方案二 · P2</div>
+      <div class="nm">句读改径</div>
+      <p class="cl">地图是一篇文章，敌人沿字序流动。你放的<b>标点</b>决定它们怎么被读——「、」分流、「。」折返离场。断句一变，<b>路径就变了</b>。</p>
+      <div class="meta">
+        <span class="pill">加权 4.14</span>
+        <span class="pill hot">新颖度 5.0</span>
+        <span class="pill">轻量版先行</span>
+      </div>
+    </a>
+
+    <a class="card" href="05-对句波次.html">
+      <div class="no">方案五 · P3</div>
+      <div class="nm">对句波次</div>
+      <p class="cl">敌方出上联，你<b>对下联</b>。对仗工整度决定这一波的难度与奖励。等待变成了创作，建议做成独立模式。</p>
+      <div class="meta">
+        <span class="pill">加权 4.21</span>
+        <span class="pill hot">新颖度 5.0</span>
+        <span class="pill">独立模式</span>
+      </div>
+    </a>
+
+    <a class="card" href="06-错别字入侵.html">
+      <div class="no">方案六 · P3</div>
+      <div class="nm">错别字入侵</div>
+      <p class="cl">敌人用<b>形近字</b>改写你的塔（火→灭、木→术）。防守目标从血条变成<b>语义完整性</b>，你要主动「校勘」修复。</p>
+      <div class="meta">
+        <span class="pill">加权 4.03</span>
+        <span class="pill">Boss 专属机制</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="foot">
+    <b>阅读提示</b>　加粗的红色文字标出了每个方案最值得看的一处设计。<br>
+    本目录为纯静态原型，不参与构建，未改动任何游戏代码（<code>index.html</code> / <code>js/</code> / <code>css/</code> 零改动）。<br>
+    原型中的数值仅用于演示效果，不代表最终平衡数值。工单见 <code>docs/工单计划/2026-09-16-玩法创新可交互原型.md</code>。
+  </div>
+</div>
+</body>
+</html>

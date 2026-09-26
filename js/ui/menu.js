@@ -26,8 +26,18 @@ UI.prototype.createTowerSelects = function() {
       el.innerHTML = '<span class="tower-char">' + charHtml + '</span><span class="tower-cost">' + config.cost + '</span>';
 
       const clickHandler = () => {
-        if (el.classList.contains('locked')) return;
+        const config = CONFIG.TOWERS[el.dataset.type];
+        // 必须用"当前金币"判断，而不是关卡加载时打上的 .locked 快照：
+        // 旧实现在关卡加载时评估一次金币，之后攒够钱卡仍是灰的、点击被直接 return，
+        // 触摸端的表现就是"点了完全没反应"。
+        if (config && this.game.gold < config.cost) {
+          el.classList.add('locked');
+          this.showToast(`金币不足（需 ${config.cost} 金）`, 'warning');
+          this.refreshTowerSelectAffordability();
+          return;
+        }
 
+        el.classList.remove('locked');
         document.querySelectorAll('.tower-select').forEach(t => t.classList.remove('selected'));
 
         if (this.selectedTowerType === el.dataset.type) {
@@ -45,7 +55,27 @@ UI.prototype.createTowerSelects = function() {
 
       bottomBar.appendChild(el);
     }
+
+    this.refreshTowerSelectAffordability();
   
+};
+/**
+ * 把"金币不足"状态同步到塔卡（由 Game.updateUI 驱动，保证与金币实时一致）
+ */
+UI.prototype.refreshTowerSelectAffordability = function() {
+    const bottomBar = document.getElementById('bottom-bar');
+    if (!bottomBar || !this.game) return;
+
+    for (const el of bottomBar.querySelectorAll('.tower-select')) {
+      const config = CONFIG.TOWERS[el.dataset.type];
+      if (!config) continue;
+
+      const locked = this.game.gold < config.cost;
+      if (el.classList.contains('locked') !== locked) {
+        el.classList.toggle('locked', locked);
+      }
+      el.setAttribute('aria-disabled', locked ? 'true' : 'false');
+    }
 };
 UI.prototype.setupMenuEventListeners = function() {
     // 开始游戏按钮 - 默认进入第一关（故事模式）

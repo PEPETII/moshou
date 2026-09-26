@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>方案二 · 句读改径 — 墨守成规 · 玩法原型</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 26px 18px 56px; background: #e7e1d2; color: #1c1a17;
+    font-family: "Kaiti SC", "KaiTi", "STKaiti", "Songti SC", "SimSun", serif;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  .top { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  h1 { font-size: 26px; margin: 0; letter-spacing: 4px; }
+  .tag { font-size: 12px; padding: 3px 10px; border: 1px solid #b03a2e; color: #b03a2e; border-radius: 2px; }
+  .claim { margin: 10px 0 4px; font-size: 15px; color: #3d382f; line-height: 1.7; }
+  .claim b { color: #b03a2e; font-weight: normal; }
+  .stage { margin-top: 18px; background: #f4efe4; border: 1px solid #cabfa6; }
+  canvas { display: block; width: 100%; height: auto; cursor: pointer; }
+  .bar { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  button {
+    font-family: inherit; font-size: 15px; padding: 8px 16px; cursor: pointer;
+    background: #f4efe4; color: #1c1a17; border: 1px solid #a89c83; border-radius: 2px;
+  }
+  button:hover { background: #fff; }
+  .hint { font-size: 13px; color: #6a6459; margin-left: auto; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 22px; }
+  .card { background: #f4efe4; border: 1px solid #cabfa6; padding: 16px 18px; }
+  .card h2 { font-size: 15px; margin: 0 0 10px; letter-spacing: 2px; }
+  .card p { font-size: 13.5px; line-height: 1.85; margin: 0 0 8px; color: #3d382f; }
+  .card code { background: #e7e1d2; padding: 1px 5px; font-family: Consolas, monospace; font-size: 12px; }
+  .punct { color: #b03a2e; font-size: 16px; }
+  .legend { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13.5px; line-height: 1.7; }
+  .legend b { color: #b03a2e; font-weight: normal; font-size: 17px; }
+  @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } h1 { font-size: 21px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>句读改径</h1>
+    <span class="tag">方案二</span>
+    <span class="tag">攻击「固定路线」</span>
+  </div>
+  <p class="claim">地图是一篇文章，敌人沿<b>字序</b>流动。你放置的<b>标点</b>决定它们怎么被"读"——断句一变，<b>路径就变了</b>。</p>
+
+  <div class="stage"><canvas id="cv" width="960" height="432"></canvas></div>
+
+  <div class="bar">
+    <button id="reset">清空全部句读</button>
+    <span class="hint">点击字与字之间的空隙，循环切换：无 → 、 → 。 → ？ → ！</span>
+  </div>
+
+  <div class="cols">
+    <div class="card">
+      <h2>四种标点的效果</h2>
+      <div class="legend">
+        <b>、</b><span>并列 <b>分流</b>——敌人经过时分裂为上下两股，单股威胁减半</span>
+        <b>。</b><span>终止 <b>转向离场</b>——敌人掉头从左侧退出，直接从战场上被"读掉"</span>
+        <b>？</b><span>疑问 <b>停滞</b>——敌人原地犹疑一秒，为你争取输出窗口</span>
+        <b>！</b><span>感叹 <b>冲刺</b>——敌人加速突进，但自身受损，是把双刃剑</span>
+      </div>
+      <p style="margin-top:12px">规则可预测性：标点<b>只在顺读方向生效</b>，被「。」折返的敌人不会触发已越过的标点，避免连锁失控。</p>
+    </div>
+    <div class="card">
+      <h2>为什么这是中文独有的</h2>
+      <p>「断句不同则意义反转」是中文特有的语言现象（「下雨天留客天留我不留」）。日文、英文的标点无法产生同等的结构歧义，因此这个机制<b>无法被同类产品直接照搬</b>。</p>
+      <p>实现上，关卡数据需从 <code>path: [[gx,gy],...]</code> 升级为 <code>text: { chars, punctuation }</code>；<code>js/entities/enemy/</code> 的移动逻辑要从"沿数组前进"改为"沿字序图寻路"，并新增路径合法性校验器（参考现有山字塔的校验逻辑）。</p>
+      <p><b>建议分两阶段落地</b>：轻量版只改入口分流权重，验证玩家是否买账后再做全量图寻路。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var cv = document.getElementById('cv');
+  var ctx = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+  var PAPER = '#f4efe4', INK = '#1c1a17', CINNABAR = '#b03a2e', GRID = '#d8cfb8';
+
+  var TEXT = '大漠孤烟直长河落日圆'.split('');
+  var TILE = 64, GAP = 0;
+  var START_X = (W - TEXT.length * TILE) / 2;
+  var LINE_Y = 132;
+
+  var slots = [];
+  for (var i = 1; i < TEXT.length; i++) slots.push({ v: '', mark: false });
+
+  var enemies = [], floats = [], coreHP = 20;
+  var rightFlash = 0;
+
+  function slotX(i) { return START_X + i * TILE + (i - 1) * GAP; }
+
+  function spawn() {
+    enemies.push({ x: START_X - 30, lane: 0, dir: 1, speed: 1.7, freeze: 0, mark: {}, hurt: 0 });
+  }
+
+  function apply(p, e, i) {
+    if (p === '、') {
+      enemies.push({ x: e.x, lane: -1, dir: 1, speed: e.speed, freeze: 0, mark: {}, hurt: 0 });
+      e.lane = 1;
+      floats.push({ x: e.x, y: LINE_Y - 36, s: '分流', life: 46, c: CINNABAR });
+    } else if (p === '。') {
+      e.dir = -1;
+      floats.push({ x: e.x, y: LINE_Y - 36, s: '断', life: 60, c: CINNABAR });
+    } else if (p === '？') {
+      e.freeze = 62;
+      floats.push({ x: e.x, y: LINE_Y - 36, s: '滞', life: 46, c: '#6a6459' });
+    } else if (p === '！') {
+      e.speed = Math.max(e.speed, 2.6);
+      e.hurt = 1;
+      floats.push({ x: e.x, y: LINE_Y - 36, s: '冲', life: 46, c: CINNABAR });
+    }
+  }
+
+  var tick = 0;
+
+  function step() {
+    tick++;
+    if (tick % 58 === 0) spawn();
+
+    for (var k = enemies.length - 1; k >= 0; k--) {
+      var e = enemies[k];
+      var prev = e.x;
+      if (e.freeze > 0) e.freeze--;
+      else e.x += e.dir * e.speed;
+
+      if (e.dir > 0) {
+        for (var i = 0; i < slots.length; i++) {
+          if (!slots[i].v || e.mark[i]) continue;
+          var sx = slotX(i + 1);
+          if (prev < sx && e.x >= sx) { e.mark[i] = true; apply(slots[i].v, e, i); }
+        }
+      }
+      if (e.x > W + 40) {
+        enemies.splice(k, 1);
+        coreHP -= 1;
+        rightFlash = 14;
+        if (coreHP < 0) coreHP = 20;
+      } else if (e.x < START_X - 60) {
+        enemies.splice(k, 1);
+      }
+    }
+
+    for (var f = floats.length - 1; f >= 0; f--) {
+      floats[f].y -= 0.55; floats[f].life--;
+      if (floats[f].life <= 0) floats.splice(f, 1);
+    }
+    if (rightFlash > 0) rightFlash--;
+  }
+
+  function ink(s, x, y, size, color, weight, align) {
+    ctx.save();
+    ctx.font = (weight || 'normal') + ' ' + size + 'px "Kaiti SC","KaiTi","STKaiti","Songti SC",serif';
+    ctx.textAlign = align || 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(28,26,23,0.28)';
+    ctx.shadowBlur = 6;
+    ctx.fillStyle = color;
+    ctx.fillText(s, x, y);
+    ctx.restore();
+  }
+
+  function draw() {
+    ctx.fillStyle = PAPER;
+    ctx.fillRect(0, 0, W, H);
+
+    ink('字行 · 敌人沿字序由左向右流动；点击字间空隙插入标点', 40, 30, 13, '#6a6459', 'normal', 'left');
+
+    ctx.fillStyle = 'rgba(28,26,23,0.10)';
+    ctx.fillRect(0, LINE_Y - 3, W, 6);
+    ctx.fillRect(0, LINE_Y - 57, W, 2);
+    ctx.fillRect(0, LINE_Y + 51, W, 2);
+
+    for (var i = 0; i < TEXT.length; i++) {
+      var x = START_X + i * TILE + TILE / 2;
+      ctx.strokeStyle = GRID;
+      ctx.lineWidth = 0.6;
+      ctx.strokeRect(START_X + i * TILE + 3, LINE_Y - TILE / 2 + 3, TILE - 6, TILE - 6);
+      ink(TEXT[i], x, LINE_Y, 34, INK);
+    }
+
+    for (var s = 0; s < slots.length; s++) {
+      var sx = slotX(s + 1);
+      if (slots[s].v) {
+        ctx.beginPath();
+        ctx.arc(sx, LINE_Y, 15, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(176,58,46,0.10)';
+        ctx.fill();
+        ink(slots[s].v, sx, LINE_Y - 2, 26, CINNABAR, '500');
+      } else {
+        ctx.beginPath();
+        ctx.arc(sx, LINE_Y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(28,26,23,0.22)';
+        ctx.fill();
+      }
+    }
+
+    for (var e = 0; e < enemies.length; e++) {
+      var en = enemies[e];
+      var y = LINE_Y + en.lane * 54;
+      ctx.beginPath();
+      ctx.arc(en.x, y, 9, 0, Math.PI * 2);
+      ctx.fillStyle = en.hurt ? CINNABAR : INK;
+      ctx.fill();
+      if (en.freeze > 0) {
+        ctx.beginPath();
+        ctx.arc(en.x, y, 15, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(106,100,89,0.55)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+    }
+
+    ctx.strokeStyle = rightFlash > 0 ? CINNABAR : 'rgba(28,26,23,0.6)';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(W - 34, 60); ctx.lineTo(W - 34, H - 120); ctx.stroke();
+    ink('城', W - 58, 92, 26, INK);
+    ctx.fillStyle = 'rgba(28,26,23,0.16)';
+    ctx.fillRect(W - 90, 46, 76, 5);
+    ctx.fillStyle = CINNABAR;
+    ctx.fillRect(W - 90, 46, 76 * Math.max(coreHP, 0) / 20, 5);
+
+    for (var f = 0; f < floats.length; f++) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, floats[f].life / 30);
+      ink(floats[f].s, floats[f].x, floats[f].y, 17, floats[f].c, '500');
+      ctx.restore();
+    }
+
+    var shown = TEXT[0];
+    for (var q = 0; q < slots.length; q++) shown += slots[q].v + TEXT[q + 1];
+    ink('读作', 40, 246, 14, '#6a6459', 'normal', 'left');
+    var fs = 34;
+    ctx.save();
+    ctx.font = '500 ' + fs + 'px "Kaiti SC","KaiTi","STKaiti","Songti SC",serif';
+    while (ctx.measureText(shown).width > W - 200 && fs > 16) {
+      fs -= 2;
+      ctx.font = '500 ' + fs + 'px "Kaiti SC","KaiTi","STKaiti","Songti SC",serif';
+    }
+    ctx.restore();
+    var cut = 0;
+    for (var r = 0; r < slots.length; r++) if (slots[r].v) cut++;
+    ink(shown, 110, 246, fs, INK, '500', 'left');
+    ink('已断句 ' + cut + ' 处　·　标点生效方向：顺读（→）', 40, 296, 13, '#6a6459', 'normal', 'left');
+
+    var LG = [['、', '分流'], ['。', '折返离场'], ['？', '停滞'], ['！', '冲刺']];
+    for (var g2 = 0; g2 < LG.length; g2++) {
+      var lx = 40 + g2 * 152;
+      ink(LG[g2][0], lx + 14, 366, 30, CINNABAR, '500');
+      ink(LG[g2][1], lx + 46, 366, 14, '#3d382f', 'normal', 'left');
+    }
+  }
+
+  function loop() { step(); draw(); requestAnimationFrame(loop); }
+
+  cv.addEventListener('click', function (ev) {
+    var r = cv.getBoundingClientRect();
+    var x = (ev.clientX - r.left) / r.width * W;
+    var y = (ev.clientY - r.top) / r.height * H;
+    if (y < LINE_Y - 46 || y > LINE_Y + 46) return;
+    var best = -1, bestD = 20;
+    for (var i = 0; i < slots.length; i++) {
+      var d = Math.abs(x - slotX(i + 1));
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    if (best < 0) return;
+    var order = ['', '、', '。', '？', '！'];
+    var idx = order.indexOf(slots[best].v);
+    slots[best].v = order[(idx + 1) % order.length];
+  });
+
+  document.getElementById('reset').addEventListener('click', function () {
+    for (var i = 0; i < slots.length; i++) slots[i].v = '';
+    enemies = []; floats = []; coreHP = 20;
+  });
+
+  loop();
+})();
+</script>
+</body>
+</html>

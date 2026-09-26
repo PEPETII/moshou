@@ -1,5 +1,14 @@
 // UI：塔信息、弹窗和解锁
-UI.prototype.showTowerInfo = function(tower, x, y) {
+/**
+ * 显示炮塔信息面板
+ * @param {Object} tower 炮塔
+ * @param {number} x 触发点 clientX（触摸端为触点）
+ * @param {number} y 触发点 clientY
+ * @param {string} [source] "touch" | "mouse"。
+ *   触摸端必须区别对待：手指会压在触点上，面板若按触点定位会被手指完全遮住
+ *   （实测面板 left/top 正好等于触点坐标，coversFinger: true）。
+ */
+UI.prototype.showTowerInfo = function(tower, x, y, source) {
     // 清理长按定时器，防止在显示信息面板期间切换界面导致意外行为
     if (this.longPressTimer) {
       clearTimeout(this.longPressTimer);
@@ -91,15 +100,18 @@ UI.prototype.showTowerInfo = function(tower, x, y) {
 
     sellBtn.textContent = `出售 +${tower.getSellValue()}金`;
 
-    // 添加右键取消选择提示
-    let rightClickHint = this.towerInfo.querySelector(".right-click-hint");
-    if (!rightClickHint) {
-      rightClickHint = document.createElement("div");
-      rightClickHint.className = "right-click-hint";
-      rightClickHint.style.cssText = "font-size:11px;color:#666;text-align:center;margin-top:8px;font-family:'ZCOOL XiaoWei',serif;";
-      this.towerInfo.appendChild(rightClickHint);
+    // 取消选中提示：文案必须与当前输入方式一致
+    // （触摸端没有右键；此前的硬编码"右键取消选择"会让移动端玩家无从下手）
+    const isTouchInput =
+      source === "touch" || !!(window.DeviceProfile && window.DeviceProfile.isTouch);
+    let cancelHint = this.towerInfo.querySelector(".right-click-hint");
+    if (!cancelHint) {
+      cancelHint = document.createElement("div");
+      cancelHint.className = "right-click-hint";
+      cancelHint.style.cssText = "font-size:11px;color:#666;text-align:center;margin-top:8px;font-family:'ZCOOL XiaoWei',serif;";
+      this.towerInfo.appendChild(cancelHint);
     }
-    rightClickHint.textContent = "右键取消选择";
+    cancelHint.textContent = isTouchInput ? "点击空白处取消选中" : "右键取消选择";
 
     if (tower.isDetonator) {
       const detonateBtn = document.createElement('button');
@@ -127,6 +139,10 @@ UI.prototype.showTowerInfo = function(tower, x, y) {
     // 先显示面板以获取实际尺寸
     this.towerInfo.classList.remove("hidden");
 
+    // 记录锚点：升级/出售后需要按同一锚点重排，避免面板逐次漂移
+    this._infoAnchor = { x, y, source: isTouchInput ? "touch" : "mouse" };
+    this._infoSource = this._infoAnchor.source;
+
     // 获取面板实际尺寸
     const panelWidth = this.towerInfo.offsetWidth;
     const panelHeight = this.towerInfo.offsetHeight;
@@ -134,24 +150,34 @@ UI.prototype.showTowerInfo = function(tower, x, y) {
     // 获取视口尺寸
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
+    const margin = 10;
 
-    // 边界检测与调整
-    let adjustedX = x;
-    let adjustedY = y;
+    let adjustedX;
+    let adjustedY;
 
-    // 右边界检测
-    if (adjustedX + panelWidth > viewportWidth) {
-      adjustedX = viewportWidth - panelWidth - 10;
+    if (isTouchInput) {
+      // 触摸端：面板整体停靠在"离手指较远"的那一侧（左半屏点按 → 面板靠右），
+      // 这是移动端常见做法，可以彻底避免面板被手指压住。
+      // 手机横屏只有 390px 高，而面板高约 250px，"贴触点上方/下方"往往会互相挤压。
+      const dockRight = x < viewportWidth / 2;
+      adjustedX = dockRight ? viewportWidth - panelWidth - margin : margin;
+      adjustedY = y - panelHeight / 2;
+    } else {
+      adjustedX = x;
+      adjustedY = y;
     }
 
-    // 下边界检测
-    if (adjustedY + panelHeight > viewportHeight) {
-      adjustedY = viewportHeight - panelHeight - 10;
+    // 边界检测与调整
+    if (adjustedX + panelWidth > viewportWidth - margin) {
+      adjustedX = viewportWidth - panelWidth - margin;
+    }
+    if (adjustedY + panelHeight > viewportHeight - margin) {
+      adjustedY = viewportHeight - panelHeight - margin;
     }
 
     // 确保不小于最小边距
-    adjustedX = Math.max(10, adjustedX);
-    adjustedY = Math.max(10, adjustedY);
+    adjustedX = Math.max(margin, adjustedX);
+    adjustedY = Math.max(margin, adjustedY);
 
     this.towerInfo.style.left = adjustedX + "px";
     this.towerInfo.style.top = adjustedY + "px";

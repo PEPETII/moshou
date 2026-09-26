@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>方案三 · 语法羁绊 — 墨守成规 · 玩法原型</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 26px 18px 56px; background: #e7e1d2; color: #1c1a17;
+    font-family: "Kaiti SC", "KaiTi", "STKaiti", "Songti SC", "SimSun", serif;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  .top { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  h1 { font-size: 26px; margin: 0; letter-spacing: 4px; }
+  .tag { font-size: 12px; padding: 3px 10px; border: 1px solid #b03a2e; color: #b03a2e; border-radius: 2px; }
+  .claim { margin: 10px 0 4px; font-size: 15px; color: #3d382f; line-height: 1.7; }
+  .claim b { color: #b03a2e; font-weight: normal; }
+  .stage { margin-top: 18px; background: #f4efe4; border: 1px solid #cabfa6; }
+  canvas { display: block; width: 100%; height: auto; cursor: pointer; }
+  .bar { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  button {
+    font-family: inherit; font-size: 17px; padding: 6px 16px; cursor: pointer;
+    background: #f4efe4; color: #1c1a17; border: 1px solid #a89c83; border-radius: 2px;
+  }
+  button:hover { background: #fff; }
+  button.on { background: #1c1a17; color: #f4efe4; border-color: #1c1a17; }
+  .hint { font-size: 13px; color: #6a6459; margin-left: auto; }
+  .cols { display: grid; grid-template-columns: 1.05fr 1fr; gap: 18px; margin-top: 22px; }
+  .card { background: #f4efe4; border: 1px solid #cabfa6; padding: 16px 18px; }
+  .card h2 { font-size: 15px; margin: 0 0 10px; letter-spacing: 2px; }
+  .card p { font-size: 13.5px; line-height: 1.85; margin: 0 0 8px; color: #3d382f; }
+  .card code { background: #e7e1d2; padding: 1px 5px; font-family: Consolas, monospace; font-size: 12px; }
+  .words { display: flex; flex-wrap: wrap; gap: 8px; min-height: 34px; }
+  .w {
+    display: inline-flex; align-items: baseline; gap: 7px; padding: 5px 11px;
+    border: 1px solid #cabfa6; background: #efe9db; font-size: 13px;
+  }
+  .w i { font-style: normal; font-size: 19px; color: #1c1a17; }
+  .w em { font-style: normal; color: #b03a2e; font-size: 12px; }
+  .w.ju { border-color: #b03a2e; background: #f7ece9; }
+  .empty { font-size: 13px; color: #8f887a; }
+  .rule { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; font-size: 13.5px; line-height: 1.7; }
+  .rule b { color: #b03a2e; font-weight: normal; white-space: nowrap; }
+  @media (max-width: 780px) { .cols { grid-template-columns: 1fr; } h1 { font-size: 21px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>语法羁绊</h1>
+    <span class="tag">方案三</span>
+    <span class="tag">攻击「建塔防守」</span>
+    <span class="tag">可行性最高</span>
+  </div>
+  <p class="claim">把「相邻 → 融合」升级为「<b>相邻 → 成词 → 成句</b>」的三层规则编译器：<b>词性决定增益类型</b>，玩家思考的不再是"放哪种塔"，而是"这句话怎么读通"。</p>
+
+  <div class="stage"><canvas id="cv" width="960" height="432"></canvas></div>
+
+  <div class="bar">
+    <button data-c="火" class="on">火</button>
+    <button data-c="水">水</button>
+    <button data-c="木">木</button>
+    <button data-c="山">山</button>
+    <button data-c="金">金</button>
+    <button data-c="土">土</button>
+    <button id="clear">清空</button>
+    <span class="hint">点击格纸落字，相邻即成词；悬停可预览会生成什么词</span>
+  </div>
+
+  <div class="cols">
+    <div class="card">
+      <h2>当前生效的词与句</h2>
+      <div class="words" id="words"><span class="empty">尚未成词。试着让「山」挨着「火」，或让「火」挨着「水」。</span></div>
+      <h2 style="margin-top:16px">三条语法规则</h2>
+      <div class="rule">
+        <b>偏正 · 修饰+中心</b><span>「山/金/土」修饰「火/水/木」→ 中心语伤害 <b>×1.6</b>（火山、钬、涧…）</span>
+        <b>动宾 · 动作+对象</b><span>两个不同的攻击字相邻 → 附加持续伤害（蒸、炎、淋）</span>
+        <b>并列 · 同字叠用</b><span>相同字相邻 → 攻速 <b>×1.5</b> 联动（焱、淼、林、鑫…）</span>
+        <b>句法技 · 三字成行</b><span>三个及以上字连成一条直线 → 全句伤害 <b>×1.3</b></span>
+      </div>
+      <p style="margin-top:10px">注意：两个修饰字（如「山+金」）<b>不组词</b>——语法在限制你的布局，而不只是奖励。</p>
+    </div>
+    <div class="card">
+      <h2>为什么它可行性最高</h2>
+      <p>引擎层面几乎不需要新东西：<code>js/fusionSystem.js</code> 已有相邻检测，<code>js/config/fusion.js</code> 已有 <code>resolveActions(components, desc)</code> 标签动作系统。</p>
+      <p>改动集中在两处：把"两两融合"改为<b>区域扫描 + 语法图构建 + 增益结算</b>；在 <code>js/config/</code> 新增 <code>GRAMMAR_RULES</code> 表。不需要改渲染、不需要改敌人、不需要改资源系统。</p>
+      <p><b>最大风险是可读性</b>——玩家看不懂语法就会变成玄学数值。因此必须配套 UI 可视化：用细墨线实时标出当前生效的词与句（就是这个原型里画出来的东西）。</p>
+      <p><b>协同价值</b>：它定义了「词」「句」两个概念，是方案二（句读）与方案五（对句）的公共底座，因此建议放在 P0 先做。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var cv = document.getElementById('cv');
+  var ctx = cv.getContext('2d');
+  var CELL = 48, COLS = 20, ROWS = 9;
+  var W = cv.width, H = cv.height;
+  var PAPER = '#f4efe4', INK = '#1c1a17', CINNABAR = '#b03a2e', GRID = '#ded5c0';
+
+  var MOD = { '山': 1, '金': 1, '土': 1 };
+  var HEAD = { '火': 1, '水': 1, '木': 1 };
+  var WORD = {
+    '山火': '火山', '土火': '灶', '金火': '钬',
+    '山水': '涧', '土水': '洼', '金水': '铄',
+    '山木': '柞', '土木': '杜', '金木': '钎',
+    '水火': '蒸', '火木': '炎', '水木': '淋',
+    '火火': '焱', '水水': '淼', '木木': '林',
+    '金金': '鑫', '山山': '岳', '土土': '垚'
+  };
+  var JU_NAME = { '火': '火烧连营', '水': '水淹七军', '木': '万木丛生' };
+
+  var towers = [], bonds = [], runs = [], shots = [], floats = [], enemies = [];
+  var cur = '火', hover = null, tick = 0;
+
+  var PATH = [];
+  (function () {
+    var pts = [[-1, 1], [5, 1], [5, 7], [11, 7], [11, 4], [16, 4], [16, 8], [20, 8]];
+    for (var i = 0; i < pts.length - 1; i++) {
+      var a = pts[i], b = pts[i + 1];
+      var n = Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])) * 4;
+      for (var s = 0; s < n; s++) {
+        var k = s / n;
+        PATH.push([(a[0] + (b[0] - a[0]) * k + 0.5) * CELL, (a[1] + (b[1] - a[1]) * k + 0.5) * CELL]);
+      }
+    }
+  })();
+
+  function at(gx, gy) {
+    for (var i = 0; i < towers.length; i++) if (towers[i].gx === gx && towers[i].gy === gy) return towers[i];
+    return null;
+  }
+
+  function grammar(a, b) {
+    if (a === b) return { type: '并列', key: (a + b), mul: 'spd' };
+    if (MOD[a] && HEAD[b]) return { type: '偏正', key: (a + b).split('').sort().join(''), mul: 'dmg' };
+    if (MOD[b] && HEAD[a]) return { type: '偏正', key: (a + b).split('').sort().join(''), mul: 'dmg' };
+    if (HEAD[a] && HEAD[b]) return { type: '动宾', key: (a + b).split('').sort().join(''), mul: 'dot' };
+    return null;
+  }
+
+  function rebuild() {
+    bonds = []; runs = [];
+    for (var i = 0; i < towers.length; i++) {
+      towers[i].dmg = 9; towers[i].spd = 1; towers[i].dot = 0;
+    }
+    for (var a = 0; a < towers.length; a++) {
+      var dirs = [[1, 0], [0, 1]];
+      for (var d = 0; d < 2; d++) {
+        var b = at(towers[a].gx + dirs[d][0], towers[a].gy + dirs[d][1]);
+        if (!b) continue;
+        var g = grammar(towers[a].c, b.c);
+        if (!g) continue;
+        bonds.push({ a: towers[a], b: b, type: g.type, word: WORD[g.key] || g.key, mul: g.mul });
+      }
+    }
+    for (var k = 0; k < bonds.length; k++) {
+      var bo = bonds[k];
+      if (bo.mul === 'dmg') {
+        var h = HEAD[bo.a.c] ? bo.a : bo.b;
+        h.dmg *= 1.6;
+      } else if (bo.mul === 'spd') {
+        bo.a.spd *= 1.5; bo.b.spd *= 1.5;
+      } else {
+        bo.a.dot += 6; bo.b.dot += 6;
+      }
+    }
+
+    var rows = {}, cols = {};
+    for (var t = 0; t < towers.length; t++) {
+      var tw = towers[t];
+      (rows[tw.gy] = rows[tw.gy] || []).push(tw);
+      (cols[tw.gx] = cols[tw.gx] || []).push(tw);
+    }
+    function collect(groups) {
+      for (var key in groups) {
+        var list = groups[key].slice().sort(function (p, q) { return (p.gx + p.gy) - (q.gx + q.gy); });
+        var run = [list[0]];
+        for (var i = 1; i < list.length; i++) {
+          var prev = run[run.length - 1], cur2 = list[i];
+          if (Math.abs(cur2.gx - prev.gx) + Math.abs(cur2.gy - prev.gy) === 1) run.push(cur2);
+          else { if (run.length >= 3) runs.push(run.slice()); run = [cur2]; }
+        }
+        if (run.length >= 3) runs.push(run);
+      }
+    }
+    collect(rows); collect(cols);
+    for (var r = 0; r < runs.length; r++) {
+      for (var m = 0; m < runs[r].length; m++) runs[r][m].dmg *= 1.3;
+    }
+    renderWords();
+  }
+
+  function renderWords() {
+    var box = document.getElementById('words');
+    if (!bonds.length && !runs.length) {
+      box.innerHTML = '<span class="empty">尚未成词。试着让「山」挨着「火」，或让「火」挨着「水」。</span>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < bonds.length; i++) {
+      var b = bonds[i];
+      html += '<span class="w"><i>' + (WORD[(b.a.c + b.b.c).split('').sort().join('')] || b.word) + '</i>' +
+        b.a.c + b.b.c + ' · ' + b.type + '<em>' + (b.mul === 'dmg' ? '伤害×1.6' : b.mul === 'spd' ? '攻速×1.5' : '附加灼伤') + '</em></span>';
+    }
+    for (var r = 0; r < runs.length; r++) {
+      var chars = runs[r].map(function (x) { return x.c; }).join('');
+      var name = '三字成句';
+      for (var c in JU_NAME) if (chars.indexOf(c) >= 0) { name = JU_NAME[c]; break; }
+      html += '<span class="w ju"><i>' + name + '</i>「' + chars + '」成行<em>全句伤害×1.3</em></span>';
+    }
+    box.innerHTML = html;
+  }
+
+  function spawn() { enemies.push({ i: 0, hp: 120, max: 120, x: PATH[0][0], y: PATH[0][1], burn: 0 }); }
+
+  function step() {
+    tick++;
+    if (tick % 52 === 0) spawn();
+
+    for (var i = enemies.length - 1; i >= 0; i--) {
+      var e = enemies[i];
+      e.i += 1.5;
+      if (e.i >= PATH.length - 1) { enemies.splice(i, 1); continue; }
+      var p = PATH[Math.floor(e.i)];
+      e.x = p[0]; e.y = p[1];
+      if (e.burn > 0) { e.burn--; e.hp -= 0.35; }
+      if (e.hp <= 0) enemies.splice(i, 1);
+    }
+
+    for (var t = 0; t < towers.length; t++) {
+      var tw = towers[t];
+      tw.cd = (tw.cd || 0) - 1;
+      if (tw.cd > 0) continue;
+      var best = null, bd = CELL * 3.4;
+      for (var e2 = 0; e2 < enemies.length; e2++) {
+        var dd = Math.hypot(enemies[e2].x - (tw.gx + 0.5) * CELL, enemies[e2].y - (tw.gy + 0.5) * CELL);
+        if (dd < bd) { bd = dd; best = enemies[e2]; }
+      }
+      if (!best) continue;
+      tw.cd = Math.round(44 / tw.spd);
+      shots.push({
+        x: (tw.gx + 0.5) * CELL, y: (tw.gy + 0.5) * CELL,
+        tx: best.x, ty: best.y, t: 0, dmg: Math.round(tw.dmg), dot: tw.dot, target: best
+      });
+    }
+
+    for (var s = shots.length - 1; s >= 0; s--) {
+      var sh = shots[s];
+      sh.t += 0.16;
+      if (sh.t >= 1) {
+        if (sh.target && enemies.indexOf(sh.target) >= 0) {
+          sh.target.hp -= sh.dmg;
+          if (sh.dot) sh.target.burn = 120;
+          floats.push({ x: sh.target.x, y: sh.target.y - 16, v: sh.dmg, life: 44, big: sh.dmg >= 14 });
+        }
+        shots.splice(s, 1);
+      }
+    }
+
+    for (var f = floats.length - 1; f >= 0; f--) {
+      floats[f].y -= 0.75; floats[f].life--;
+      if (floats[f].life <= 0) floats.splice(f, 1);
+    }
+  }
+
+  function ink(s, x, y, size, color, weight, align) {
+    ctx.save();
+    ctx.font = (weight || 'normal') + ' ' + size + 'px "Kaiti SC","KaiTi","STKaiti","Songti SC",serif';
+    ctx.textAlign = align || 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(28,26,23,0.30)';
+    ctx.shadowBlur = 6;
+    ctx.fillStyle = color;
+    ctx.fillText(s, x, y);
+    ctx.restore();
+  }
+
+  function cx(t) { return (t.gx + 0.5) * CELL; }
+  function cy(t) { return (t.gy + 0.5) * CELL; }
+
+  function draw() {
+    ctx.fillStyle = PAPER; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = GRID; ctx.lineWidth = 0.5;
+    for (var x = 0; x <= COLS; x++) { ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, H); ctx.stroke(); }
+    for (var y = 0; y <= ROWS; y++) { ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(W, y * CELL); ctx.stroke(); }
+
+    ctx.strokeStyle = 'rgba(28,26,23,0.10)'; ctx.lineWidth = 24; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (var i = 0; i < PATH.length; i += 4) { if (i === 0) ctx.moveTo(PATH[i][0], PATH[i][1]); else ctx.lineTo(PATH[i][0], PATH[i][1]); }
+    ctx.stroke();
+
+    if (hover) {
+      var gx = hover.gx, gy = hover.gy;
+      if (!at(gx, gy)) {
+        ctx.save();
+        ctx.globalAlpha = 0.28;
+        ink(cur, (gx + 0.5) * CELL, (gy + 0.5) * CELL, 30, INK);
+        ctx.restore();
+        var dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+        for (var d = 0; d < 4; d++) {
+          var nb = at(gx + dirs[d][0], gy + dirs[d][1]);
+          if (!nb) continue;
+          var g = grammar(cur, nb.c);
+          if (!g) continue;
+          var mx = (cx(nb) + (gx + 0.5) * CELL) / 2, my = (cy(nb) + (gy + 0.5) * CELL) / 2;
+          ctx.save();
+          ctx.globalAlpha = 0.5;
+          ctx.setLineDash([4, 3]);
+          ctx.strokeStyle = CINNABAR; ctx.lineWidth = 1.4;
+          ctx.beginPath(); ctx.moveTo(cx(nb), cy(nb)); ctx.lineTo((gx + 0.5) * CELL, (gy + 0.5) * CELL); ctx.stroke();
+          ctx.setLineDash([]);
+          ink(WORD[g.key] || g.key, mx, my - 14, 15, CINNABAR, '500');
+          ctx.restore();
+        }
+      }
+    }
+
+    for (var r = 0; r < runs.length; r++) {
+      var first = runs[r][0], last = runs[r][runs[r].length - 1];
+      var sameRow = first.gy === last.gy;
+      ctx.save();
+      ctx.globalAlpha = 0.22; ctx.strokeStyle = CINNABAR; ctx.lineWidth = 20; ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(cx(first), cy(first)); ctx.lineTo(cx(last), cy(last));
+      ctx.stroke();
+      ctx.restore();
+      var chars = runs[r].map(function (q) { return q.c; }).join('');
+      var nm = '三字成句';
+      for (var kk in JU_NAME) if (chars.indexOf(kk) >= 0) { nm = JU_NAME[kk]; break; }
+      ink(nm, (cx(first) + cx(last)) / 2, (cy(first) + cy(last)) / 2 + (sameRow ? -34 : 0) + (sameRow ? 0 : 26), 16, CINNABAR, '500');
+    }
+
+    for (var b = 0; b < bonds.length; b++) {
+      var bo = bonds[b];
+      ctx.save();
+      ctx.strokeStyle = bo.mul === 'dmg' ? CINNABAR : 'rgba(28,26,23,0.75)';
+      ctx.lineWidth = bo.mul === 'dmg' ? 2.4 : 1.4;
+      if (bo.mul === 'dot') ctx.setLineDash([6, 4]);
+      ctx.beginPath(); ctx.moveTo(cx(bo.a), cy(bo.a)); ctx.lineTo(cx(bo.b), cy(bo.b)); ctx.stroke();
+      if (bo.mul === 'spd') {
+        ctx.beginPath(); ctx.moveTo(cx(bo.a), cy(bo.a) + 5); ctx.lineTo(cx(bo.b), cy(bo.b) + 5); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      ctx.restore();
+      var w = WORD[(bo.a.c + bo.b.c).split('').sort().join('')] || bo.word;
+      ink(w, (cx(bo.a) + cx(bo.b)) / 2, (cy(bo.a) + cy(bo.b)) / 2 - 17, 17, CINNABAR, '500');
+    }
+
+    for (var t2 = 0; t2 < towers.length; t2++) {
+      var tw = towers[t2];
+      ink(tw.c, cx(tw), cy(tw), 30, INK);
+      if (tw.dmg > 9) {
+        ctx.beginPath();
+        ctx.arc(cx(tw), cy(tw), 20, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(176,58,46,0.4)'; ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+
+    for (var s2 = 0; s2 < shots.length; s2++) {
+      var sh = shots[s2];
+      ctx.beginPath();
+      ctx.arc(sh.x + (sh.tx - sh.x) * sh.t, sh.y + (sh.ty - sh.y) * sh.t, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = CINNABAR; ctx.fill();
+    }
+
+    for (var e3 = 0; e3 < enemies.length; e3++) {
+      var en = enemies[e3];
+      ctx.beginPath(); ctx.arc(en.x, en.y, 9, 0, Math.PI * 2);
+      ctx.fillStyle = en.burn > 0 ? CINNABAR : INK; ctx.fill();
+      ctx.fillStyle = 'rgba(28,26,23,0.18)'; ctx.fillRect(en.x - 14, en.y - 19, 28, 3);
+      ctx.fillStyle = CINNABAR; ctx.fillRect(en.x - 14, en.y - 19, 28 * Math.max(en.hp, 0) / en.max, 3);
+    }
+
+    for (var f2 = 0; f2 < floats.length; f2++) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, floats[f2].life / 26);
+      ink('-' + floats[f2].v, floats[f2].x, floats[f2].y, floats[f2].big ? 18 : 14, CINNABAR, floats[f2].big ? '500' : 'normal');
+      ctx.restore();
+    }
+
+    ink('词 ' + bonds.length + '　　句 ' + runs.length, W - 20, 26, 14, '#6a6459', 'normal', 'right');
+  }
+
+  function loop() { step(); draw(); requestAnimationFrame(loop); }
+
+  function toGrid(ev) {
+    var r = cv.getBoundingClientRect();
+    return {
+      gx: Math.floor((ev.clientX - r.left) / r.width * W / CELL),
+      gy: Math.floor((ev.clientY - r.top) / r.height * H / CELL)
+    };
+  }
+
+  cv.addEventListener('mousemove', function (ev) {
+    var g = toGrid(ev);
+    hover = (g.gx >= 0 && g.gx < COLS && g.gy >= 0 && g.gy < ROWS) ? g : null;
+  });
+  cv.addEventListener('mouseleave', function () { hover = null; });
+  cv.addEventListener('click', function (ev) {
+    var g = toGrid(ev);
+    if (g.gx < 0 || g.gx >= COLS || g.gy < 0 || g.gy >= ROWS) return;
+    if (at(g.gx, g.gy)) {
+      towers = towers.filter(function (t) { return !(t.gx === g.gx && t.gy === g.gy); });
+    } else {
+      towers.push({ gx: g.gx, gy: g.gy, c: cur, dmg: 9, spd: 1, dot: 0, cd: 0 });
+    }
+    rebuild();
+  });
+
+  var btns = document.querySelectorAll('button[data-c]');
+  function bind(btn) {
+    btn.addEventListener('click', function () {
+      for (var j = 0; j < btns.length; j++) btns[j].classList.remove('on');
+      btn.classList.add('on');
+      cur = btn.getAttribute('data-c');
+    });
+  }
+  for (var i = 0; i < btns.length; i++) bind(btns[i]);
+
+  document.getElementById('clear').addEventListener('click', function () {
+    towers = []; shots = []; floats = []; rebuild();
+  });
+
+  [['山', 5, 1], ['火', 6, 1], ['水', 7, 1], ['金', 13, 5], ['金', 14, 5]].forEach(function (p) {
+    towers.push({ gx: p[1], gy: p[2], c: p[0], dmg: 9, spd: 1, dot: 0, cd: 0 });
+  });
+
+  rebuild();
+  loop();
+})();
+</script>
+</body>
+</html>

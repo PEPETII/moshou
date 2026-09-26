@@ -1,0 +1,273 @@
+/* ========================================
+   触屏交互层（part-05）
+   适用：移动端浏览器 / TapTap 小游戏（H5 横屏）
+
+   这一层只处理「输入方式」相关的适配，不改变任何视觉风格与游戏数值。
+   它存在的根本原因：
+     整棵游戏树挂在 #scale-container 的 transform: scale(s) 之下，
+     CSS 里声明的 44px 会连同缩放一起被缩小（实测 s=0.636 时 44px 只渲染出 28px）。
+     所以触控尺寸必须写成 calc(44px / var(--ui-scale)) 才能反向补偿。
+   ======================================== */
+
+/* ----------------------------------------
+   0. 变量：安全区与缩放因子
+   --ui-scale 由 js/bootstrap/viewport.js 写入
+   ---------------------------------------- */
+:root {
+  --ui-scale: 1;
+  --touch-min: 44px;
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+/* ----------------------------------------
+   1. 横屏布局修复
+   原实现把 #game-container 限制为 800px（矮屏 700px），
+   而 #game-area 是固定的 960×432 —— 实测画布比顶栏/底栏宽出 165.3px，
+   顶栏底栏只覆盖战场左侧 83%，右侧战场"露"在外面。
+
+   修法：容器宽度必须严格等于画布宽度（960px）。不能写成 width:auto ——
+   底栏 38 张炮塔卡在 overflow-x:auto 下的最大内容宽度会把容器撑到 1415px，
+   缩放基准随之崩掉（实测 scale 从 0.65 跌到 0.386）。
+   ---------------------------------------- */
+@media (max-height: 500px) and (orientation: landscape) {
+  #game-container {
+    width: 960px;
+    max-width: none;
+  }
+}
+
+/* 战场必须完整可见，避免任何祖先的裁切把边缘格子切掉 */
+#game-area {
+  overflow: visible;
+}
+
+/* ----------------------------------------
+   2. 手势归属
+   ---------------------------------------- */
+#game-canvas {
+  touch-action: none;              /* 画布上的手势全部由游戏自己处理 */
+}
+
+html[data-input="touch"] #bottom-bar {
+  touch-action: pan-x;             /* 底栏只允许横向滑动，禁止纵向带动页面 */
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+
+html[data-input="touch"] .tower-select {
+  scroll-snap-align: start;
+}
+
+html[data-input="touch"] button,
+html[data-input="touch"] .tower-select,
+html[data-input="touch"] .filter-tab,
+html[data-input="touch"] .encyclopedia-card,
+html[data-input="touch"] .encyclopedia-item,
+html[data-input="touch"] .fusion-item,
+html[data-input="touch"] .game-fusion-item,
+html[data-input="touch"] .custom-card,
+html[data-input="touch"] .theme-card,
+html[data-input="touch"] .level-item,
+html[data-input="touch"] .conquest-theme-card,
+html[data-input="touch"] .conquest-level-item,
+html[data-input="touch"] .menu-level-item {
+  touch-action: manipulation;      /* 去掉双击缩放等待，点击响应更快 */
+}
+
+/* ----------------------------------------
+   3. 触控目标尺寸反算（缩放容器内部元素）
+   渲染后尺寸 = 声明值 × var(--ui-scale)，
+   故声明 calc(44px / var(--ui-scale)) 使渲染结果稳定在 44px。
+   ---------------------------------------- */
+@media (hover: none) and (pointer: coarse) {
+  /* clamp 上限用于防止极端小屏下反算值过大把顶栏/底栏撑爆 */
+  html[data-input="touch"] .tower-select {
+    min-width: clamp(var(--touch-min), calc(var(--touch-min) / var(--ui-scale)), 88px);
+    min-height: clamp(var(--touch-min), calc(var(--touch-min) / var(--ui-scale)), 88px);
+  }
+
+  html[data-input="touch"] #start-wave,
+  html[data-input="touch"] #fusion-encyclopedia-btn,
+  html[data-input="touch"] #back-to-menu-btn,
+  html[data-input="touch"] #sound-toggle,
+  html[data-input="touch"] .summon-btn,
+  html[data-input="touch"] .conquest-wave-btn,
+  html[data-input="touch"] .conquest-menu-btn,
+  html[data-input="touch"] #conquest-summon-btn,
+  html[data-input="touch"] #conquest-fusion-encyclopedia-btn {
+    min-height: clamp(var(--touch-min), calc(var(--touch-min) / var(--ui-scale)), 88px);
+  }
+
+  html[data-input="touch"] #start-wave {
+    min-width: clamp(80px, calc(80px / var(--ui-scale)), 140px);
+  }
+
+  html[data-input="touch"] #fusion-encyclopedia-btn,
+  html[data-input="touch"] #back-to-menu-btn,
+  html[data-input="touch"] #conquest-fusion-encyclopedia-btn {
+    min-width: clamp(var(--touch-min), calc(var(--touch-min) / var(--ui-scale)), 88px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* 炮塔信息面板（升级/出售）不参与整体缩放，直接用绝对值 */
+@media (hover: none) and (pointer: coarse) {
+  html[data-input="touch"] #tower-info .info-actions button,
+  html[data-input="touch"] #conquest-tower-info .info-actions button {
+    min-height: 44px;
+  }
+}
+
+/* ----------------------------------------
+   4. 触屏下压缩栏内边距，把省下的高度还给战场
+   战场高 432px 是固定的，栏越矮、缩放越大、格子越好点。
+   ---------------------------------------- */
+@media (hover: none) and (pointer: coarse) {
+  html[data-input="touch"] #top-bar {
+    padding: 4px 10px;
+  }
+
+  html[data-input="touch"] #bottom-bar {
+    padding: 4px 10px;
+    gap: 8px;
+  }
+}
+
+/* ----------------------------------------
+   5. 底栏滑动提示
+   全量炮塔共 38 张，移动端一屏放不下，需要让玩家知道可以滑。
+   用右缘渐隐表达"还有内容"，是移动端的通用约定。
+   ---------------------------------------- */
+html[data-input="touch"] #bottom-bar {
+  mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent 100%);
+}
+
+html[data-input="touch"] #bottom-bar::-webkit-scrollbar {
+  height: 0;
+}
+
+/* ----------------------------------------
+   6. 按压反馈（移动端唯一的即时反馈通道）
+   docs/ui-design-spec.md:49 ——「悬停状态仅作桌面端增强，移动端依赖 :active 反馈」
+   但原实现 58 处 :hover 对应仅 3 个类的 :active，
+   且 html/body 已设 -webkit-tap-highlight-color: transparent，
+   等于系统默认高亮被拿掉、替代反馈又没写 —— 触屏点任何东西都没有回应。
+   ---------------------------------------- */
+html[data-input="touch"] .menu-btn:active,
+html[data-input="touch"] .tower-select:active,
+html[data-input="touch"] .filter-tab:active,
+html[data-input="touch"] .encyclopedia-card:active,
+html[data-input="touch"] .encyclopedia-item:active,
+html[data-input="touch"] .fusion-item:active,
+html[data-input="touch"] .game-fusion-item:active,
+html[data-input="touch"] .custom-card:active,
+html[data-input="touch"] .theme-card:not(.locked):active,
+html[data-input="touch"] .level-item:active,
+html[data-input="touch"] .conquest-theme-card:active,
+html[data-input="touch"] .conquest-level-item:not(.locked):active,
+html[data-input="touch"] .menu-level-item:active,
+html[data-input="touch"] #modal-btn:active,
+html[data-input="touch"] #start-wave:not(:disabled):active,
+html[data-input="touch"] #fusion-encyclopedia-btn:active,
+html[data-input="touch"] #back-to-menu-btn:active,
+html[data-input="touch"] .summon-btn:not(:disabled):active,
+html[data-input="touch"] .conquest-wave-btn:not(:disabled):active,
+html[data-input="touch"] .conquest-menu-btn:active,
+html[data-input="touch"] .detail-close-btn:active,
+html[data-input="touch"] .guide-btn:active,
+html[data-input="touch"] .info-actions button:not(:disabled):active,
+html[data-input="touch"] #back-to-menu:active,
+html[data-input="touch"] #back-to-themes:active,
+html[data-input="touch"] #back-to-encyclopedia-from-towers:active,
+html[data-input="touch"] #back-to-encyclopedia-from-enemies:active,
+html[data-input="touch"] #back-to-encyclopedia-from-fusion:active,
+html[data-input="touch"] #back-to-menu-from-encyclopedia:active,
+html[data-input="touch"] #back-to-menu-from-conquest-theme:active,
+html[data-input="touch"] #back-to-conquest-themes:active,
+html[data-input="touch"] #back-to-custom-from-towers:active,
+html[data-input="touch"] #back-to-custom-from-levels:active,
+html[data-input="touch"] #back-to-custom-from-export:active,
+html[data-input="touch"] #back-to-menu-from-custom:active {
+  background: #242424 !important;
+  border-color: #5a5a5a !important;
+}
+
+/* 触屏选中态：同时用发出光晕强化（规范 12.5） */
+html[data-input="touch"] .tower-select.selected {
+  border-color: #ffd700 !important;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3) !important;
+}
+
+/* 锁定/禁用元素不应给出"可按"的反馈 */
+html[data-input="touch"] .tower-select.locked:active,
+html[data-input="touch"] .theme-card.locked:active,
+html[data-input="touch"] .conquest-level-item.locked:active,
+html[data-input="touch"] button:disabled:active {
+  background: #1a1a1a !important;
+  border-color: #2d2d2d !important;
+}
+
+/* 锁定卡：保留可点击语义，用抖动提示"金币不足"（见 toast.js 配合） */
+html[data-input="touch"] .tower-select.locked {
+  cursor: default;
+  opacity: 0.45;
+}
+
+/* ----------------------------------------
+   7. 触摸端 canvas 上方浮层
+   触摸端没有 hover，不应保留任何"悬停才出现"的浮层依赖。
+   ---------------------------------------- */
+html[data-input="touch"] .tower-select:hover {
+  transform: none;
+}
+
+/* ----------------------------------------
+   8. 横屏刘海机型：容器左右留出安全区
+   ---------------------------------------- */
+@media (orientation: landscape) {
+  #game-wrapper {
+    padding-left: var(--sal);
+    padding-right: var(--sar);
+    padding-top: var(--sat);
+    padding-bottom: var(--sab);
+  }
+}
+
+/* ----------------------------------------
+   9. 炮塔信息面板在触摸端压缩
+   手机横屏只有约 390px 高，`.info-stats` 的行高 2 会把面板撑到 250px 以上，
+   几乎占满可用高度。触摸端压缩行高与内边距，并允许面板内滚动。
+   ---------------------------------------- */
+html[data-input="touch"] #tower-info,
+html[data-input="touch"] #conquest-tower-info {
+  padding: 12px;
+  max-height: calc(100vh - 20px);
+  overflow-y: auto;
+  touch-action: pan-y;
+}
+
+html[data-input="touch"] #tower-info .info-stats,
+html[data-input="touch"] #conquest-tower-info .info-stats {
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+html[data-input="touch"] #tower-info .info-header,
+html[data-input="touch"] #conquest-tower-info .info-header {
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+}
+
+/* 触摸端：面板内部按钮更易点中 */
+html[data-input="touch"] #tower-info .info-actions button,
+html[data-input="touch"] #conquest-tower-info .info-actions button {
+  font-size: 14px;
+  padding: 10px;
+}
+

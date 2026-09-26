@@ -1,4 +1,5 @@
-// UI：输入、拖拽和融合交互
+// UI：鼠标输入、拖拽融合与共用交互助手
+// 触摸输入见 js/ui/input-touch.js（按输入能力分流，避免两套逻辑互相干扰）
 UI.prototype.setupEventListeners = function() {
     const mouseMoveHandler = (e) => {
       const result = getGridFromEvent(e, this.canvas);
@@ -25,131 +26,25 @@ UI.prototype.setupEventListeners = function() {
       const { gx, gy } = result;
 
       if (this.selectedTowerType) {
-        const placed = this.game.placeTower(this.selectedTowerType, gx, gy);
-        if (placed) {
-        }
+        this.tryPlaceTowerAt(gx, gy);
       } else {
         const tower = this.game.getTowerAt(gx, gy);
         if (tower) {
-          this.selectedTower = tower;
-          this.showTowerInfo(tower, e.clientX, e.clientY);
+          this.selectAndShowTower(tower, e.clientX, e.clientY, "mouse");
         } else {
-          this.selectedTower = null;
-          this.hideTowerInfo();
+          this.clearTowerSelection();
         }
       }
     };
     this.addTrackedEventListener(this.canvas, "click", clickHandler);
 
+    // 桌面端保留"右键取消选中"；移动端的等价能力是"点击空白处取消"
+    // （见 tryPlaceTowerAt / clearTowerSelection 与 input-touch.js）
     const contextMenuHandler = (e) => {
       e.preventDefault();
-      this.selectedTowerType = null;
-      document
-        .querySelectorAll(".tower-select")
-        .forEach((t) => t.classList.remove("selected"));
+      this.cancelTowerTypeSelection();
     };
     this.addTrackedEventListener(this.canvas, "contextmenu", contextMenuHandler);
-
-    // === 触摸事件支持 ===
-    // 防止触摸时页面滚动
-    const touchStartHandler = (e) => {
-      e.preventDefault();
-    };
-    this.addTrackedEventListener(this.canvas, 'touchstart', touchStartHandler, { passive: false });
-
-    const touchMoveHandler = (e) => {
-      e.preventDefault();
-
-      // 更新悬停格子位置，用于预选炮塔时的攻击范围预览
-      if (e.touches.length === 1) {
-        const touch = e.touches[0];
-        const result = getGridFromEvent(touch, this.canvas);
-        if (result) {
-          this.hoveredCell = { gx: result.gx, gy: result.gy };
-        } else {
-          this.hoveredCell = null;
-        }
-      }
-    };
-    this.addTrackedEventListener(this.canvas, 'touchmove', touchMoveHandler, { passive: false });
-
-    // 触摸结束处理
-    // 注意：touchend 使用 passive: true 以提高滚动性能，因为不需要阻止默认行为
-    const touchEndHandler = (e) => {
-      if (e.changedTouches.length > 0) {
-        const touch = e.changedTouches[0];
-        const result = getGridFromEvent(touch, this.canvas);
-        if (!result) return;
-
-        const { gx, gy } = result;
-
-        if (this.selectedTowerType) {
-          this.game.placeTower(this.selectedTowerType, gx, gy);
-        } else {
-          const tower = this.game.getTowerAt(gx, gy);
-          if (tower) {
-            this.selectedTower = tower;
-            this.showTowerInfo(tower, touch.clientX, touch.clientY);
-          } else {
-            this.selectedTower = null;
-            this.hideTowerInfo();
-          }
-        }
-      }
-    };
-    this.addTrackedEventListener(this.canvas, 'touchend', touchEndHandler, { passive: true });
-
-    // 长按显示炮塔信息（移动端)
-    this.longPressTimer = null;
-    this.longPressDelay = CONFIG.GAMEPLAY?.longPressDelay || 500; // 长按阈值(ms)
-
-    const longPressTouchStartHandler = (e) => {
-      if (e.touches.length !== 1) return;
-      const touch = e.touches[0];
-      const result = getGridFromEvent(touch, this.canvas);
-      if (!result) return;
-
-      const { gx, gy } = result;
-      const tower = this.game.getTowerAt(gx, gy);
-
-      if (tower && !this.selectedTowerType) {
-        this.longPressTimer = setTimeout(() => {
-          this.selectedTower = tower;
-          this.showTowerInfo(tower, touch.clientX, touch.clientY);
-        }, this.longPressDelay);
-      }
-    };
-    this.addTrackedEventListener(this.canvas, 'touchstart', longPressTouchStartHandler, { passive: false });
-
-    const longPressTouchEndHandler = () => {
-      if (this.longPressTimer) {
-        clearTimeout(this.longPressTimer);
-        this.longPressTimer = null;
-      }
-    };
-    this.addTrackedEventListener(this.canvas, 'touchend', longPressTouchEndHandler, { passive: false });
-
-    const longPressTouchMoveHandler = (e) => {
-      // 多点触控时清除长按定时器
-      if (e.touches.length !== 1 && this.longPressTimer) {
-        clearTimeout(this.longPressTimer);
-        this.longPressTimer = null;
-      }
-      if (this.longPressTimer) {
-        clearTimeout(this.longPressTimer);
-        this.longPressTimer = null;
-      }
-    };
-    this.addTrackedEventListener(this.canvas, 'touchmove', longPressTouchMoveHandler, { passive: false });
-
-    // 触摸取消时清理长按定时器
-    const longPressTouchCancelHandler = () => {
-      if (this.longPressTimer) {
-        clearTimeout(this.longPressTimer);
-        this.longPressTimer = null;
-      }
-    };
-    this.addTrackedEventListener(this.canvas, 'touchcancel', longPressTouchCancelHandler, { passive: false });
 
     const startWaveBtn = document.getElementById("start-wave");
     if (startWaveBtn) {
@@ -162,16 +57,10 @@ UI.prototype.setupEventListeners = function() {
     if (upgradeBtn) {
       this.addTrackedEventListener(upgradeBtn, "click", () => {
         if (this.selectedTower) {
-          const upgraded = this.selectedTower.upgrade();
-          if (upgraded) {
-          }
-          this.showTowerInfo(
-            this.selectedTower,
-            parseFloat(this.towerInfo.style.left) +
-              this.towerInfo.offsetWidth / 2,
-            parseFloat(this.towerInfo.style.top) +
-              this.towerInfo.offsetHeight / 2,
-          );
+          this.selectedTower.upgrade();
+          // 用原始锚点重排，避免"取面板中心再当锚点"造成面板逐次漂移
+          const anchor = this._infoAnchor || { x: 0, y: 0, source: "mouse" };
+          this.showTowerInfo(this.selectedTower, anchor.x, anchor.y, anchor.source);
           this.game.updateUI();
         }
       });
@@ -188,11 +77,114 @@ UI.prototype.setupEventListeners = function() {
       });
     }
 
-    // === 拖拽融合事件监听 ===
+    // === 拖拽融合事件监听（鼠标） ===
     this.setupDragAndDrop();
-  
+
+    // === 触摸输入（仅在有触摸硬件时注册，避免与鼠标路径重复） ===
+    if (window.DeviceProfile && window.DeviceProfile.hasTouch) {
+      this.setupTouchInteraction();
+    }
+
 };
-// === 拖拽融合系统 ===
+
+// === 共用交互助手 ===
+/**
+ * 放置炮塔；失败时给出可见原因（触摸端没有 hover 预览，静默失败等于"点了没反应"）
+ */
+UI.prototype.tryPlaceTowerAt = function(gx, gy) {
+    const type = this.selectedTowerType;
+    if (!type) return false;
+
+    const reason = this.game.getPlacementBlockReason
+      ? this.game.getPlacementBlockReason(type, gx, gy)
+      : null;
+
+    if (reason) {
+      this.showToast(reason, "warning");
+      return false;
+    }
+
+    return !!this.game.placeTower(type, gx, gy);
+};
+
+/**
+ * 选中炮塔并显示信息面板
+ * @param {Object} tower
+ * @param {number} x 触点/鼠标 clientX
+ * @param {number} y 触点/鼠标 clientY
+ * @param {string} source "touch" | "mouse" —— 触摸端面板需要避让手指
+ */
+UI.prototype.selectAndShowTower = function(tower, x, y, source) {
+    this.selectedTower = tower;
+    this.showTowerInfo(tower, x, y, source || "mouse");
+};
+
+/**
+ * 取消"待放置炮塔类型"的选中态（含卡片高亮）
+ */
+UI.prototype.cancelTowerTypeSelection = function() {
+    this.selectedTowerType = null;
+    document
+      .querySelectorAll(".tower-select")
+      .forEach((t) => t.classList.remove("selected"));
+};
+
+/**
+ * 清空所有选中（塔类型 + 已选炮塔 + 信息面板）
+ */
+UI.prototype.clearTowerSelection = function() {
+    this.cancelTowerTypeSelection();
+    this.selectedTower = null;
+    this.hideTowerInfo();
+};
+
+/**
+ * 在触点附近拾取炮塔（带容差）
+ *
+ * 容差只用于"点中一座已存在的塔"——这是一次没有副作用的读取操作，宽容一些更符合手指精度；
+ * 放置炮塔则严格要求落在目标格上，避免误花金币。
+ */
+UI.prototype.pickTowerNear = function(clientX, clientY, options) {
+    const opts = options || {};
+    const tolerance = opts.tolerance;
+    const canvas = this.canvas;
+    const towers = this.game.towers || [];
+
+    if (!towers.length) return null;
+
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return null;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const px = (clientX - rect.left) * scaleX;
+    const py = (clientY - rect.top) * scaleY;
+
+    // 先做严格的格命中，命中就直接返回
+    const gx = Math.floor(px / CONFIG.CELL_SIZE);
+    const gy = Math.floor(py / CONFIG.CELL_SIZE);
+    const direct = this.game.getTowerAt(gx, gy);
+    if (direct && direct !== opts.exclude) return direct;
+
+    if (!(tolerance > 0)) return null;
+
+    const maxDistance = tolerance * CONFIG.CELL_SIZE;
+    let best = null;
+    let bestDistance = Infinity;
+
+    for (const tower of towers) {
+      if (tower === opts.exclude) continue;
+      const pos = gridToPixel(tower.gx, tower.gy);
+      const d = distance(px, py, pos.x, pos.y);
+      if (d < bestDistance) {
+        bestDistance = d;
+        best = tower;
+      }
+    }
+
+    return bestDistance <= maxDistance ? best : null;
+};
+
+// === 拖拽融合系统（鼠标） ===
 UI.prototype.setupDragAndDrop = function() {
     const mouseDownHandler = (e) => {
       const result = getGridFromEvent(e, this.canvas);
@@ -226,13 +218,12 @@ UI.prototype.setupDragAndDrop = function() {
 
     const mouseUpHandler = (e) => {
       if (this.draggingTower && this.isDragging) {
-        const result = getGridFromEvent(e, this.canvas);
-        if (result) {
-          const { gx, gy } = result;
-          const targetTower = this.game.getTowerAt(gx, gy);
-          if (targetTower && targetTower !== this.draggingTower) {
-            this.attemptFusion(this.draggingTower, targetTower);
-          }
+        const targetTower = this.pickTowerNear(e.clientX, e.clientY, {
+          exclude: this.draggingTower,
+          tolerance: 0.5
+        });
+        if (targetTower) {
+          this.attemptFusion(this.draggingTower, targetTower);
         }
 
         // 标记拖拽刚完成，防止触发点击事件
@@ -240,121 +231,36 @@ UI.prototype.setupDragAndDrop = function() {
         setTimeout(() => { this.dragJustCompleted = false; }, 50);
       }
 
-      // 重置拖拽状态并清理缓存
-      this.draggingTower = null;
-      this.dragStartPos = null;
-      this.dragCurrentPos = null;
-      this.isDragging = false;
-      this._clearDragCache();
+      this._resetDragState();
     };
     this.addTrackedEventListener(this.canvas, 'mouseup', mouseUpHandler);
 
     // 鼠标离开画布时取消拖拽
     const dragMouseLeaveHandler = () => {
-      this.draggingTower = null;
-      this.dragStartPos = null;
-      this.dragCurrentPos = null;
-      this.isDragging = false;
-      this._clearDragCache();
+      this._resetDragState();
     };
     this.addTrackedEventListener(this.canvas, 'mouseleave', dragMouseLeaveHandler);
-
-    // === 触摸拖拽支持 ===
-    const dragTouchStartHandler = (e) => {
-      if (e.touches.length !== 1) return;
-      const touch = e.touches[0];
-      const result = getGridFromEvent(touch, this.canvas);
-      if (!result) return;
-
-      const { gx, gy } = result;
-      const tower = this.game.getTowerAt(gx, gy);
-      if (tower) {
-        this.draggingTower = tower;
-        this.dragStartPos = { x: touch.clientX, y: touch.clientY };
-        this.dragCurrentPos = { x: touch.clientX, y: touch.clientY };
-        this.isDragging = false;
-        // 缓存拖拽所需的 canvas 尺寸信息
-        this._cacheDragMetrics();
-      }
-    };
-    this.addTrackedEventListener(this.canvas, 'touchstart', dragTouchStartHandler, { passive: false });
-
-    const dragTouchMoveHandler = (e) => {
-      // 多点触控时取消拖拽状态
-      if (e.touches.length !== 1) {
-        this.draggingTower = null;
-        this.dragStartPos = null;
-        this.dragCurrentPos = null;
-        this.isDragging = false;
-        return;
-      }
-      if (this.draggingTower) {
-        const touch = e.touches[0];
-        this.dragCurrentPos = { x: touch.clientX, y: touch.clientY };
-
-        const dist = calculateDragDistance(this.dragStartPos.x, this.dragStartPos.y, this.dragCurrentPos.x, this.dragCurrentPos.y);
-
-        if (checkDragThreshold(dist, this.dragThreshold)) {
-          this.isDragging = true;
-        }
-      }
-    };
-    this.addTrackedEventListener(this.canvas, 'touchmove', dragTouchMoveHandler, { passive: false });
-
-    const dragTouchEndHandler = (e) => {
-      // 多点触控场景下，如果还有剩余触摸点，不处理拖拽结束
-      if (e.touches.length > 0) {
-        return;
-      }
-      if (this.draggingTower && this.isDragging) {
-        if (e.changedTouches.length > 0) {
-          const touch = e.changedTouches[0];
-          const result = getGridFromEvent(touch, this.canvas);
-          if (result) {
-            const { gx, gy } = result;
-            const targetTower = this.game.getTowerAt(gx, gy);
-            if (targetTower && targetTower !== this.draggingTower) {
-              this.attemptFusion(this.draggingTower, targetTower);
-            }
-          }
-        }
-
-        // 标记拖拽刚完成，防止触发点击事件
-        this.dragJustCompleted = true;
-        setTimeout(() => { this.dragJustCompleted = false; }, 50);
-      }
-
-      this.draggingTower = null;
-      this.dragStartPos = null;
-      this.dragCurrentPos = null;
-      this.isDragging = false;
-      this._clearDragCache();
-    };
-    this.addTrackedEventListener(this.canvas, 'touchend', dragTouchEndHandler, { passive: false });
-
-    // 触摸取消时清理拖拽状态
-    const touchCancelHandler = () => {
-      this.draggingTower = null;
-      this.dragStartPos = null;
-      this.dragCurrentPos = null;
-      this.isDragging = false;
-      this._clearDragCache();
-    };
-    this.addTrackedEventListener(this.canvas, 'touchcancel', touchCancelHandler, { passive: false });
-  
 };
+
+UI.prototype._resetDragState = function() {
+    this.draggingTower = null;
+    this.dragStartPos = null;
+    this.dragCurrentPos = null;
+    this.isDragging = false;
+    this._clearDragCache();
+};
+
 UI.prototype.attemptFusion = function(tower1, tower2) {
     const preview = this.game.getFusionPreview(tower1, tower2);
     if (!preview) {
-      // 无法融合，显示提示
-      this.showFusionFailed();
+      this.showToast('这两个炮塔无法融合', 'warning');
       return;
     }
 
     // 显示融合确认弹窗
     this.showFusionConfirm(tower1, tower2, preview);
-  
 };
+
 UI.prototype.showFusionConfirm = function(tower1, tower2, preview) {
     const canFuse = this.game.canFuse(tower1, tower2);
 
@@ -397,10 +303,10 @@ UI.prototype.showFusionConfirm = function(tower1, tower2, preview) {
       // 防抖：防止重复处理
       if (this._fusionProcessing) return;
       this._fusionProcessing = true;
-      
+
       // 禁用按钮防止重复点击
       btnEl.disabled = true;
-      
+
       if (this.pendingFusion) {
         this.game.fuseTowers(this.pendingFusion.tower1, this.pendingFusion.tower2);
         this.pendingFusion = null;
@@ -409,10 +315,10 @@ UI.prototype.showFusionConfirm = function(tower1, tower2, preview) {
       }
       this.hideModal();
     };
-    
+
     btnEl.addEventListener('click', this._fusionConfirmHandler);
-  
 };
+
 // 清理融合模态框的事件监听器
 UI.prototype._cleanupFusionModalListeners = function() {
     const btnEl = document.getElementById('modal-btn');
@@ -422,13 +328,8 @@ UI.prototype._cleanupFusionModalListeners = function() {
     }
     this.pendingFusion = null;
     this._fusionProcessing = false; // 重置处理标志位
-  
 };
-UI.prototype.showFusionFailed = function() {
-    // 简单的失败提示（可以用更优雅的方式）
-    console.log('这两个炮塔无法融合');
-  
-};
+
 // 绘制拖拽预览（由 Game.draw 调用）
 UI.prototype.drawDragPreview = function(ctx) {
     if (!this.isDragging || !this.draggingTower) return;
@@ -436,6 +337,19 @@ UI.prototype.drawDragPreview = function(ctx) {
     // 使用缓存的 rect 和比例计算，避免每帧重新计算
     const x = (this.dragCurrentPos.x - this._dragRectLeft) * this._dragScaleX;
     const y = (this.dragCurrentPos.y - this._dragRectTop) * this._dragScaleY;
+
+    // 触摸端看不到鼠标光标，必须显式画出"松手会落在哪一格"
+    const target = pixelToGrid(x, y);
+    ctx.save();
+    ctx.strokeStyle = "rgba(255, 215, 0, 0.85)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(
+      target.gx * CONFIG.CELL_SIZE,
+      target.gy * CONFIG.CELL_SIZE,
+      CONFIG.CELL_SIZE,
+      CONFIG.CELL_SIZE
+    );
+    ctx.restore();
 
     const rangeInPixels = this.draggingTower.range * CONFIG.CELL_SIZE;
     ctx.beginPath();
@@ -447,14 +361,14 @@ UI.prototype.drawDragPreview = function(ctx) {
 
     ctx.save();
     ctx.globalAlpha = 0.6;
-    ctx.font = 'bold 28px Microsoft YaHei';
+    ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = this.draggingTower.isFusion ? '#888' : '#ffff00';
     ctx.fillText(this.draggingTower.char, x, y);
     ctx.restore();
-  
 };
+
 // 缓存拖拽所需的 canvas 尺寸信息
 UI.prototype._cacheDragMetrics = function() {
     const rect = this.canvas.getBoundingClientRect();
@@ -462,13 +376,12 @@ UI.prototype._cacheDragMetrics = function() {
     this._dragRectTop = rect.top;
     this._dragScaleX = 1 / (rect.width / this.canvas.width);
     this._dragScaleY = 1 / (rect.height / this.canvas.height);
-  
 };
+
 // 清理拖拽缓存
 UI.prototype._clearDragCache = function() {
     this._dragRectLeft = null;
     this._dragRectTop = null;
     this._dragScaleX = null;
     this._dragScaleY = null;
-  
 };

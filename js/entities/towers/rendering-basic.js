@@ -177,7 +177,7 @@ Tower.prototype.drawFireTower = function(ctx, progress) {
       scale = 1 + 0.2 * Math.sin(progress * Math.PI);
     }
 
-    ctx.font = `bold ${28 * scale}px Microsoft YaHei`;
+    ctx.font = `bold ${28 * scale}px ${CONFIG.FONTS.BRUSH}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
@@ -208,7 +208,7 @@ Tower.prototype.drawWaterTower = function(ctx, progress) {
       waveOffset = Math.sin(progress * Math.PI * 4) * 3;
     }
 
-    ctx.font = "bold 28px Microsoft YaHei";
+    ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
@@ -240,7 +240,7 @@ Tower.prototype.drawWoodTower = function(ctx, progress) {
       bounceOffset = -Math.sin(progress * Math.PI) * 4;
     }
 
-    ctx.font = "bold 28px Microsoft YaHei";
+    ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
@@ -261,7 +261,7 @@ Tower.prototype.drawGoldTower = function(ctx, progress) {
       glowIntensity = Math.sin(progress * Math.PI);
     }
 
-    ctx.font = "bold 28px Microsoft YaHei";
+    ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
@@ -295,7 +295,7 @@ Tower.prototype.drawEarthTower = function(ctx, progress) {
       shakeY = Math.sin(progress * Math.PI) * 3; // 下沉效果
     }
 
-    ctx.font = "bold 28px Microsoft YaHei";
+    ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 

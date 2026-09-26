@@ -13,6 +13,12 @@ Game.prototype.updateUI = function() {
     waveBtn.disabled =
       this.waveInProgress || this.wave >= this.maxWave || this.gameEnded;
     waveBtn.textContent = this.wave >= this.maxWave ? "通关" : "开始波次";
+
+    // 塔卡的"金币不足"状态必须随金币实时刷新，
+    // 否则玩家攒够钱后卡仍是灰的、点击无响应（移动端表现为"点了没反应"）
+    if (this.ui && this.ui.refreshTowerSelectAffordability) {
+      this.ui.refreshTowerSelectAffordability();
+    }
   
 };
 Game.prototype.update = function(now) {
@@ -222,6 +228,20 @@ Game.prototype.drawPlacementPreview = function() {
       CONFIG.CELL_SIZE,
       CONFIG.CELL_SIZE,
     );
+
+    // 触摸端单格渲染后仅约 31px，纯填充色对比度不足以确认落点，
+    // 补一圈描边让"松手会放在哪"一目了然
+    this.ctx.strokeStyle = canPlace
+      ? "rgba(120, 255, 120, 0.9)"
+      : "rgba(255, 90, 90, 0.9)";
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeRect(
+      gx * CONFIG.CELL_SIZE + 1,
+      gy * CONFIG.CELL_SIZE + 1,
+      CONFIG.CELL_SIZE - 2,
+      CONFIG.CELL_SIZE - 2,
+    );
+    this.ctx.lineWidth = 1;
 
     if (canPlace) {
       const config = CONFIG.TOWERS[this.ui.selectedTowerType];

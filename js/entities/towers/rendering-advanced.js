@@ -91,7 +91,7 @@ Tower.prototype.drawFrostTower = function(ctx, progress) {
 };
 Tower.prototype.drawMountainTower = function(ctx, progress) {
     // 山塔：受击时震动
-    ctx.font = "bold 28px Microsoft YaHei";
+    ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
@@ -425,7 +425,7 @@ Tower.prototype.drawPathTower = function(ctx, progress) {
   
 };
 Tower.prototype.drawBasicTower = function(ctx, progress) {
-    ctx.font = "bold 28px Microsoft YaHei";
+    ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 

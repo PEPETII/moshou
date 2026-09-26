@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>方案四 · 墨为血 — 墨守成规 · 玩法原型</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 26px 18px 56px; background: #e7e1d2; color: #1c1a17;
+    font-family: "Kaiti SC", "KaiTi", "STKaiti", "Songti SC", "SimSun", serif;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  .top { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  h1 { font-size: 26px; margin: 0; letter-spacing: 4px; }
+  .tag { font-size: 12px; padding: 3px 10px; border: 1px solid #b03a2e; color: #b03a2e; border-radius: 2px; }
+  .claim { margin: 10px 0 4px; font-size: 15px; color: #3d382f; line-height: 1.7; }
+  .claim b { color: #b03a2e; font-weight: normal; }
+  .stage { margin-top: 18px; background: #f4efe4; border: 1px solid #cabfa6; }
+  canvas { display: block; width: 100%; height: auto; cursor: pointer; }
+  .bar { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  button {
+    font-family: inherit; font-size: 17px; padding: 6px 16px; cursor: pointer;
+    background: #f4efe4; color: #1c1a17; border: 1px solid #a89c83; border-radius: 2px;
+  }
+  button:hover { background: #fff; }
+  button.on { background: #1c1a17; color: #f4efe4; border-color: #1c1a17; }
+  .hint { font-size: 13px; color: #6a6459; margin-left: auto; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 22px; }
+  .card { background: #f4efe4; border: 1px solid #cabfa6; padding: 16px 18px; }
+  .card h2 { font-size: 15px; margin: 0 0 10px; letter-spacing: 2px; }
+  .card p { font-size: 13.5px; line-height: 1.85; margin: 0 0 8px; color: #3d382f; }
+  .card code { background: #e7e1d2; padding: 1px 5px; font-family: Consolas, monospace; font-size: 12px; }
+  .chain { display: flex; align-items: center; gap: 10px; font-size: 26px; flex-wrap: wrap; }
+  .chain span { font-size: 12px; color: #6a6459; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #b03a2e; }
+  @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } h1 { font-size: 21px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>墨为血</h1>
+    <span class="tag">方案四</span>
+    <span class="tag">攻击「建塔防守 · 波次进攻」</span>
+  </div>
+  <p class="claim">金币换成「<b>墨</b>」。<b>墨量同时是货币与生命</b>：写字耗墨，敌人不扣核心血，而是<b>擦掉你的笔画</b>——字缺了笔画，就不再是那个字。</p>
+
+  <div class="stage"><canvas id="cv" width="960" height="432"></canvas></div>
+
+  <div class="bar">
+    <button data-c="火" class="on">火</button>
+    <button data-c="水">水</button>
+    <button data-c="木">木</button>
+    <button data-c="山">山</button>
+    <button id="clear">清空</button>
+    <span class="hint">点击空白处落字（耗墨 20）；点击受损的字可「蘸墨」修复笔画（耗墨 8）</span>
+  </div>
+
+  <div class="cols">
+    <div class="card">
+      <h2>字的退化链（血条变成了字形完整性）</h2>
+      <div class="chain">
+        <b>火</b><span>三笔俱全</span>→<b>火</b><span>缺一笔·伤害减半</span>→<b>火</b><span>缺两笔·近乎失效</span>→<b>人</b><span>不再是「火」</span>
+      </div>
+      <p style="margin-top:10px">已放置的字会随时间<b>干涸</b>（浓度下降），浓墨写的字更强、但会向邻格<b>晕染</b>污染相邻字的浓度——写多必枯，这是主动的风险权衡，而不是数值升级。</p>
+    </div>
+    <div class="card">
+      <h2>为什么它差异化最深</h2>
+      <p>这是六个方案里唯一把<b>美术语言直接变成规则语言</b>的方案：水墨的「浓淡干湿」从装饰变成玩法。别的水墨游戏在画墨，这个游戏在<b>用墨</b>。</p>
+      <p>实现上需要新增墨资源层替换 <code>js/game.js</code> 的金币逻辑，并让 <code>js/inkRenderer.js</code> 增加"扩散 / 干涸 / 残留"三种字状态渲染（现有墨晕、飞白、拖影可复用）。</p>
+      <p><b>最大风险是平衡</b>：两个资源耦合会让数值难度指数上升。项目已有 <code>npm run test:balance</code> 基线，本方案的重调<b>必须一次性完成</b>，反复改会拖垮基线。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var cv = document.getElementById('cv');
+  var ctx = cv.getContext('2d');
+  var CELL = 48, COLS = 20, ROWS = 9;
+  var W = cv.width, H = cv.height;
+  var PAPER = '#f4efe4', INK = '#1c1a17', CINNABAR = '#b03a2e', GRID = '#ded5c0';
+
+  var DECAY = { '火': ['人', '火', '火', '火'], '水': ['氺', '水', '水', '水'], '木': ['十', '木', '木', '木'], '山': ['凵', '山', '山', '山'] };
+  var DPS = { '火': 16, '水': 9, '木': 11, '山': 6 };
+  var BANDS = [[6, 4, 36, 12], [6, 30, 36, 12], [2, 16, 44, 12]];
+
+  var towers = [], enemies = [], floats = [], ink = 100;
+  var cur = '火', tick = 0;
+
+  var off = document.createElement('canvas');
+  off.width = CELL; off.height = CELL;
+  var octx = off.getContext('2d');
+
+  var PATH = [];
+  (function () {
+    var pts = [[-1, 2], [6, 2], [6, 6], [12, 6], [12, 3], [17, 3], [17, 7], [20, 7]];
+    for (var i = 0; i < pts.length - 1; i++) {
+      var a = pts[i], b = pts[i + 1];
+      var n = Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])) * 4;
+      for (var s = 0; s < n; s++) {
+        var k = s / n;
+        PATH.push([(a[0] + (b[0] - a[0]) * k + 0.5) * CELL, (a[1] + (b[1] - a[1]) * k + 0.5) * CELL]);
+      }
+    }
+  })();
+
+  function at(gx, gy) {
+    for (var i = 0; i < towers.length; i++) if (towers[i].gx === gx && towers[i].gy === gy) return towers[i];
+    return null;
+  }
+
+  function towerDamage(t) {
+    return Math.round(DPS[t.c] * (t.strokes >= 3 ? 1 : t.strokes === 2 ? 0.5 : t.strokes === 1 ? 0.15 : 0));
+  }
+
+  function glyph(t) {
+    octx.clearRect(0, 0, CELL, CELL);
+    var name = DECAY[t.c][t.strokes];
+    var alpha = 0.22 + t.strokes * 0.26;
+    octx.save();
+    octx.globalAlpha = alpha;
+    octx.font = 'normal 32px "Kaiti SC","KaiTi","STKaiti","Songti SC",serif';
+    octx.textAlign = 'center';
+    octx.textBaseline = 'middle';
+    octx.shadowColor = 'rgba(28,26,23,0.35)';
+    octx.shadowBlur = 6;
+    octx.fillStyle = t.strokes === 0 ? '#8a8377' : INK;
+    octx.fillText(name, CELL / 2, CELL / 2);
+    octx.restore();
+    if (t.strokes < 3 && t.strokes > 0) {
+      octx.save();
+      octx.globalCompositeOperation = 'destination-out';
+      for (var i = 0; i < 3 - t.strokes; i++) {
+        var b = BANDS[i];
+        octx.fillRect(b[0], b[1], b[2], b[3]);
+      }
+      octx.restore();
+    }
+    return off;
+  }
+
+  function spawn() { enemies.push({ i: 0, x: PATH[0][0], y: PATH[0][1], cd: 0 }); }
+
+  function step() {
+    tick++;
+    ink = Math.min(120, ink + 0.022);
+    if (tick % 64 === 0) spawn();
+
+    for (var t = 0; t < towers.length; t++) {
+      var tw = towers[t];
+      tw.age = (tw.age || 0) + 1;
+      if (tw.age % 240 === 0 && tw.strokes > 1) {
+        tw.strokes--;
+        floats.push({ x: (tw.gx + 0.5) * CELL, y: (tw.gy + 0.5) * CELL - 12, s: '干涸', life: 50, c: '#8a8377' });
+      }
+      if (tw.strokes >= 3 && tw.age % 300 === 0) {
+        var dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+        for (var d = 0; d < 4; d++) {
+          var nb = at(tw.gx + dirs[d][0], tw.gy + dirs[d][1]);
+          if (nb && nb.strokes > 1 && Math.random() < 0.5) {
+            nb.strokes--;
+            floats.push({ x: (nb.gx + 0.5) * CELL, y: (nb.gy + 0.5) * CELL - 12, s: '晕染', life: 50, c: CINNABAR });
+          }
+        }
+      }
+    }
+
+    for (var i = enemies.length - 1; i >= 0; i--) {
+      var e = enemies[i];
+      e.i += 1.5;
+      if (e.i >= PATH.length - 1) {
+        enemies.splice(i, 1);
+        ink -= 7;
+        continue;
+      }
+      var p = PATH[Math.floor(e.i)];
+      e.x = p[0]; e.y = p[1];
+      if (e.cd > 0) { e.cd--; continue; }
+      for (var k = 0; k < towers.length; k++) {
+        var tw2 = towers[k];
+        if (Math.hypot(e.x - (tw2.gx + 0.5) * CELL, e.y - (tw2.gy + 0.5) * CELL) < CELL * 0.85) {
+          if (tw2.strokes > 0) {
+            tw2.strokes--;
+            floats.push({ x: e.x, y: e.y - 16, s: '擦', life: 44, c: CINNABAR });
+          }
+          e.cd = 30;
+          break;
+        }
+      }
+    }
+
+    for (var f = floats.length - 1; f >= 0; f--) {
+      floats[f].y -= 0.6; floats[f].life--;
+      if (floats[f].life <= 0) floats.splice(f, 1);
+    }
+    if (ink < 0) ink = 0;
+  }
+
+  function inkText(s, x, y, size, color, weight, align, alpha) {
+    ctx.save();
+    if (alpha !== undefined) ctx.globalAlpha = alpha;
+    ctx.font = (weight || 'normal') + ' ' + size + 'px "Kaiti SC","KaiTi","STKaiti","Songti SC",serif';
+    ctx.textAlign = align || 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(28,26,23,0.30)';
+    ctx.shadowBlur = 6;
+    ctx.fillStyle = color;
+    ctx.fillText(s, x, y);
+    ctx.restore();
+  }
+
+  function draw() {
+    ctx.fillStyle = PAPER; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = GRID; ctx.lineWidth = 0.5;
+    for (var x = 0; x <= COLS; x++) { ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, H); ctx.stroke(); }
+    for (var y = 0; y <= ROWS; y++) { ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(W, y * CELL); ctx.stroke(); }
+
+    ctx.strokeStyle = 'rgba(28,26,23,0.10)'; ctx.lineWidth = 24; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (var i = 0; i < PATH.length; i += 4) { if (i === 0) ctx.moveTo(PATH[i][0], PATH[i][1]); else ctx.lineTo(PATH[i][0], PATH[i][1]); }
+    ctx.stroke();
+
+    for (var t = 0; t < towers.length; t++) {
+      var tw = towers[t];
+      var px = (tw.gx + 0.5) * CELL, py = (tw.gy + 0.5) * CELL;
+      var r = 16 + tw.strokes * 9;
+      var grad = ctx.createRadialGradient(px, py, 2, px, py, r);
+      var a = 0.05 + tw.strokes * 0.05;
+      grad.addColorStop(0, 'rgba(28,26,23,' + a.toFixed(3) + ')');
+      grad.addColorStop(1, 'rgba(28,26,23,0)');
+      ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2);
+      ctx.fillStyle = grad; ctx.fill();
+    }
+
+    for (var t2 = 0; t2 < towers.length; t2++) {
+      var tw2 = towers[t2];
+      var px2 = (tw2.gx + 0.5) * CELL, py2 = (tw2.gy + 0.5) * CELL;
+      ctx.drawImage(glyph(tw2), px2 - CELL / 2, py2 - CELL / 2);
+      for (var s = 0; s < 3; s++) {
+        ctx.beginPath(); ctx.arc(px2 - 12 + s * 12, py2 + 24, 2.6, 0, Math.PI * 2);
+        ctx.fillStyle = s < tw2.strokes ? INK : 'rgba(28,26,23,0.15)';
+        ctx.fill();
+      }
+      var dmg = towerDamage(tw2);
+      if (dmg > 0) inkText(String(dmg), px2 + 18, py2 - 16, 12, '#6a6459', 'normal');
+      else inkText('失效', px2, py2 - 18, 11, CINNABAR, '500');
+    }
+
+    for (var e = 0; e < enemies.length; e++) {
+      var en = enemies[e];
+      ctx.save();
+      ctx.translate(en.x, en.y);
+      ctx.strokeStyle = CINNABAR;
+      ctx.lineWidth = 2.4;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-6, -6); ctx.lineTo(6, 6);
+      ctx.moveTo(4, -7); ctx.lineTo(-7, 4);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    for (var f = 0; f < floats.length; f++) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, floats[f].life / 30);
+      inkText(floats[f].s, floats[f].x, floats[f].y, 15, floats[f].c, '500');
+      ctx.restore();
+    }
+
+    ctx.fillStyle = 'rgba(28,26,23,0.14)';
+    ctx.fillRect(24, 20, 300, 16);
+    ctx.fillStyle = ink < 30 ? CINNABAR : INK;
+    ctx.fillRect(24, 20, 300 * Math.min(ink, 120) / 120, 16);
+    inkText('墨 ' + Math.round(ink), 336, 28, 15, ink < 30 ? CINNABAR : INK, '500', 'left');
+    inkText('墨量即货币，也是生命：敌人冲过防线会直接夺走墨', 24, 52, 12, '#6a6459', 'normal', 'left');
+    inkText('余墨 ' + Math.round(ink) + '　字 ' + towers.length, W - 20, 26, 13, '#6a6459', 'normal', 'right');
+  }
+
+  function loop() { step(); draw(); requestAnimationFrame(loop); }
+
+  function toGrid(ev) {
+    var r = cv.getBoundingClientRect();
+    return {
+      gx: Math.floor((ev.clientX - r.left) / r.width * W / CELL),
+      gy: Math.floor((ev.clientY - r.top) / r.height * H / CELL)
+    };
+  }
+
+  cv.addEventListener('click', function (ev) {
+    var g = toGrid(ev);
+    if (g.gx < 0 || g.gx >= COLS || g.gy < 0 || g.gy >= ROWS) return;
+    var t = at(g.gx, g.gy);
+    if (t) {
+      if (t.strokes < 3 && ink >= 8) {
+        t.strokes++;
+        ink -= 8;
+        floats.push({ x: (t.gx + 0.5) * CELL, y: (t.gy + 0.5) * CELL - 14, s: '蘸墨', life: 46, c: INK });
+      }
+    } else if (ink >= 20) {
+      ink -= 20;
+      towers.push({ gx: g.gx, gy: g.gy, c: cur, strokes: 3, age: 0 });
+    }
+  });
+
+  var btns = document.querySelectorAll('button[data-c]');
+  function bind(b) {
+    b.addEventListener('click', function () {
+      for (var j = 0; j < btns.length; j++) btns[j].classList.remove('on');
+      b.classList.add('on');
+      cur = b.getAttribute('data-c');
+    });
+  }
+  for (var i = 0; i < btns.length; i++) bind(btns[i]);
+
+  document.getElementById('clear').addEventListener('click', function () {
+    towers = []; floats = []; ink = 100;
+  });
+
+  loop();
+})();
+</script>
+</body>
+</html>

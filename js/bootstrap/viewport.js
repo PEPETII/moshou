@@ -1,119 +1,164 @@
-// 移动端适配
-    (function() {
-        // 游戏原始尺寸
-        const GAME_WIDTH = 960;  // 画布宽度960px (20列 x 48px)
-        const GAME_HEIGHT = 480;
-        const SIDE_PANEL_WIDTH = 280;
-        const GAP = 24;
-        const TOTAL_GAME_WIDTH = SIDE_PANEL_WIDTH + GAP + GAME_WIDTH; // 1264px
+// 移动端适配：缩放计算与横竖屏处理
+//
+// 旧实现的三个致命问题（均在手机横屏实测复现）：
+//   1. 用固定常量 TOTAL_GAME_WIDTH=1264 / GAME_HEIGHT=480 估算内容尺寸，
+//      与实际布局不符：塔防模式实际内容宽 960（无侧栏）、实际内容高约 562。
+//      → 塔防模式被无谓缩小约 24%，且高估可用高度导致上下被裁切。
+//   2. 只在 load 时计算一次，塔防 ↔ 征服模式切换后不重算。
+//   3. 未扣除刘海屏安全区。
+//
+// 现改为：直接实测「当前可见根元素」的自然尺寸，迭代求收敛的 scale。
+// 迭代是必需的——触控尺寸用 calc(44px / var(--ui-scale)) 反算，
+// 改变 scale 会改变实测尺寸，需要反复逼近。
+(function initViewportAdapter() {
+  'use strict';
 
-        // 响应式断点定义（与 CSS 保持一致）
-        // 移动端：max-width: 768px
-        // 平板：min-width: 769px and max-width: 1024px
-        // 桌面：min-width: 1025px
-        const BREAKPOINTS = {
-            MOBILE: 768,
-            TABLET: 1024
-        };
+  var MIN_SCALE = 0.3;
+  var MAX_SCALE = 1;
+  var MAX_ITERATIONS = 4;
+  var CONVERGE_EPSILON = 0.002;
 
-        // 根据屏幕宽度获取设备类型（与 CSS 媒体查询保持一致）
-        function getDeviceType() {
-            const width = window.innerWidth;
-            if (width <= BREAKPOINTS.MOBILE) {
-                return 'mobile';
-            } else if (width >= 769 && width <= BREAKPOINTS.TABLET) {
-                return 'tablet';
-            }
-            return 'desktop';
-        }
+  function debugEnabled() {
+    try {
+      return new URLSearchParams(window.location.search).get('debug') === '1';
+    } catch (e) {
+      return false;
+    }
+  }
 
-        // 计算并应用缩放
-        function applyScale() {
-            const container = document.getElementById('scale-container');
-            if (!container) return;
+  function readInset(name) {
+    var raw = getComputedStyle(document.documentElement).getPropertyValue(name);
+    var value = parseFloat(raw);
+    return isFinite(value) ? value : 0;
+  }
 
-            const wrapperWidth = window.innerWidth;
-            const wrapperHeight = window.innerHeight;
+  function readSafeArea() {
+    return {
+      top: readInset('--sat'),
+      right: readInset('--sar'),
+      bottom: readInset('--sab'),
+      left: readInset('--sal')
+    };
+  }
 
-            // 使用与 CSS 一致的断点检测设备类型
-            const deviceType = getDeviceType();
-            const isMobile = deviceType === 'mobile';
-            const isTablet = deviceType === 'tablet';
+  /**
+   * 当前真正需要缩放的内容根元素。
+   * 游戏未开始（#main-container 隐藏）时返回 null —— 主菜单是 fixed 全屏布局，不参与缩放。
+   */
+  function getVisibleRoot() {
+    var main = document.getElementById('main-container');
+    if (!main || main.classList.contains('hidden')) return null;
 
-            // 检测是否为横屏（宽度大于高度）
-            const isLandscape = wrapperWidth > wrapperHeight;
+    var conquest = document.getElementById('conquest-container');
+    if (conquest && !conquest.classList.contains('hidden')) return conquest;
 
-            // 计算最大允许缩放（考虑边距）
-            const padding = isMobile ? 10 : 20;
-            const maxScaleX = (wrapperWidth - padding * 2) / TOTAL_GAME_WIDTH;
-            const maxScaleY = (wrapperHeight - padding * 2) / GAME_HEIGHT;
+    return document.getElementById('game-container');
+  }
 
-            // 移动端和平板允许更小的缩放比例，确保内容可见
-            // 横屏时进一步降低最小缩放比例
-            let minScale;
-            if (isMobile && isLandscape) {
-                minScale = 0.3; // 手机横屏时允许更小缩放
-            } else if (isMobile) {
-                minScale = 0.4;
-            } else if (isTablet) {
-                minScale = 0.45;
-            } else {
-                minScale = 0.5;
-            }
+  function getCurrentScale() {
+    var value = parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--ui-scale')
+    );
+    if (!isFinite(value) || value <= 0) return 1;
+    return Math.min(Math.max(value, MIN_SCALE), MAX_SCALE);
+  }
 
-            let scale = Math.min(maxScaleX, maxScaleY, 1);
-            scale = Math.max(scale, minScale); // 确保最小缩放
+  /**
+   * 计算并应用缩放。可在模式切换 / 尺寸变化时反复调用。
+   * @returns {number} 实际应用的 scale
+   */
+  function applyScale() {
+    var container = document.getElementById('scale-container');
+    if (!container) return 1;
 
-            container.style.transform = 'scale(' + scale + ')';
+    var root = getVisibleRoot();
+    if (!root) {
+      document.documentElement.style.setProperty('--ui-scale', '1');
+      container.style.transform = '';
+      return 1;
+    }
 
-            // 移动端和平板优化：调整容器位置
-            if (isMobile || isTablet) {
-                container.style.transformOrigin = 'center center';
-            }
+    var isTouch = !!(window.DeviceProfile && window.DeviceProfile.isTouch);
+    var padding = isTouch ? 8 : 20;
+    var safe = readSafeArea();
 
-            // 调试信息仅在 ?debug=1 时输出，避免移动端默认产生日志开销。
-            if (new URLSearchParams(window.search).get('debug') === '1') {
-                console.log('Scale:', scale, 'Device:', deviceType, 'Landscape:', isLandscape, 'Available:', wrapperWidth, 'x', wrapperHeight);
-            }
-        }
+    var availableWidth = Math.max(160, window.innerWidth - padding * 2 - safe.left - safe.right);
+    var availableHeight = Math.max(120, window.innerHeight - padding * 2 - safe.top - safe.bottom);
 
-        // 横屏检测 - 使用与 CSS 一致的断点
-        function checkOrientation() {
-            const wrapperWidth = window.innerWidth;
-            const wrapperHeight = window.innerHeight;
-            const deviceType = getDeviceType();
-            
-            // 根据设备类型设置最小宽度阈值
-            // 移动端：768px, 平板：769px, 桌面：800px
-            const minWidth = deviceType === 'mobile' ? BREAKPOINTS.MOBILE : 
-                            (deviceType === 'tablet' ? 769 : 800);
-            
-            if (wrapperHeight > wrapperWidth && wrapperWidth < minWidth) {
-                document.body.classList.add('show-rotate-tip');
-            } else {
-                document.body.classList.remove('show-rotate-tip');
-                setTimeout(applyScale, 100);
-            }
-        }
+    var scale = getCurrentScale();
+    var width = 0;
+    var height = 0;
 
-        // 初始化
-        function init() {
-            applyScale();
-        }
+    // 迭代逼近：scale 会影响反算后的触控元素尺寸，进而影响实测尺寸。
+    for (var i = 0; i < MAX_ITERATIONS; i++) {
+      width = root.offsetWidth;
+      height = root.offsetHeight;
+      if (!width || !height) break;
 
-        window.addEventListener('load', function() {
-            init();
-            checkOrientation();
-        });
-        window.addEventListener('resize', function() {
-            checkOrientation();
-        });
-        window.addEventListener('orientationchange', function() {
-            setTimeout(function() {
-                checkOrientation();
-            }, 200); // 增加延迟确保方向变化完成
-        });
-        
-        // 添加触摸事件支持
-        document.addEventListener('touchstart', function() {}, {passive: true});
-    })();
+      var next = Math.min(availableWidth / width, availableHeight / height, MAX_SCALE);
+      next = Math.min(Math.max(next, MIN_SCALE), MAX_SCALE);
+
+      var converged = Math.abs(next - scale) < CONVERGE_EPSILON;
+      scale = next;
+      document.documentElement.style.setProperty('--ui-scale', String(scale));
+      if (converged) break;
+    }
+
+    container.style.transform = 'scale(' + scale + ')';
+
+    if (debugEnabled()) {
+      console.log(
+        '[viewport] scale=' + scale.toFixed(4) +
+        ' root=' + root.id +
+        ' content=' + width + 'x' + height +
+        ' available=' + availableWidth + 'x' + availableHeight +
+        ' touch=' + isTouch
+      );
+    }
+
+    return scale;
+  }
+
+  /**
+   * 竖屏且窄屏时提示旋转（手机竖屏无法容纳 20 列战场）。
+   */
+  function checkOrientation() {
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+    var isPortrait = height > width;
+    var needRotate = isPortrait && width < 768;
+
+    if (needRotate) {
+      document.body.classList.add('show-rotate-tip');
+      return;
+    }
+
+    document.body.classList.remove('show-rotate-tip');
+    applyScale();
+  }
+
+  function onViewportChanged() {
+    // 旋转后浏览器尺寸上报有延迟，分两拍刷新更稳
+    setTimeout(checkOrientation, 60);
+    setTimeout(applyScale, 320);
+  }
+
+  // 对外暴露：模式切换（塔防 ↔ 征服）、进入/退出战斗时都需要重算
+  window.applyGameScale = applyScale;
+  window.applyScale = applyScale;
+
+  window.addEventListener('load', function () {
+    checkOrientation();
+  });
+  window.addEventListener('resize', onViewportChanged);
+  window.addEventListener('orientationchange', function () {
+    setTimeout(checkOrientation, 200);
+  });
+
+  // iOS 地址栏收起/展开不会触发可靠 resize，补一个视觉视口监听
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', function () {
+      setTimeout(applyScale, 120);
+    });
+  }
+})();

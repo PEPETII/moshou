@@ -207,7 +207,7 @@ ConquestGame.prototype.drawDragPreview = function() {
 
     this.ctx.save();
     this.ctx.globalAlpha = 0.6;
-    this.ctx.font = "bold 28px Microsoft YaHei";
+    this.ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
     this.ctx.fillStyle = this.draggingTower.isFusion ? "#888" : "#ffff00";

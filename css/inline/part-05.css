@@ -1,0 +1,85 @@
+/* ========================================
+   触屏交互层（菜单/图鉴/征服选择界面，part-05）
+   注意：#main-menu 及其所有子面板挂在 #scale-container 之外，
+   不参与整体缩放，因此这里的触控尺寸直接用 44px 绝对值，
+   不需要像 css/style/part-05.css 那样用 calc(44px / var(--ui-scale)) 反算。
+   ======================================== */
+
+/* ----------------------------------------
+   1. 触控目标尺寸（规范 docs/ui-design-spec.md:49 要求最小 44×44px）
+   ---------------------------------------- */
+@media (hover: none) and (pointer: coarse) {
+  html[data-input="touch"] .encyclopedia-card,
+  html[data-input="touch"] .custom-card,
+  html[data-input="touch"] .theme-card,
+  html[data-input="touch"] .conquest-theme-card {
+    min-height: 44px;
+  }
+
+  html[data-input="touch"] .filter-tab,
+  html[data-input="touch"] .detail-close-btn,
+  html[data-input="touch"] .guide-btn,
+  html[data-input="touch"] .encyclopedia-item,
+  html[data-input="touch"] .fusion-item,
+  html[data-input="touch"] .game-fusion-item,
+  html[data-input="touch"] .level-item,
+  html[data-input="touch"] .menu-level-item,
+  html[data-input="touch"] .conquest-level-item {
+    min-height: 44px;
+  }
+
+  html[data-input="touch"] .filter-tab {
+    min-width: 44px;
+  }
+
+  /* 顶部栏 / 面板里的返回入口 */
+  html[data-input="touch"] #back-to-menu,
+  html[data-input="touch"] #back-to-themes,
+  html[data-input="touch"] #back-to-menu-from-encyclopedia,
+  html[data-input="touch"] #back-to-encyclopedia-from-towers,
+  html[data-input="touch"] #back-to-encyclopedia-from-enemies,
+  html[data-input="touch"] #back-to-encyclopedia-from-fusion,
+  html[data-input="touch"] #back-to-menu-from-custom,
+  html[data-input="touch"] #back-to-custom-from-towers,
+  html[data-input="touch"] #back-to-custom-from-levels,
+  html[data-input="touch"] #back-to-custom-from-export,
+  html[data-input="touch"] #back-to-menu-from-conquest-theme,
+  html[data-input="touch"] #back-to-conquest-themes {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* ----------------------------------------
+   2. 触屏上禁用"悬停位移"类效果
+   移动端没有 hover，残留的 translateY/scale 变换只会在
+   某些浏览器"点击后保持悬停态"时造成元素抖动。
+   ---------------------------------------- */
+html[data-input="touch"] .encyclopedia-card:hover,
+html[data-input="touch"] .custom-card:hover,
+html[data-input="touch"] .theme-card:hover,
+html[data-input="touch"] .conquest-theme-card:hover,
+html[data-input="touch"] .level-item:hover,
+html[data-input="touch"] .encyclopedia-item:hover,
+html[data-input="touch"] .fusion-item:hover,
+html[data-input="touch"] .game-fusion-item:hover,
+html[data-input="touch"] .conquest-level-item:hover {
+  transform: none;
+}
+
+/* ----------------------------------------
+   3. 菜单按钮高度兜底（竖屏/小屏分支已另有规则，这里保证不因字号而低于 44px）
+   ---------------------------------------- */
+@media (hover: none) and (pointer: coarse) {
+  html[data-input="touch"] .menu-btn {
+    min-height: 44px;
+    min-width: 120px;
+  }
+}
+
+/* ----------------------------------------
+   4. 旋转提示：触摸端也要能被"点击继续"，避免用户误以为卡死
+   ---------------------------------------- */
+html[data-input="touch"] .rotate-tip {
+  touch-action: manipulation;
+}

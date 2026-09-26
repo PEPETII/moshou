@@ -208,3 +208,57 @@
   border-color: #5a5a5a;
   color: #999;
 }
+
+/* 手机横屏（矮视口）：压缩自定义子界面尺寸，保证返回按钮留在可视区内 */
+@media (max-height: 500px) and (orientation: landscape) {
+  #main-menu {
+    overflow-y: auto;
+  }
+
+  #custom-towers-container,
+  #custom-levels-container,
+  #custom-export-container {
+    padding: 10px 16px;
+  }
+
+  .custom-sub-title {
+    font-size: 22px;
+    letter-spacing: 4px;
+  }
+
+  .custom-sub-header {
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+  }
+
+  .custom-placeholder {
+    padding: 16px 24px;
+    margin-bottom: 10px;
+    min-width: 0;
+    width: min(90vw, 480px);
+  }
+
+  .custom-placeholder .placeholder-icon {
+    font-size: 32px;
+    margin-bottom: 6px;
+  }
+
+  .custom-placeholder .placeholder-text {
+    font-size: 16px;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+
+  .custom-placeholder .placeholder-desc {
+    font-size: 12px;
+  }
+
+  #back-to-custom-from-towers,
+  #back-to-custom-from-levels,
+  #back-to-custom-from-export {
+    margin-top: 10px;
+    padding: 8px 24px;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+}

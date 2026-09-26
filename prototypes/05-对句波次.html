@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>方案五 · 对句波次 — 墨守成规 · 玩法原型</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 26px 18px 56px; background: #e7e1d2; color: #1c1a17;
+    font-family: "Kaiti SC", "KaiTi", "STKaiti", "Songti SC", "SimSun", serif;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  .top { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  h1 { font-size: 26px; margin: 0; letter-spacing: 4px; }
+  .tag { font-size: 12px; padding: 3px 10px; border: 1px solid #b03a2e; color: #b03a2e; border-radius: 2px; }
+  .claim { margin: 10px 0 4px; font-size: 15px; color: #3d382f; line-height: 1.7; }
+  .claim b { color: #b03a2e; font-weight: normal; }
+  .stage { margin-top: 18px; background: #f4efe4; border: 1px solid #cabfa6; }
+  canvas { display: block; width: 100%; height: auto; cursor: pointer; }
+  .bar { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  button {
+    font-family: inherit; font-size: 15px; padding: 8px 18px; cursor: pointer;
+    background: #f4efe4; color: #1c1a17; border: 1px solid #a89c83; border-radius: 2px;
+  }
+  button:hover { background: #fff; }
+  button.primary { background: #1c1a17; color: #f4efe4; border-color: #1c1a17; font-size: 17px; }
+  .hint { font-size: 13px; color: #6a6459; margin-left: auto; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 22px; }
+  .card { background: #f4efe4; border: 1px solid #cabfa6; padding: 16px 18px; }
+  .card h2 { font-size: 15px; margin: 0 0 10px; letter-spacing: 2px; }
+  .card p { font-size: 13.5px; line-height: 1.85; margin: 0 0 8px; color: #3d382f; }
+  .card code { background: #e7e1d2; padding: 1px 5px; font-family: Consolas, monospace; font-size: 12px; }
+  .tb { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tb th, .tb td { border-bottom: 1px solid #d8cfb8; padding: 5px 6px; text-align: left; }
+  .tb th { font-weight: normal; color: #6a6459; }
+  .g { color: #b03a2e; }
+  @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } h1 { font-size: 21px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>对句波次</h1>
+    <span class="tag">方案五</span>
+    <span class="tag">攻击「波次进攻」</span>
+    <span class="tag">新颖度满分</span>
+  </div>
+  <p class="claim">把"波次倒计时"变成"<b>应答创作</b>"：敌方出上联，你必须在限时内<b>对出下联</b>——对仗工整度直接决定这一波的难度与奖励。等待变成了创作。</p>
+
+  <div class="stage"><canvas id="cv" width="960" height="432"></canvas></div>
+
+  <div class="bar">
+    <button class="primary" id="judge">对</button>
+    <button id="clear">重对</button>
+    <span class="hint">点击下方候选字填入下联；点击已填的字可撤回</span>
+  </div>
+
+  <div class="cols">
+    <div class="card">
+      <h2>判定规则（两维度打分，满分 10）</h2>
+      <table class="tb">
+        <tr><th>维度</th><th>判定</th><th>得分</th></tr>
+        <tr><td>词性</td><td>名 / 动 / 形 / 数 是否相对</td><td>1</td></tr>
+        <tr><td>意象</td><td>色彩 / 天文 / 地理 / 动作 是否同类</td><td>1</td></tr>
+      </table>
+      <p style="margin-top:10px">参考正确答案：<span class="g">黄河入海流</span>（9/10）。判定<b>不做平仄</b>——平仄机器判定太硬，会让游戏变成语文考试。</p>
+      <p>判定必须用<b>确定性规则表</b>，禁止用大模型实时判定：延迟与成本不可控，且玩家无法预测结果。</p>
+    </div>
+    <div class="card">
+      <h2>两个必须注意的风险</h2>
+      <p><b>判定宽容度极难调</b>：过严变成"语文考试"，过宽变成"摆设"，中间地带很窄，只能靠大量玩家测试收敛。</p>
+      <p><b>内容成本是六个方案里最高的</b>：需要策划表维护意象词库与可对项，工作量和关卡设计深度绑定。</p>
+      <p>因此建议做成<b>独立模式</b>——项目已有 <code>js/modes/conquest/</code> 的独立模式架构，可直接复用其关卡流程骨架，把风险与主线完全隔离。它更适合作为<b>差异化卖点与宣传素材</b>，而不是主线必经环节。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var cv = document.getElementById('cv');
+  var ctx = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+  var PAPER = '#f4efe4', INK = '#1c1a17', CINNABAR = '#b03a2e', GRID = '#d8cfb8';
+
+  var UPPER = '白日依山尽'.split('');
+  var INFO = {
+    '白': ['形', '色彩'], '日': ['名', '天文'], '依': ['动', '动作'], '山': ['名', '地理'], '尽': ['动', '动作'],
+    '黄': ['形', '色彩'], '赤': ['形', '色彩'], '大': ['形', '数量'],
+    '河': ['名', '地理'], '云': ['名', '天文'], '天': ['名', '天文'], '风': ['名', '天文'], '木': ['名', '植物'],
+    '三': ['数', '数量'],
+    '入': ['动', '动作'], '出': ['动', '动作'], '飞': ['动', '动作'],
+    '海': ['名', '地理'], '流': ['动', '动作']
+  };
+  var PALETTE = ['黄', '河', '入', '海', '流', '赤', '云', '天', '木', '三', '出', '飞'];
+
+  var lower = ['', '', '', '', ''];
+  var CX = 320, DX = 68;
+  var PX = 172, PS = 44, PG = 8;
+
+  var enemies = [], judged = null, flash = 0, resultText = '', resultColor = INK;
+  var core = 20;
+
+  for (var i = 0; i < 5; i++) enemies.push({ x: 180 + i * 62, s: 1, alive: true });
+
+  function uptext() { return UPPER.join(''); }
+  function lowtext() { return lower.map(function (c) { return c || '□'; }).join(''); }
+
+  function score() {
+    var pts = [], total = 0;
+    for (var i = 0; i < 5; i++) {
+      if (!lower[i]) { pts.push(-1); continue; }
+      var a = INFO[UPPER[i]], b = INFO[lower[i]];
+      var s = 0;
+      if (a && b) {
+        if (a[0] === b[0]) s++;
+        if (a[1] === b[1]) s++;
+      }
+      pts.push(s);
+      total += s;
+    }
+    return { pts: pts, total: total };
+  }
+
+  function doJudge() {
+    var r = score();
+    judged = r.pts;
+    flash = 40;
+    if (r.total >= 8) {
+      resultText = '工整 · 敌自乱　' + r.total + '/10';
+      resultColor = CINNABAR;
+      for (var i = 0; i < enemies.length; i++) if (enemies[i].alive && Math.random() < 0.85) enemies[i].alive = false;
+    } else if (r.total >= 5) {
+      resultText = '勉强成对 · 敌稍挫　' + r.total + '/10';
+      resultColor = '#6a6459';
+      for (var j = 0; j < enemies.length; j++) if (enemies[j].alive && Math.random() < 0.4) enemies[j].alive = false;
+    } else {
+      resultText = '失工 · 敌势长　' + r.total + '/10';
+      resultColor = CINNABAR;
+      for (var k = 0; k < enemies.length; k++) {
+        if (enemies[k].alive) { enemies[k].s = 1.45; enemies[k].buffed = true; }
+      }
+    }
+  }
+
+  var tick = 0;
+  function step() {
+    tick++;
+    if (tick % 150 === 0) {
+      for (var i = 0; i < enemies.length; i++) {
+        if (!enemies[i].alive) { enemies[i].alive = true; enemies[i].s = 1; enemies[i].x = 180 + i * 62; }
+      }
+    }
+    for (var e = 0; e < enemies.length; e++) {
+      var en = enemies[e];
+      if (!en.alive) { en.s *= 0.9; continue; }
+      en.x += en.buffed ? 1.5 : 0.55;
+      if (en.x > 900) { en.x = 180; en.buffed = false; en.s = 1; core--; }
+    }
+    if (flash > 0) flash--;
+  }
+
+  function ink(s, x, y, size, color, weight, align, alpha) {
+    ctx.save();
+    if (alpha !== undefined) ctx.globalAlpha = alpha;
+    ctx.font = (weight || 'normal') + ' ' + size + 'px "Kaiti SC","KaiTi","STKaiti","Songti SC",serif';
+    ctx.textAlign = align || 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(28,26,23,0.30)';
+    ctx.shadowBlur = 6;
+    ctx.fillStyle = color;
+    ctx.fillText(s, x, y);
+    ctx.restore();
+  }
+
+  function draw() {
+    ctx.fillStyle = PAPER; ctx.fillRect(0, 0, W, H);
+
+    ink('敌方出上联', 60, 26, 14, '#6a6459', 'normal', 'left');
+    for (var i = 0; i < 5; i++) {
+      var x = CX + i * DX;
+      ink(UPPER[i], x, 68, 44, INK);
+      ctx.strokeStyle = GRID; ctx.lineWidth = 0.5;
+      ctx.strokeRect(x - 26, 68 - 26, 52, 52);
+    }
+
+    var r = score();
+    for (var j = 0; j < 5; j++) {
+      var x2 = CX + j * DX;
+      var s = (judged && judged[j] !== undefined) ? judged[j] : (lower[j] ? r.pts[j] : -1);
+      ctx.beginPath();
+      ctx.moveTo(x2, 96);
+      ctx.lineTo(x2, 122);
+      if (s === 2) {
+        ctx.strokeStyle = CINNABAR; ctx.lineWidth = 2;
+        ctx.setLineDash([]);
+      } else if (s === 1) {
+        ctx.strokeStyle = 'rgba(28,26,23,0.55)'; ctx.lineWidth = 1.2;
+        ctx.setLineDash([5, 4]);
+      } else {
+        ctx.strokeStyle = 'rgba(28,26,23,0.18)'; ctx.lineWidth = 1;
+        ctx.setLineDash([2, 4]);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+      if (s >= 0) {
+        ctx.beginPath(); ctx.arc(x2, 109, s === 2 ? 4 : 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = s === 2 ? CINNABAR : s === 1 ? INK : 'rgba(28,26,23,0.25)';
+        ctx.fill();
+      }
+    }
+
+    ink('你的下联', 60, 150, 14, '#6a6459', 'normal', 'left');
+    for (var k = 0; k < 5; k++) {
+      var x3 = CX + k * DX;
+      if (lower[k]) {
+        ink(lower[k], x3, 150, 44, INK);
+        ctx.strokeStyle = GRID; ctx.lineWidth = 0.5;
+        ctx.strokeRect(x3 - 26, 150 - 26, 52, 52);
+      } else {
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = 'rgba(28,26,23,0.3)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x3 - 26, 150 - 26, 52, 52);
+        ctx.restore();
+        ink('□', x3, 150, 26, 'rgba(28,26,23,0.2)');
+      }
+    }
+
+    ink('候选字 · 点击填入', 60, 196, 14, '#6a6459', 'normal', 'left');
+    for (var p = 0; p < PALETTE.length; p++) {
+      var px = PX + p * (PS + PG) + PS / 2;
+      var used = lower.indexOf(PALETTE[p]) >= 0;
+      ctx.save();
+      ctx.globalAlpha = used ? 0.3 : 1;
+      ctx.fillStyle = '#efe9db';
+      ctx.fillRect(px - PS / 2, 214, PS, PS);
+      ctx.strokeStyle = GRID; ctx.lineWidth = 0.6;
+      ctx.strokeRect(px - PS / 2, 214, PS, PS);
+      ink(PALETTE[p], px, 214 + PS / 2, 24, INK);
+      ctx.restore();
+    }
+
+    if (resultText) {
+      ctx.save();
+      ctx.globalAlpha = flash > 0 ? 1 : 0.9;
+      ink(resultText, 60, 288, 19, resultColor, '500', 'left');
+      ctx.restore();
+    } else {
+      ink('择字成句，然后按「对」', 60, 288, 15, '#8f887a', 'normal', 'left');
+    }
+
+    ctx.fillStyle = 'rgba(28,26,23,0.10)';
+    ctx.fillRect(150, 366, 760, 3);
+    for (var e = 0; e < enemies.length; e++) {
+      var en = enemies[e];
+      if (en.s < 0.12) continue;
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, en.s);
+      ctx.beginPath();
+      ctx.arc(en.x, 366, 10 * en.s, 0, Math.PI * 2);
+      ctx.fillStyle = en.buffed ? CINNABAR : INK;
+      ctx.fill();
+      ctx.restore();
+    }
+    ink('城', 922, 366, 26, INK);
+    ctx.fillStyle = 'rgba(28,26,23,0.16)';
+    ctx.fillRect(872, 336, 72, 5);
+    ctx.fillStyle = CINNABAR;
+    ctx.fillRect(872, 336, 72 * Math.max(core, 0) / 20, 5);
+    ink('上联「' + uptext() + '」　下联「' + lowtext() + '」', 60, 410, 13, '#6a6459', 'normal', 'left');
+  }
+
+  function loop() { step(); draw(); requestAnimationFrame(loop); }
+
+  function pos(ev) {
+    var rc = cv.getBoundingClientRect();
+    return { x: (ev.clientX - rc.left) / rc.width * W, y: (ev.clientY - rc.top) / rc.height * H };
+  }
+
+  cv.addEventListener('click', function (ev) {
+    var q = pos(ev);
+    if (q.y >= 124 && q.y <= 178) {
+      for (var k = 0; k < 5; k++) {
+        if (Math.abs(q.x - (CX + k * DX)) < 26) { lower[k] = ''; judged = null; resultText = ''; return; }
+      }
+    }
+    if (q.y >= 214 && q.y <= 258) {
+      for (var p = 0; p < PALETTE.length; p++) {
+        var px = PX + p * (PS + PG) + PS / 2;
+        if (Math.abs(q.x - px) < PS / 2 + 2) {
+          for (var s = 0; s < 5; s++) {
+            if (!lower[s]) {
+              lower[s] = PALETTE[p];
+              judged = null; resultText = '';
+              return;
+            }
+          }
+          return;
+        }
+      }
+    }
+  });
+
+  document.getElementById('judge').addEventListener('click', doJudge);
+  document.getElementById('clear').addEventListener('click', function () {
+    lower = ['', '', '', '', ''];
+    judged = null; resultText = ''; core = 20;
+    for (var i = 0; i < enemies.length; i++) { enemies[i].alive = true; enemies[i].s = 1; enemies[i].x = 180 + i * 62; enemies[i].buffed = false; }
+  });
+
+  loop();
+})();
+</script>
+</body>
+</html>

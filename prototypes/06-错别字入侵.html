@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>方案六 · 错别字入侵 — 墨守成规 · 玩法原型</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 26px 18px 56px; background: #e7e1d2; color: #1c1a17;
+    font-family: "Kaiti SC", "KaiTi", "STKaiti", "Songti SC", "SimSun", serif;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  .top { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  h1 { font-size: 26px; margin: 0; letter-spacing: 4px; }
+  .tag { font-size: 12px; padding: 3px 10px; border: 1px solid #b03a2e; color: #b03a2e; border-radius: 2px; }
+  .claim { margin: 10px 0 4px; font-size: 15px; color: #3d382f; line-height: 1.7; }
+  .claim b { color: #b03a2e; font-weight: normal; }
+  .stage { margin-top: 18px; background: #f4efe4; border: 1px solid #cabfa6; }
+  canvas { display: block; width: 100%; height: auto; cursor: pointer; }
+  .bar { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  button {
+    font-family: inherit; font-size: 17px; padding: 6px 16px; cursor: pointer;
+    background: #f4efe4; color: #1c1a17; border: 1px solid #a89c83; border-radius: 2px;
+  }
+  button:hover { background: #fff; }
+  button.on { background: #1c1a17; color: #f4efe4; border-color: #1c1a17; }
+  .hint { font-size: 13px; color: #6a6459; margin-left: auto; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 22px; }
+  .card { background: #f4efe4; border: 1px solid #cabfa6; padding: 16px 18px; }
+  .card h2 { font-size: 15px; margin: 0 0 10px; letter-spacing: 2px; }
+  .card p { font-size: 13.5px; line-height: 1.85; margin: 0 0 8px; color: #3d382f; }
+  .card code { background: #e7e1d2; padding: 1px 5px; font-family: Consolas, monospace; font-size: 12px; }
+  .tb { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tb th, .tb td { border-bottom: 1px solid #d8cfb8; padding: 5px 6px; text-align: left; }
+  .tb th { font-weight: normal; color: #6a6459; font-size: 12px; }
+  .tb td:nth-child(1) { font-size: 22px; }
+  .bad { color: #b03a2e; }
+  @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } h1 { font-size: 21px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>错别字入侵</h1>
+    <span class="tag">方案六</span>
+    <span class="tag">攻击「建塔防守」</span>
+  </div>
+  <p class="claim">敌人不再只是扣血，而是<b>改写你的字</b>。防守目标从「血条」变成「<b>语义完整性</b>」——核心是一个「文」字，被改坏则满盘皆输。</p>
+
+  <div class="stage"><canvas id="cv" width="960" height="432"></canvas></div>
+
+  <div class="bar">
+    <button data-c="火" class="on">火</button>
+    <button data-c="水">水</button>
+    <button data-c="木">木</button>
+    <button data-c="土">土</button>
+    <button id="clear">清空</button>
+    <span class="hint">点击格纸落字；<b>点击被改坏的字可「校勘」修复</b>（耗墨 8）</span>
+  </div>
+
+  <div class="cols">
+    <div class="card">
+      <h2>形近字改写表（这才是中文的"错别字"）</h2>
+      <table class="tb">
+        <tr><th>原字</th><th>被改写为</th><th>后果</th></tr>
+        <tr><td>火</td><td class="bad">灭</td><td>攻击完全失效</td></tr>
+        <tr><td>木</td><td class="bad">术</td><td>攻速减半</td></tr>
+        <tr><td>土</td><td class="bad">士</td><td>范围归零</td></tr>
+        <tr><td>水</td><td class="bad">冰</td><td>减速失效</td></tr>
+      </table>
+      <p style="margin-top:10px">选形近字而不是随便换字，是因为<b>字形相近、意义全变</b>恰好就是中文"错别字"的本质——玩家一眼能看出"这个字不对"，视觉反馈天然成立。</p>
+    </div>
+    <div class="card">
+      <h2>最大的风险是理解成本</h2>
+      <p>"为什么我的塔突然变弱了？"——这是六个方案里<b>玩家理解成本最高</b>的一个。负面机制天然带来挫败感，对视觉反馈质量的要求极高：必须让玩家在<b>不看数值</b>的情况下，一眼就知道哪个字被改坏了。</p>
+      <p>实现上，敌人需要"篡改意图"AI（判定改哪个字收益最高），渲染层需要支持<b>残缺字 / 错字</b>绘制，并新增"字 + 偏旁"的映射表（比现有元素融合表更宽）。</p>
+      <p><b>因此建议不要作为全局规则</b>，而是做成特定敌人「错字鬼」的专属机制，或独立 Boss 战设计，把负面体验限制在可控范围内。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var cv = document.getElementById('cv');
+  var ctx = cv.getContext('2d');
+  var CELL = 48, COLS = 20, ROWS = 9;
+  var W = cv.width, H = cv.height;
+  var PAPER = '#f4efe4', INK = '#1c1a17', CINNABAR = '#b03a2e', GRID = '#ded5c0';
+
+  var CORRUPT = { '火': ['灭', '攻击完全失效'], '木': ['术', '攻速减半'], '土': ['士', '范围归零'], '水': ['冰', '减速失效'] };
+
+  var towers = [], ghosts = [], floats = [], ink = 100, wen = 100;
+  var cur = '火', hover = null, tick = 0;
+
+  var PATH = [];
+  (function () {
+    var pts = [[-1, 1], [6, 1], [6, 5], [13, 5], [13, 8], [20, 8]];
+    for (var i = 0; i < pts.length - 1; i++) {
+      var a = pts[i], b = pts[i + 1];
+      var n = Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])) * 4;
+      for (var s = 0; s < n; s++) {
+        var k = s / n;
+        PATH.push([(a[0] + (b[0] - a[0]) * k + 0.5) * CELL, (a[1] + (b[1] - a[1]) * k + 0.5) * CELL]);
+      }
+    }
+  })();
+
+  function at(gx, gy) {
+    for (var i = 0; i < towers.length; i++) if (towers[i].gx === gx && towers[i].gy === gy) return towers[i];
+    return null;
+  }
+
+  function spawn() {
+    ghosts.push({ i: 0, x: PATH[0][0], y: PATH[0][1], phase: 0 });
+  }
+
+  function step() {
+    tick++;
+    ink = Math.min(120, ink + 0.02);
+    if (tick % 56 === 0) spawn();
+
+    for (var g = ghosts.length - 1; g >= 0; g--) {
+      var gh = ghosts[g];
+      if (gh.phase === 1) {
+        gh.t = (gh.t || 0) + 1;
+        if (gh.t > 30) ghosts.splice(g, 1);
+        continue;
+      }
+      gh.i += 1.35;
+      if (gh.i >= PATH.length - 1) { ghosts.splice(g, 1); continue; }
+      var p = PATH[Math.floor(gh.i)];
+      gh.x = p[0]; gh.y = p[1];
+
+      for (var t = 0; t < towers.length; t++) {
+        var tw = towers[t];
+        if (tw.bad) continue;
+        if (Math.hypot(gh.x - (tw.gx + 0.5) * CELL, gh.y - (tw.gy + 0.5) * CELL) < CELL * 1.3) {
+          tw.bad = true;
+          tw.morph = 24;
+          floats.push({ x: (tw.gx + 0.5) * CELL, y: (tw.gy + 0.5) * CELL - 20, s: '改字', life: 54, c: CINNABAR });
+          gh.phase = 1; gh.t = 0;
+          break;
+        }
+      }
+    }
+
+    var badCount = 0;
+    for (var k = 0; k < towers.length; k++) {
+      if (towers[k].bad) badCount++;
+      if (towers[k].morph > 0) towers[k].morph--;
+    }
+    if (badCount > 0) wen -= 0.09 * badCount;
+    if (wen < 0) { wen = 100; towers.forEach(function (t) { t.bad = false; }); }
+
+    for (var f = floats.length - 1; f >= 0; f--) {
+      floats[f].y -= 0.6; floats[f].life--;
+      if (floats[f].life <= 0) floats.splice(f, 1);
+    }
+  }
+
+  function inkText(s, x, y, size, color, weight, align, alpha) {
+    ctx.save();
+    if (alpha !== undefined) ctx.globalAlpha = alpha;
+    ctx.font = (weight || 'normal') + ' ' + size + 'px "Kaiti SC","KaiTi","STKaiti","Songti SC",serif';
+    ctx.textAlign = align || 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(28,26,23,0.30)';
+    ctx.shadowBlur = 6;
+    ctx.fillStyle = color;
+    ctx.fillText(s, x, y);
+    ctx.restore();
+  }
+
+  function draw() {
+    ctx.fillStyle = PAPER; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = GRID; ctx.lineWidth = 0.5;
+    for (var x = 0; x <= COLS; x++) { ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, H); ctx.stroke(); }
+    for (var y = 0; y <= ROWS; y++) { ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(W, y * CELL); ctx.stroke(); }
+
+    ctx.strokeStyle = 'rgba(28,26,23,0.10)'; ctx.lineWidth = 24; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (var i = 0; i < PATH.length; i += 4) { if (i === 0) ctx.moveTo(PATH[i][0], PATH[i][1]); else ctx.lineTo(PATH[i][0], PATH[i][1]); }
+    ctx.stroke();
+
+    if (hover && !at(hover.gx, hover.gy)) {
+      ctx.save();
+      ctx.globalAlpha = 0.25;
+      inkText(cur, (hover.gx + 0.5) * CELL, (hover.gy + 0.5) * CELL, 30, INK);
+      ctx.restore();
+    }
+
+    for (var t = 0; t < towers.length; t++) {
+      var tw = towers[t];
+      var px = (tw.gx + 0.5) * CELL, py = (tw.gy + 0.5) * CELL;
+      var shown = tw.c;
+      if (tw.bad) {
+        if (tw.morph > 0 && Math.floor(tw.morph / 4) % 2 === 0) shown = tw.c;
+        else shown = CORRUPT[tw.c][0];
+        ctx.save();
+        ctx.setLineDash([5, 4]);
+        ctx.strokeStyle = 'rgba(176,58,46,0.75)';
+        ctx.lineWidth = 1.4;
+        ctx.strokeRect(px - CELL / 2 + 4, py - CELL / 2 + 4, CELL - 8, CELL - 8);
+        ctx.restore();
+      }
+      inkText(shown, px, py, 30, tw.bad ? '#9a9184' : INK, 'normal', 'center', tw.bad ? 0.65 : 1);
+
+      if (tw.bad) {
+        ctx.save();
+        ctx.globalAlpha = 0.9;
+        ctx.strokeStyle = CINNABAR;
+        ctx.lineWidth = 1.6;
+        ctx.strokeRect(px + 12, py + 8, 15, 15);
+        ctx.restore();
+        inkText('错', px + 19.5, py + 16, 11, CINNABAR, '500');
+        inkText(CORRUPT[tw.c][1], px, py + 26, 11, CINNABAR);
+      }
+      if (hover && hover.gx === tw.gx && hover.gy === tw.gy && tw.bad) {
+        inkText('校勘 · 8', px, py - 28, 13, CINNABAR, '500');
+      }
+    }
+
+    for (var g = 0; g < ghosts.length; g++) {
+      var gh = ghosts[g];
+      ctx.save();
+      if (gh.phase === 1) ctx.globalAlpha = Math.max(0, 1 - gh.t / 30);
+      ctx.beginPath();
+      ctx.arc(gh.x, gh.y, 9, 0, Math.PI * 2);
+      ctx.fillStyle = CINNABAR;
+      ctx.fill();
+      inkText('虫', gh.x, gh.y, 12, '#f4efe4', '500');
+      ctx.restore();
+    }
+
+    for (var f = 0; f < floats.length; f++) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, floats[f].life / 30);
+      inkText(floats[f].s, floats[f].x, floats[f].y, 15, floats[f].c, '500');
+      ctx.restore();
+    }
+
+    var wa = 0.25 + wen / 100 * 0.75;
+    inkText('文', 918, 60, 34, wen < 40 ? CINNABAR : INK, 'normal', 'center', wa);
+    ctx.strokeStyle = 'rgba(28,26,23,0.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(918, 60, 30, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(wen, 0) / 100);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(28,26,23,0.14)';
+    ctx.fillRect(24, 20, 260, 14);
+    ctx.fillStyle = INK;
+    ctx.fillRect(24, 20, 260 * Math.min(ink, 120) / 120, 14);
+    inkText('墨 ' + Math.round(ink), 292, 27, 14, INK, '500', 'left');
+    inkText('语义完整性 ' + Math.round(Math.max(wen, 0)) + '%', 24, 50, 12, wen < 40 ? CINNABAR : '#6a6459', 'normal', 'left');
+    inkText('错字 ' + towers.filter(function (t) { return t.bad; }).length + ' / 字 ' + towers.length, W - 20, 26, 13, '#6a6459', 'normal', 'right');
+  }
+
+  function loop() { step(); draw(); requestAnimationFrame(loop); }
+
+  function toGrid(ev) {
+    var r = cv.getBoundingClientRect();
+    return {
+      gx: Math.floor((ev.clientX - r.left) / r.width * W / CELL),
+      gy: Math.floor((ev.clientY - r.top) / r.height * H / CELL)
+    };
+  }
+
+  cv.addEventListener('mousemove', function (ev) {
+    var g = toGrid(ev);
+    hover = (g.gx >= 0 && g.gx < COLS && g.gy >= 0 && g.gy < ROWS) ? g : null;
+  });
+  cv.addEventListener('mouseleave', function () { hover = null; });
+  cv.addEventListener('click', function (ev) {
+    var g = toGrid(ev);
+    if (g.gx < 0 || g.gx >= COLS || g.gy < 0 || g.gy >= ROWS) return;
+    var t = at(g.gx, g.gy);
+    if (t) {
+      if (t.bad && ink >= 8) {
+        t.bad = false; t.morph = 0; ink -= 8;
+        floats.push({ x: (t.gx + 0.5) * CELL, y: (t.gy + 0.5) * CELL - 18, s: '校勘', life: 48, c: INK });
+      } else if (!t.bad) {
+        towers = towers.filter(function (x) { return x !== t; });
+      }
+    } else if (ink >= 20) {
+      ink -= 20;
+      towers.push({ gx: g.gx, gy: g.gy, c: cur, bad: false, morph: 0 });
+    }
+  });
+
+  var btns = document.querySelectorAll('button[data-c]');
+  function bind(b) {
+    b.addEventListener('click', function () {
+      for (var j = 0; j < btns.length; j++) btns[j].classList.remove('on');
+      b.classList.add('on');
+      cur = b.getAttribute('data-c');
+    });
+  }
+  for (var i = 0; i < btns.length; i++) bind(btns[i]);
+
+  document.getElementById('clear').addEventListener('click', function () {
+    towers = []; ghosts = []; floats = []; ink = 100; wen = 100;
+  });
+
+  towers.push({ gx: 7, gy: 4, c: '火', bad: false, morph: 0 });
+  towers.push({ gx: 12, gy: 4, c: '木', bad: false, morph: 0 });
+  towers.push({ gx: 12, gy: 7, c: '土', bad: false, morph: 0 });
+
+  loop();
+})();
+</script>
+</body>
+</html>

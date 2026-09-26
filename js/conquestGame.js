@@ -71,6 +71,10 @@ class ConquestGame {
     this.dragCurrentPos = null;
     this.isDragging = false;
     this.dragThreshold = 5;
+    // 触摸端必须用更大的滑点：手指按下后的自然抖动普遍 6~10px，
+    // 沿用鼠标的 5px 会把"轻点查看信息"误判为"拖拽移动炮塔"。
+    this.dragThresholdTouch =
+      (window.DeviceProfile && window.DeviceProfile.slop) || 12;
 
     this.hoveredCell = null;
 

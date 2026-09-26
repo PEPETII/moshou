@@ -91,11 +91,17 @@ ConquestGame.prototype.startLevel = function(levelId) {
     }
 
     // 显示征服模式容器
+    // 注意：#conquest-container 位于 #main-container 之内，
+    // 只解除自身 hidden、父级仍 hidden 会导致整屏空白（实测已复现）。
+    document.getElementById("main-container").classList.remove("hidden");
     document.getElementById("conquest-container").classList.remove("hidden");
 
     // 更新UI并启动游戏
     this.updateUI();
     this.start();
+
+    // 征服模式内容宽 1072px、塔防模式 960px，尺寸不同，必须重算缩放
+    if (typeof window.applyGameScale === "function") window.applyGameScale();
   
 };
 // 获取下一关卡ID
@@ -168,6 +174,7 @@ ConquestGame.prototype.returnToLevelSelect = function() {
   
 };
 ConquestGame.prototype.startGame = function() {
+    document.getElementById("main-container").classList.remove("hidden");
     document.getElementById("conquest-container").classList.remove("hidden");
     document.getElementById("main-menu").classList.add("hidden");
 
@@ -191,6 +198,8 @@ ConquestGame.prototype.startGame = function() {
     }
 
     this.start();
+
+    if (typeof window.applyGameScale === "function") window.applyGameScale();
   
 };
 ConquestGame.prototype.getTowerAt = function(gx, gy) {
