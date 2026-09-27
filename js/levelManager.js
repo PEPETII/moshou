@@ -23,7 +23,7 @@ class LevelManager {
    */
   _initThemes() {
     const themeConfigs = {
-      1: { id: 1, name: "初墨", icon: "墨", color: "#8a8a8a", desc: "水墨初染，入门试炼", unlockRequirement: null },
+      1: { id: 1, name: "初墨", icon: "墨", color: "#6a6459", desc: "水墨初染，入门试炼", unlockRequirement: null },
       2: { id: 2, name: "风林", icon: "风", color: "#81c784", desc: "疾风骤雨，速度试炼", unlockRequirement: { theme: 1, level: 5 } },
       3: { id: 3, name: "火山", icon: "火", color: "#ff7043", desc: "烈焰焚天，力量试炼", unlockRequirement: { theme: 1, level: 10 } },
       4: { id: 4, name: "玄冰", icon: "冰", color: "#4fc3f7", desc: "冰封千里，控制试炼", unlockRequirement: { theme: 2, level: 5 } },
@@ -214,7 +214,7 @@ class LevelManager {
       difficulty: rawData.difficulty || 1,
       tags: rawData.tags || [],
       prerequisites: rawData.prerequisites || [],
-      startGold: rawData.startGold,
+      startInk: rawData.startInk,
       coreHp: rawData.coreHp,
       path: paths.length === 1 ? paths[0] : paths,
       core: rawData.core,

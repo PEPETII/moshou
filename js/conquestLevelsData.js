@@ -89,16 +89,16 @@ function generateLevel(themeId, levelIndex) {
   const levelId = `${themeId}-${levelIndex + 1}`;
   const difficulty = (themeId - 1) * 10 + levelIndex * 2 + 1;
   
-  // 初始金币配置
-  const startGoldRanges = {
+  // 初始墨水配置
+  const startInkRanges = {
     1: { min: 300, max: 500 },
     2: { min: 400, max: 600 },
     3: { min: 500, max: 700 },
     4: { min: 600, max: 800 },
     5: { min: 700, max: 1000 }
   };
-  const goldRange = startGoldRanges[themeId];
-  const startGold = goldRange.min + Math.floor((goldRange.max - goldRange.min) * levelIndex / 4);
+  const inkRange = startInkRanges[themeId];
+  const startInk = inkRange.min + Math.floor((inkRange.max - inkRange.min) * levelIndex / 4);
   
   // 召唤消耗随关卡递增
   const baseSummonCost = 50;
@@ -121,7 +121,7 @@ function generateLevel(themeId, levelIndex) {
     id: levelId,
     theme: themeId,
     difficulty: difficulty,
-    startGold: startGold,
+    startInk: startInk,
     summonCost: summonCost,
     maxWave: maxWave,
     waves: waves,

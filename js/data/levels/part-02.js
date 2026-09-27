@@ -5,7 +5,7 @@ Object.assign(LEVELS_DATA, {
     name: "炼狱",
     theme: 3,
     difficulty: 25,
-    startGold: 700,
+    startInk: 700,
     coreHp: 35,
     path: [
       {x:0,y:0},{x:1,y:0},{x:2,y:0},{x:3,y:0},{x:4,y:0},{x:5,y:0},{x:6,y:0},{x:7,y:0},{x:8,y:0},{x:9,y:0},
@@ -25,7 +25,7 @@ Object.assign(LEVELS_DATA, {
     name: "爆炎",
     theme: 3,
     difficulty: 26,
-    startGold: 750,
+    startInk: 750,
     coreHp: 38,
     path: [
       {x:0,y:4},{x:1,y:4},{x:2,y:4},{x:3,y:4},{x:4,y:4},{x:5,y:4},{x:6,y:4},{x:7,y:4},{x:8,y:4},{x:9,y:4},
@@ -45,7 +45,7 @@ Object.assign(LEVELS_DATA, {
     name: "焚心",
     theme: 3,
     difficulty: 27,
-    startGold: 800,
+    startInk: 800,
     coreHp: 40,
     path: [
       {x:0,y:2},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:4,y:2},{x:5,y:2},{x:6,y:2},{x:7,y:2},{x:8,y:2},{x:9,y:2},{x:10,y:2},
@@ -65,7 +65,7 @@ Object.assign(LEVELS_DATA, {
     name: "熔炉",
     theme: 3,
     difficulty: 28,
-    startGold: 850,
+    startInk: 850,
     coreHp: 42,
     path: [
       {x:0,y:4},{x:1,y:4},{x:2,y:4},{x:3,y:4},{x:4,y:4},{x:5,y:4},
@@ -87,7 +87,7 @@ Object.assign(LEVELS_DATA, {
     name: "业火",
     theme: 3,
     difficulty: 29,
-    startGold: 900,
+    startInk: 900,
     coreHp: 45,
     path: [
       {x:0,y:1},{x:1,y:1},{x:2,y:1},{x:3,y:1},{x:4,y:1},{x:5,y:1},{x:6,y:1},{x:7,y:1},{x:8,y:1},{x:9,y:1},
@@ -107,7 +107,7 @@ Object.assign(LEVELS_DATA, {
     name: "涅槃",
     theme: 3,
     difficulty: 30,
-    startGold: 1000,
+    startInk: 1000,
     coreHp: 50,
     path: [
       {x:0,y:4},{x:1,y:4},{x:2,y:4},{x:3,y:4},{x:4,y:4},{x:5,y:4},{x:6,y:4},{x:7,y:4},{x:8,y:4},{x:9,y:4},
@@ -131,7 +131,7 @@ Object.assign(LEVELS_DATA, {
     name: "霜降",
     theme: 4,
     difficulty: 31,
-    startGold: 500,
+    startInk: 500,
     coreHp: 25,
     path: [
       {x:0,y:5},{x:1,y:5},{x:2,y:5},{x:3,y:5},{x:4,y:5},{x:5,y:5},{x:6,y:5},{x:7,y:5},{x:8,y:5},{x:9,y:5},
@@ -150,7 +150,7 @@ Object.assign(LEVELS_DATA, {
     name: "冰封",
     theme: 4,
     difficulty: 32,
-    startGold: 550,
+    startInk: 550,
     coreHp: 28,
     path: [
       {x:0,y:2},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:4,y:2},{x:5,y:2},{x:6,y:2},{x:7,y:2},
@@ -170,7 +170,7 @@ Object.assign(LEVELS_DATA, {
     name: "雪崩",
     theme: 4,
     difficulty: 33,
-    startGold: 600,
+    startInk: 600,
     coreHp: 30,
     path: [
       {x:0,y:1},{x:1,y:1},{x:2,y:1},{x:3,y:1},{x:4,y:1},{x:5,y:1},{x:6,y:1},{x:7,y:1},{x:8,y:1},{x:9,y:1},
@@ -190,7 +190,7 @@ Object.assign(LEVELS_DATA, {
     name: "凛冬",
     theme: 4,
     difficulty: 34,
-    startGold: 650,
+    startInk: 650,
     coreHp: 32,
     path: [
       {x:0,y:4},{x:1,y:4},{x:2,y:4},{x:3,y:4},{x:4,y:4},{x:5,y:4},
@@ -212,7 +212,7 @@ Object.assign(LEVELS_DATA, {
     name: "极寒",
     theme: 4,
     difficulty: 35,
-    startGold: 700,
+    startInk: 700,
     coreHp: 35,
     path: [
       {x:0,y:0},{x:1,y:0},{x:2,y:0},{x:3,y:0},{x:4,y:0},{x:5,y:0},{x:6,y:0},{x:7,y:0},{x:8,y:0},{x:9,y:0},
@@ -232,7 +232,7 @@ Object.assign(LEVELS_DATA, {
     name: "冰狱",
     theme: 4,
     difficulty: 36,
-    startGold: 750,
+    startInk: 750,
     coreHp: 38,
     path: [
       {x:0,y:4},{x:1,y:4},{x:2,y:4},{x:3,y:4},{x:4,y:4},{x:5,y:4},{x:6,y:4},{x:7,y:4},{x:8,y:4},{x:9,y:4},
@@ -252,7 +252,7 @@ Object.assign(LEVELS_DATA, {
     name: "霜冻",
     theme: 4,
     difficulty: 37,
-    startGold: 800,
+    startInk: 800,
     coreHp: 40,
     path: [
       {x:0,y:2},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:4,y:2},{x:5,y:2},{x:6,y:2},{x:7,y:2},{x:8,y:2},{x:9,y:2},{x:10,y:2},
@@ -272,7 +272,7 @@ Object.assign(LEVELS_DATA, {
     name: "冰河",
     theme: 4,
     difficulty: 38,
-    startGold: 850,
+    startInk: 850,
     coreHp: 42,
     path: [
       {x:0,y:4},{x:1,y:4},{x:2,y:4},{x:3,y:4},{x:4,y:4},{x:5,y:4},
@@ -294,7 +294,7 @@ Object.assign(LEVELS_DATA, {
     name: "雪暴",
     theme: 4,
     difficulty: 39,
-    startGold: 900,
+    startInk: 900,
     coreHp: 45,
     path: [
       {x:0,y:1},{x:1,y:1},{x:2,y:1},{x:3,y:1},{x:4,y:1},{x:5,y:1},{x:6,y:1},{x:7,y:1},{x:8,y:1},{x:9,y:1},
@@ -314,7 +314,7 @@ Object.assign(LEVELS_DATA, {
     name: "永冻",
     theme: 4,
     difficulty: 40,
-    startGold: 1000,
+    startInk: 1000,
     coreHp: 50,
     path: [
       {x:0,y:4},{x:1,y:4},{x:2,y:4},{x:3,y:4},{x:4,y:4},{x:5,y:4},{x:6,y:4},{x:7,y:4},{x:8,y:4},{x:9,y:4},
@@ -338,7 +338,7 @@ Object.assign(LEVELS_DATA, {
     name: "末日",
     theme: 5,
     difficulty: 41,
-    startGold: 600,
+    startInk: 600,
     coreHp: 30,
     path: [
       {x:0,y:5},{x:1,y:5},{x:2,y:5},{x:3,y:5},{x:4,y:5},{x:5,y:5},{x:6,y:5},{x:7,y:5},{x:8,y:5},{x:9,y:5},
@@ -357,7 +357,7 @@ Object.assign(LEVELS_DATA, {
     name: "毁灭",
     theme: 5,
     difficulty: 42,
-    startGold: 650,
+    startInk: 650,
     coreHp: 32,
     path: [
       {x:0,y:2},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:4,y:2},{x:5,y:2},{x:6,y:2},{x:7,y:2},
@@ -377,7 +377,7 @@ Object.assign(LEVELS_DATA, {
     name: "混沌",
     theme: 5,
     difficulty: 43,
-    startGold: 700,
+    startInk: 700,
     coreHp: 35,
     path: [
       {x:0,y:1},{x:1,y:1},{x:2,y:1},{x:3,y:1},{x:4,y:1},{x:5,y:1},{x:6,y:1},{x:7,y:1},{x:8,y:1},{x:9,y:1},
@@ -397,7 +397,7 @@ Object.assign(LEVELS_DATA, {
     name: "灾变",
     theme: 5,
     difficulty: 44,
-    startGold: 750,
+    startInk: 750,
     coreHp: 38,
     path: [
       {x:0,y:4},{x:1,y:4},{x:2,y:4},{x:3,y:4},{x:4,y:4},{x:5,y:4},
@@ -419,7 +419,7 @@ Object.assign(LEVELS_DATA, {
     name: "浩劫",
     theme: 5,
     difficulty: 45,
-    startGold: 800,
+    startInk: 800,
     coreHp: 40,
     path: [
       {x:0,y:0},{x:1,y:0},{x:2,y:0},{x:3,y:0},{x:4,y:0},{x:5,y:0},{x:6,y:0},{x:7,y:0},{x:8,y:0},{x:9,y:0},
@@ -439,7 +439,7 @@ Object.assign(LEVELS_DATA, {
     name: "天罚",
     theme: 5,
     difficulty: 46,
-    startGold: 850,
+    startInk: 850,
     coreHp: 42,
     path: [
       {x:0,y:4},{x:1,y:4},{x:2,y:4},{x:3,y:4},{x:4,y:4},{x:5,y:4},{x:6,y:4},{x:7,y:4},{x:8,y:4},{x:9,y:4},
@@ -459,7 +459,7 @@ Object.assign(LEVELS_DATA, {
     name: "审判",
     theme: 5,
     difficulty: 47,
-    startGold: 900,
+    startInk: 900,
     coreHp: 45,
     path: [
       {x:0,y:2},{x:1,y:2},{x:2,y:2},{x:3,y:2},{x:4,y:2},{x:5,y:2},{x:6,y:2},{x:7,y:2},{x:8,y:2},{x:9,y:2},{x:10,y:2},
@@ -479,7 +479,7 @@ Object.assign(LEVELS_DATA, {
     name: "湮灭",
     theme: 5,
     difficulty: 48,
-    startGold: 950,
+    startInk: 950,
     coreHp: 48,
     path: [
       {x:0,y:4},{x:1,y:4},{x:2,y:4},{x:3,y:4},{x:4,y:4},{x:5,y:4},
@@ -501,7 +501,7 @@ Object.assign(LEVELS_DATA, {
     name: "归零",
     theme: 5,
     difficulty: 49,
-    startGold: 1000,
+    startInk: 1000,
     coreHp: 50,
     path: [
       {x:0,y:1},{x:1,y:1},{x:2,y:1},{x:3,y:1},{x:4,y:1},{x:5,y:1},{x:6,y:1},{x:7,y:1},{x:8,y:1},{x:9,y:1},

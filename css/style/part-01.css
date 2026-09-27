@@ -20,8 +20,8 @@
 
 /* 基础样式 */
 html, body {
-  background: #0c0c0c;
-  color: #f5f5f5;
+  background: #e7e1d2;
+  color: #1c1a17;
   font-family: "Ma Shan Zheng", "ZCOOL XiaoWei", "Microsoft YaHei", serif;
   width: 100%;
   height: 100%;
@@ -44,8 +44,8 @@ html, body {
 /* 游戏容器 */
 #game-container {
   width: 960px;
-  background: #0c0c0c;
-  border: 2px solid #1f1f1f;
+  background: #e7e1d2;
+  border: 2px solid #ded5c0;
   box-shadow:
     0 0 30px rgba(0,0,0,0.6),
     inset 0 0 60px rgba(0,0,0,0.3);
@@ -56,8 +56,8 @@ html, body {
   display: flex;
   justify-content: space-between;
   padding: 14px 24px;
-  background: #141414;
-  border-bottom: 1px solid #1f1f1f;
+  background: #e0d9c9;
+  border-bottom: 1px solid #ded5c0;
   position: relative;
 }
 
@@ -68,7 +68,7 @@ html, body {
   left: 5%;
   right: 5%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, #2a2a2a, transparent);
+  background: linear-gradient(90deg, transparent, #d0c6b0, transparent);
 }
 
 .stat {
@@ -78,7 +78,7 @@ html, body {
 }
 
 .stat .label {
-  color: #666;
+  color: #6a6459;
   font-size: 14px;
   font-family: "ZCOOL XiaoWei", serif;
 }
@@ -89,11 +89,11 @@ html, body {
   font-family: "Ma Shan Zheng", cursive;
 }
 
-#gold {
-  color: #d4af37;
+#ink {
+  color: #8a6d1f;
 }
 #wave {
-  color: #b0b0b0;
+  color: #8a8377;
 }
 #enemies {
   color: #c45c48;
@@ -107,7 +107,7 @@ html, body {
   width: 960px;
   height: 432px;
   position: relative;
-  background: #0c0c0c;
+  background: #e7e1d2;
 }
 
 #game-canvas {
@@ -121,12 +121,12 @@ html, body {
   justify-content: flex-start;
   gap: 12px;
   padding: 8px 18px;
-  background: #141414;
-  border-top: 1px solid #1f1f1f;
+  background: #e0d9c9;
+  border-top: 1px solid #ded5c0;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: thin;
-  scrollbar-color: #3a3a3a #1a1a1a;
+  scrollbar-color: #b8ac91 #f4efe4;
 }
 
 #bottom-bar::-webkit-scrollbar {
@@ -134,11 +134,11 @@ html, body {
 }
 
 #bottom-bar::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: #f4efe4;
 }
 
 #bottom-bar::-webkit-scrollbar-thumb {
-  background: #3a3a3a;
+  background: #b8ac91;
   border-radius: 2px;
 }
 
@@ -150,15 +150,15 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #1a1a1a;
-  border: 2px solid #2d2d2d;
+  background: #f4efe4;
+  border: 2px solid #cabfa6;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
   flex-shrink: 0;
   box-shadow:
     0 2px 6px rgba(0,0,0,0.3),
-    inset 0 1px 0 rgba(255,255,255,0.03);
+    inset 0 1px 0 rgba(28, 26, 23, 0.03);
 }
 
 .tower-select::before {
@@ -168,25 +168,25 @@ html, body {
   left: 2px;
   right: 2px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(28, 26, 23, 0.1), transparent);
   opacity: 0.5;
 }
 
 .tower-select:hover {
-  border-color: #4a4a4a;
-  background: #1f1f1f;
+  border-color: #6a6459;
+  background: #ded5c0;
   transform: translateY(-2px);
   box-shadow:
     0 4px 12px rgba(0,0,0,0.4),
-    0 0 20px rgba(255,255,255,0.03);
+    0 0 20px rgba(28, 26, 23, 0.03);
 }
 
 .tower-select.selected {
-  border-color: #5a5a5a;
-  background: #242424;
+  border-color: #6a6459;
+  background: #d6cdb8;
   box-shadow:
-    0 0 20px rgba(255,255,255,0.05),
-    inset 0 0 10px rgba(255,255,255,0.02);
+    0 0 20px rgba(28, 26, 23, 0.05),
+    inset 0 0 10px rgba(28, 26, 23, 0.02);
 }
 
 .tower-select.locked {
@@ -195,8 +195,8 @@ html, body {
 }
 
 .tower-select.locked:hover {
-  border-color: #2d2d2d;
-  background: #1a1a1a;
+  border-color: #cabfa6;
+  background: #f4efe4;
   transform: none;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
@@ -205,7 +205,7 @@ html, body {
   font-size: 32px;
   font-family: "Ma Shan Zheng", cursive;
   line-height: 1;
-  color: #e8e8e8;
+  color: #1c1a17;
 }
 
 /* 多字炮塔样式 */
@@ -223,7 +223,7 @@ html, body {
 
 .tower-cost {
   font-size: 13px;
-  color: #8a8a8a;
+  color: #6a6459;
   margin-top: 6px;
   font-family: "ZCOOL XiaoWei", serif;
 }
@@ -232,7 +232,7 @@ html, body {
 #wave-btn {
   padding: 14px;
   text-align: center;
-  background: #141414;
+  background: #e0d9c9;
   position: relative;
 }
 
@@ -243,7 +243,7 @@ html, body {
   left: 10%;
   right: 10%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, #2a2a2a, transparent);
+  background: linear-gradient(90deg, transparent, #d0c6b0, transparent);
 }
 
 /* 顶部栏小型波次按钮 */
@@ -255,9 +255,9 @@ html, body {
 #start-wave {
   padding: 6px 16px;
   font-size: 14px;
-  background: #1a1a1a;
-  border: 1px solid #3a3a3a;
-  color: #d4d4d4;
+  background: #f4efe4;
+  border: 1px solid #b8ac91;
+  color: #3d382f;
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: "Ma Shan Zheng", cursive;
@@ -273,7 +273,7 @@ html, body {
   left: 50%;
   width: 0;
   height: 0;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(28, 26, 23, 0.1) 0%, transparent 70%);
   transform: translate(-50%, -50%);
   transition: width 0.4s, height 0.4s;
 }
@@ -282,8 +282,8 @@ html, body {
 #fusion-encyclopedia-btn {
   padding: 6px 12px;
   font-size: 14px;
-  background: #1a1a1a;
-  border: 1px solid #3a3a3a;
+  background: #f4efe4;
+  border: 1px solid #b8ac91;
   color: #c45c48;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -306,9 +306,9 @@ html, body {
 }
 
 #fusion-encyclopedia-btn:hover {
-  background: #1f1f1f;
+  background: #ded5c0;
   border-color: #c45c48;
-  color: #e8e8e8;
+  color: #1c1a17;
 }
 
 #fusion-encyclopedia-btn:hover::before {
@@ -317,9 +317,9 @@ html, body {
 }
 
 #start-wave:hover {
-  background: #1f1f1f;
-  border-color: #4a4a4a;
-  color: #f5f5f5;
+  background: #ded5c0;
+  border-color: #6a6459;
+  color: #1c1a17;
 }
 
 #start-wave:hover::before {
@@ -355,10 +355,10 @@ html, body {
 }
 
 #modal-content {
-  background: #141414;
+  background: #e0d9c9;
   padding: 48px;
   text-align: center;
-  border: 2px solid #2d2d2d;
+  border: 2px solid #cabfa6;
   box-shadow:
     0 0 40px rgba(0,0,0,0.6),
     0 0 80px rgba(0,0,0,0.3);
@@ -373,20 +373,20 @@ html, body {
   left: 20%;
   right: 20%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #4a4a4a, transparent);
+  background: linear-gradient(90deg, transparent, #6a6459, transparent);
 }
 
 #modal-title {
   font-size: 36px;
   margin-bottom: 24px;
   font-family: "Ma Shan Zheng", cursive;
-  color: #e8e8e8;
+  color: #1c1a17;
   letter-spacing: 4px;
 }
 
 #modal-text {
   font-size: 16px;
-  color: #8a8a8a;
+  color: #6a6459;
   margin-bottom: 32px;
   line-height: 1.6;
   font-family: "ZCOOL XiaoWei", serif;
@@ -394,27 +394,49 @@ html, body {
 
 #modal-btn {
   padding: 12px 36px;
+  min-height: 44px;
   font-size: 16px;
-  background: #1a1a1a;
-  border: 2px solid #3a3a3a;
-  color: #d4d4d4;
+  background: #f4efe4;
+  border: 2px solid #b8ac91;
+  color: #3d382f;
   cursor: pointer;
   transition: all 0.3s;
   font-family: "Ma Shan Zheng", cursive;
   letter-spacing: 2px;
 }
 
+/* 征服模式融合/胜利弹窗动态创建的第二个操作按钮 */
+#modal-return-btn {
+  min-height: 44px;
+  margin-top: 12px;
+  padding: 12px 36px;
+  font-size: 16px;
+  background: #f4efe4;
+  border: 2px solid #b8ac91;
+  color: #6a6459;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: "Ma Shan Zheng", cursive;
+  letter-spacing: 2px;
+}
+
+#modal-return-btn:hover {
+  background: #ded5c0;
+  border-color: #6a6459;
+  color: #1c1a17;
+}
+
 #modal-btn:hover {
-  background: #1f1f1f;
-  border-color: #4a4a4a;
-  color: #f5f5f5;
+  background: #ded5c0;
+  border-color: #6a6459;
+  color: #1c1a17;
 }
 
 /* 炮塔信息面板 */
 #tower-info {
   position: absolute;
-  background: #141414;
-  border: 2px solid #2d2d2d;
+  background: #e0d9c9;
+  border: 2px solid #cabfa6;
   padding: 14px;
   z-index: var(--z-tooltip);
   min-width: 160px;
@@ -433,17 +455,17 @@ html, body {
   gap: 12px;
   margin-bottom: 12px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid #d0c6b0;
 }
 
 .info-char {
   font-size: 28px;
   font-family: "Ma Shan Zheng", cursive;
-  color: #e8e8e8;
+  color: #1c1a17;
 }
 
 .info-level {
-  color: #666;
+  color: #6a6459;
   font-size: 14px;
   font-family: "ZCOOL XiaoWei", serif;
 }
@@ -452,7 +474,7 @@ html, body {
   font-size: 14px;
   line-height: 2;
   margin-bottom: 14px;
-  color: #a0a0a0;
+  color: #8a8377;
   font-family: "ZCOOL XiaoWei", serif;
 }
 
@@ -465,18 +487,18 @@ html, body {
   flex: 1;
   padding: 8px;
   font-size: 13px;
-  background: #1a1a1a;
+  background: #f4efe4;
   border: 1px solid #333;
-  color: #b0b0b0;
+  color: #8a8377;
   cursor: pointer;
   transition: all 0.2s;
   font-family: "Ma Shan Zheng", cursive;
 }
 
 .info-actions button:hover {
-  background: #1f1f1f;
+  background: #ded5c0;
   border-color: #444;
-  color: #d4d4d4;
+  color: #3d382f;
 }
 
 .upgrade-btn {
@@ -501,9 +523,9 @@ html, body {
 }
 
 #sound-toggle {
-  background: #1a1a1a;
-  border: 1px solid #3a3a3a;
-  color: #d4d4d4;
+  background: #f4efe4;
+  border: 1px solid #b8ac91;
+  color: #3d382f;
   padding: 6px 10px;
   cursor: pointer;
   border-radius: 4px;
@@ -515,8 +537,8 @@ html, body {
 }
 
 #sound-toggle:hover {
-  background: #2a2a2a;
-  border-color: #4a4a4a;
+  background: #d0c6b0;
+  border-color: #6a6459;
 }
 
 #sound-toggle:active {
@@ -526,14 +548,14 @@ html, body {
 /* 关卡选择面板 */
 #level-panel {
   width: 180px;
-  background: #141414;
-  border: 2px solid #2a2a2a;
+  background: #e0d9c9;
+  border: 2px solid #d0c6b0;
   padding: 20px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow:
     0 0 20px rgba(0,0,0,0.5),
-    inset 0 1px 0 rgba(255,255,255,0.05);
+    inset 0 1px 0 rgba(28, 26, 23, 0.05);
   position: relative;
 }
 
@@ -544,7 +566,7 @@ html, body {
   left: 10%;
   right: 10%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #3a3a3a, transparent);
+  background: linear-gradient(90deg, transparent, #b8ac91, transparent);
 }
 
 #level-list {

@@ -296,22 +296,22 @@ Object.assign(CONFIG, {
 
   COLORS: {
     // 水墨基调：黑、浅黑（墨晕）、白
-    bg: "#0c0c0c",           // 浓墨底色
-    grid: "#1f1f1f",         // 淡墨网格
-    gridHover: "#2a2a2a",    // 墨晕悬浮
-    path: "#2d2d2d",         // 石板路底色
-    pathLine: "#3a3a3a",     // 路径线条（润笔）
-    pathEdge: "#1a1a1a",     // 路径边缘墨晕
+    bg: "#f4efe4",           // 宣纸底色
+    grid: "#ded5c0",         // 淡墨网格（比纸底略深）
+    gridHover: "#cbc2ad",    // 墨晕悬浮
+    path: "#8a8377",         // 石板路底色
+    pathLine: "#8a8377",     // 路径线条（润笔）
+    pathEdge: "#6a6459",     // 路径边缘墨晕
     core: "#c45c48",         // 朱砂红（唯一彩色，用于核心）
     coreInner: "#8b3a2f",    // 核心深色
     tower: "#e8e8e8",        // 飞白（防御塔）
     towerShadow: "#666666",  // 塔影
-    enemy: "#cccccc",        // 浅墨（敌人）
+    enemy: "#1c1a17",        // 浓墨（敌人）
     enemyDark: "#888888",    // 浓墨敌人
-    projectile: "#b0b0b0",   // 淡墨弹道
+    projectile: "#4a4a4a",   // 中墨弹道（浅底上需足够的墨度）
     inkTrail: "#4a4a4a",     // 墨线拖影
-    text: "#f5f5f5",         // 纯白文字
-    textDim: "#8a8a8a",      // 淡墨文字
+    text: "#1c1a17",         // 浓墨文字
+    textDim: "#6a6459",      // 淡墨文字（辅助文本）
     highlight: "#d4d4d4",    // 飞白高亮
     inkSplash: "#2a2a2a",    // 墨点飞溅
     inkWash: "#3d3d3d",

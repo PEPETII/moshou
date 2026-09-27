@@ -37,7 +37,7 @@ const CONFIG = {
     arrow: { cost: 180, damage: 1.1, cooldown: 600, range: 3.2, hp: 12, onPath: true, pierce: true, pierceCount: 1 },
     bunker: { cost: 300, damage: 2.4, cooldown: 1100, range: 2.2, hp: 34, onPath: true, reflectDamage: 2.6, damageReduction: 0.22 },
     palisade: { cost: 80, damage: 0.6, cooldown: 0, range: 0, hp: 8, onPath: true, repairRatio: 0.35 },
-    treasure: { cost: 110, damage: 0, cooldown: 0, range: 0, goldPerWave: 30, interestBonus: 6, maxCount: 2 },
+    treasure: { cost: 110, damage: 0, cooldown: 0, range: 0, inkPerWave: 30, interestBonus: 6, maxCount: 2 },
     healer: { cost: 160, damage: 0, cooldown: 0, range: 0, healPerWave: 4, emergencyThreshold: 0.35, emergencyBonus: 2.5 },
     soul: { cost: 230, damage: 0, cooldown: 7500, range: 4.2, summonHp: 6, summonDamage: 1.2, maxSummons: 2 },
     shadow: { cost: 210, damage: 0, cooldown: 0, range: 0, copyEfficiency: 0.58 },
@@ -123,14 +123,14 @@ function calculateAuraUtility(tower) {
  * 计算效用分 - 经济塔
  */
 function calculateEconUtility(tower) {
-  if (!tower.goldPerWave) return 0;
+  if (!tower.inkPerWave) return 0;
   
-  const goldPerWave = tower.goldPerWave;
+  const inkPerWave = tower.inkPerWave;
   const interestBonus = tower.interestBonus || 0;
   const cost = tower.cost || 100;
   
   // 60秒期望收益 (假设每波20秒)
-  const expectedGain = (goldPerWave * 3) + interestBonus;
+  const expectedGain = (inkPerWave * 3) + interestBonus;
   
   return expectedGain / cost;
 }
@@ -179,7 +179,7 @@ function testTowerBalance() {
     if (key === 'fusion') continue;
     
     // 判断是否为伤害塔
-    const isDamageTower = tower.damage > 0 && tower.cooldown > 0 && !tower.aura && !tower.onPath && !tower.goldPerWave && !tower.summonHp && !tower.globalSlow;
+    const isDamageTower = tower.damage > 0 && tower.cooldown > 0 && !tower.aura && !tower.onPath && !tower.inkPerWave && !tower.summonHp && !tower.globalSlow;
     
     if (isDamageTower) {
       const dps = calculateDPS(tower.damage, tower.cooldown);
@@ -205,7 +205,7 @@ function testTowerBalance() {
       } else if (tower.slow || tower.stunDuration || tower.freezeDuration) {
         utility = calculateControlUtility(tower);
         utilityType = 'control';
-      } else if (tower.goldPerWave) {
+      } else if (tower.inkPerWave) {
         utility = calculateEconUtility(tower);
         utilityType = 'econ';
       } else if (tower.summonHp) {

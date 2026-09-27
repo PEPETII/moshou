@@ -166,7 +166,7 @@ UI.prototype.populateTowerEncyclopedia = function(filter = 'all') {
 
       item.innerHTML = `
         ${charHtml}
-        <span class="item-cost">${config.cost}金</span>
+        <span class="item-cost">${config.cost}墨</span>
       `;
 
       const clickHandler = () => {
@@ -209,7 +209,7 @@ UI.prototype.showTowerDetail = function(type, config) {
       statsHtml += this.createDetailStatRow("攻速", (config.cooldown / 1000).toFixed(1) + "秒");
     }
     if (config.cost !== undefined) {
-      statsHtml += this.createDetailStatRow("造价", config.cost + "金", true);
+      statsHtml += this.createDetailStatRow("造价", config.cost + "墨", true);
     }
     if (config.hp !== undefined) {
       statsHtml += this.createDetailStatRow("生命值", config.hp);
@@ -295,7 +295,7 @@ UI.prototype.showEnemyDetail = function(type, config) {
     statsHtml += this.createDetailStatRow("生命值", config.hp);
     statsHtml += this.createDetailStatRow("攻击力", config.damage);
     statsHtml += this.createDetailStatRow("移动速度", config.speed);
-    statsHtml += this.createDetailStatRow("击败奖励", config.reward + "金", true);
+    statsHtml += this.createDetailStatRow("击败奖励", config.reward + "墨", true);
 
     // 特殊能力
     const specials = [];

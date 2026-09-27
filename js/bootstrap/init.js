@@ -1,5 +1,11 @@
 // 资源预加载和初始化
     (function() {
+        // 主菜单显示游戏版本号（CONFIG 已在前面加载）
+        const versionEl = document.getElementById('game-version');
+        if (versionEl && typeof CONFIG !== 'undefined' && CONFIG.GAME_VERSION) {
+            versionEl.textContent = CONFIG.GAME_VERSION;
+        }
+
         const loadingContainer = document.getElementById('loading-container');
         const loadingProgress = document.getElementById('loading-progress');
         const loadingPercent = document.getElementById('loading-percent');

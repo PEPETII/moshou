@@ -17,6 +17,7 @@
   var MAX_SCALE = 1;
   var MAX_ITERATIONS = 4;
   var CONVERGE_EPSILON = 0.002;
+  var scaleSettleTimers = [];
 
   function debugEnabled() {
     try {
@@ -137,6 +138,25 @@
     applyScale();
   }
 
+  /**
+   * 模式切换后先立即适配，再等待触控尺寸和字体布局稳定后补算几次。
+   * CSS 中的 calc(44px / --ui-scale) 会反过来改变侧栏高度，单次测量会留下裁切。
+   */
+  function applyGameScale() {
+    var applied = applyScale();
+
+    scaleSettleTimers.forEach(function (timer) { clearTimeout(timer); });
+    scaleSettleTimers = [0, 180, 360].map(function (delay) {
+      return setTimeout(applyScale, delay);
+    });
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(applyScale);
+    }
+
+    return applied;
+  }
+
   function onViewportChanged() {
     // 旋转后浏览器尺寸上报有延迟，分两拍刷新更稳
     setTimeout(checkOrientation, 60);
@@ -144,12 +164,16 @@
   }
 
   // 对外暴露：模式切换（塔防 ↔ 征服）、进入/退出战斗时都需要重算
-  window.applyGameScale = applyScale;
+  window.applyGameScale = applyGameScale;
   window.applyScale = applyScale;
 
   window.addEventListener('load', function () {
     checkOrientation();
   });
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(applyScale);
+  }
   window.addEventListener('resize', onViewportChanged);
   window.addEventListener('orientationchange', function () {
     setTimeout(checkOrientation, 200);

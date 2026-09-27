@@ -1,8 +1,12 @@
 // ConquestGame：召唤、波次和胜负
 ConquestGame.prototype.summonTower = function() {
-    if (this.gold < this.summonCost || this.gameEnded) {
+    // 触屏没有 hover，只闪一下红屏无法说明失败原因，必须补一条文字提示
+    if (this.gameEnded) return;
+
+    if (this.ink < this.summonCost) {
       this.summonFlashTime = Date.now();
       this.summonFlashType = "fail";
+      this._notify(`墨水不足，召唤需要 ${this.summonCost} 墨`, "warning");
       return;
     }
 
@@ -10,13 +14,14 @@ ConquestGame.prototype.summonTower = function() {
     if (!pos) {
       this.summonFlashTime = Date.now();
       this.summonFlashType = "fail";
+      this._notify("内圈已无空位，先融合腾出位置", "warning");
       return;
     }
 
     const towerTypes = ["fire", "water", "mountain", "wood", "gold", "earth", "xinZhongYan", "ruFengSiZhen"];
     const type = towerTypes[Math.floor(Math.random() * towerTypes.length)];
 
-    this.gold -= this.summonCost;
+    this.ink -= this.summonCost;
 
     const tower = new Tower(type, pos.x, pos.y, this);
     if (tower.onPath) {
@@ -26,7 +31,7 @@ ConquestGame.prototype.summonTower = function() {
     this._towerIndex.set(`${tower.gx},${tower.gy}`, tower);
 
     const pixelPos = gridToPixel(pos.x, pos.y);
-    this.particleSystem.createExplosion(pixelPos.x, pixelPos.y, 15, "#ffd700");
+    this.particleSystem.createExplosion(pixelPos.x, pixelPos.y, 15, "#a67c00");
 
     this.summonFlashTime = Date.now();
     this.summonFlashType = "success";
@@ -131,6 +136,8 @@ ConquestGame.prototype.checkWaveComplete = function() {
 ConquestGame.prototype.gameOver = function(victory) {
     this.gameEnded = true;
     this.victory = victory;
+    // 胜负弹窗必须位于当前操作上下文之上，先关闭可能仍打开的炮塔信息面板。
+    this.hideTowerInfo();
 
     if (victory) {
       // 标记当前关卡已完成
@@ -189,9 +196,14 @@ ConquestGame.prototype.showVictoryModalWithNextLevel = function(nextLevelId) {
 };
 ConquestGame.prototype.showModal = function(title, text, buttonText, onClick) {
     const modal = document.getElementById("modal");
+    const returnBtn = document.getElementById("modal-return-btn");
     document.getElementById("modal-title").textContent = title;
     document.getElementById("modal-text").textContent = text;
     document.getElementById("modal-btn").textContent = buttonText;
+    if (returnBtn) {
+      returnBtn.style.display = "none";
+      returnBtn.onclick = null;
+    }
     modal.classList.remove("hidden");
 
     document.getElementById("modal-btn").onclick = () => {
@@ -201,7 +213,7 @@ ConquestGame.prototype.showModal = function(title, text, buttonText, onClick) {
   
 };
 ConquestGame.prototype.updateUI = function() {
-    document.getElementById("conquest-gold").textContent = this.gold;
+    document.getElementById("conquest-ink").textContent = this.ink;
     document.getElementById("conquest-wave").textContent = `${this.wave}/${this.maxWave}`;
 
     const aliveCount = this.enemies.filter((e) => !e.dead).length;
@@ -211,7 +223,7 @@ ConquestGame.prototype.updateUI = function() {
     if (coreHpEl) coreHpEl.textContent = this.coreHp;
 
     const summonBtn = document.getElementById("conquest-summon-btn");
-    if (summonBtn) summonBtn.disabled = this.gold < this.summonCost || this.gameEnded;
+    if (summonBtn) summonBtn.disabled = this.ink < this.summonCost || this.gameEnded;
 
     const waveBtn = document.getElementById("conquest-wave-btn");
     if (waveBtn) {

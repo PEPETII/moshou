@@ -9,7 +9,7 @@ const THEMES = {
     id: 1,
     name: "初墨",
     icon: "墨",
-    color: "#8a8a8a",
+    color: "#6a6459",
     desc: "水墨初染，入门试炼",
     unlockRequirement: null
   },

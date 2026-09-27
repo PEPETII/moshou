@@ -1,7 +1,7 @@
 // UI：轻提示（toast）
 //
 // 用途：给"操作失败"提供可见反馈。
-// 触摸端没有 hover 预览，旧实现里放置失败（金币不足 / 格子被占 / 非法位置）
+// 触摸端没有 hover 预览，旧实现里放置失败（墨水不足 / 格子被占 / 非法位置）
 // 全部静默 return false —— 玩家视角就是"点了没反应"。
 //
 // 设计约束：
@@ -16,7 +16,7 @@
   const MAX_VISIBLE = 3;
 
   const STYLES = {
-    info: { border: '#3a3a3a', color: '#d4d4d4', icon: '·' },
+    info: { border: '#b8ac91', color: '#3d382f', icon: '·' },
     success: { border: '#7a9a6a', color: '#a8c49a', icon: '✓' },
     warning: { border: '#c45c48', color: '#e0a094', icon: '!' }
   };

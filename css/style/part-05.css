@@ -47,8 +47,31 @@
 /* ----------------------------------------
    2. 手势归属
    ---------------------------------------- */
-#game-canvas {
+#game-canvas,
+#conquest-canvas {
   touch-action: none;              /* 画布上的手势全部由游戏自己处理 */
+}
+
+/* 征服模式：侧栏在手机上不该吃掉战场宽度——
+   280px 侧栏会让 768px 画布的可用缩放变小，格子跟着变小、更难点中 */
+html[data-input="touch"] #conquest-side-panel {
+  width: 200px;
+  padding: 12px;
+  height: 432px;
+  max-height: none;
+  overflow-y: auto;
+}
+
+/* 让缩放处理自然宽度，避免 flex 先把 768px 画布压到父容器外 */
+html[data-input="touch"] #conquest-container {
+  width: max-content;
+  flex: 0 0 max-content;
+}
+
+html[data-input="touch"] #conquest-game-container {
+  width: 800px;
+  max-width: none;
+  flex: 0 0 800px;
 }
 
 html[data-input="touch"] #bottom-bar {
@@ -144,8 +167,8 @@ html[data-input="touch"] .menu-level-item {
    用右缘渐隐表达"还有内容"，是移动端的通用约定。
    ---------------------------------------- */
 html[data-input="touch"] #bottom-bar {
-  mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent 100%);
+  mask-image: linear-gradient(to right, #1c1a17 calc(100% - 18px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #1c1a17 calc(100% - 18px), transparent 100%);
 }
 
 html[data-input="touch"] #bottom-bar::-webkit-scrollbar {
@@ -173,6 +196,7 @@ html[data-input="touch"] .conquest-theme-card:active,
 html[data-input="touch"] .conquest-level-item:not(.locked):active,
 html[data-input="touch"] .menu-level-item:active,
 html[data-input="touch"] #modal-btn:active,
+html[data-input="touch"] #modal-return-btn:active,
 html[data-input="touch"] #start-wave:not(:disabled):active,
 html[data-input="touch"] #fusion-encyclopedia-btn:active,
 html[data-input="touch"] #back-to-menu-btn:active,
@@ -194,13 +218,13 @@ html[data-input="touch"] #back-to-custom-from-towers:active,
 html[data-input="touch"] #back-to-custom-from-levels:active,
 html[data-input="touch"] #back-to-custom-from-export:active,
 html[data-input="touch"] #back-to-menu-from-custom:active {
-  background: #242424 !important;
-  border-color: #5a5a5a !important;
+  background: #d6cdb8 !important;
+  border-color: #6a6459 !important;
 }
 
 /* 触屏选中态：同时用发出光晕强化（规范 12.5） */
 html[data-input="touch"] .tower-select.selected {
-  border-color: #ffd700 !important;
+  border-color: #a67c00 !important;
   box-shadow: 0 0 15px rgba(255, 215, 0, 0.3) !important;
 }
 
@@ -209,11 +233,11 @@ html[data-input="touch"] .tower-select.locked:active,
 html[data-input="touch"] .theme-card.locked:active,
 html[data-input="touch"] .conquest-level-item.locked:active,
 html[data-input="touch"] button:disabled:active {
-  background: #1a1a1a !important;
-  border-color: #2d2d2d !important;
+  background: #f4efe4 !important;
+  border-color: #cabfa6 !important;
 }
 
-/* 锁定卡：保留可点击语义，用抖动提示"金币不足"（见 toast.js 配合） */
+/* 锁定卡：保留可点击语义，用抖动提示"墨水不足"（见 toast.js 配合） */
 html[data-input="touch"] .tower-select.locked {
   cursor: default;
   opacity: 0.45;
@@ -271,3 +295,8 @@ html[data-input="touch"] #conquest-tower-info .info-actions button {
   padding: 10px;
 }
 
+html[data-input="touch"] #modal-return-btn {
+  min-width: clamp(var(--touch-min), calc(var(--touch-min) / var(--ui-scale)), 140px);
+  min-height: clamp(var(--touch-min), calc(var(--touch-min) / var(--ui-scale)), 88px);
+  touch-action: manipulation;
+}

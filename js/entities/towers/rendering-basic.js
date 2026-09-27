@@ -5,9 +5,9 @@ Tower.prototype.draw = function(ctx, timestamp) {
     if (this.selected) {
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.range * CONFIG.CELL_SIZE, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(255, 255, 0, 0.3)";
+      ctx.strokeStyle = "rgba(176, 58, 46, 0.35)";
       ctx.stroke();
-      ctx.fillStyle = "rgba(255, 255, 0, 0.1)";
+      ctx.fillStyle = "rgba(176, 58, 46, 0.1)";
       ctx.fill();
     }
 

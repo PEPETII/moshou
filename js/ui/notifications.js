@@ -12,7 +12,7 @@ UI.prototype.showEventNotification = function(message, type = 'info', duration =
       color: white;
       padding: 20px;
       border-radius: 10px;
-      border: 2px solid #ffd700;
+      border: 2px solid #a67c00;
       z-index: 1000;
       min-width: 300px;
       text-align: center;
@@ -20,12 +20,12 @@ UI.prototype.showEventNotification = function(message, type = 'info', duration =
     `;
     
     notification.innerHTML = `
-      <h3 style="color: #ffd700; margin: 0 0 10px 0;">
+      <h3 style="color: #a67c00; margin: 0 0 10px 0;">
         ${type === 'success' ? '✨ 成功' : type === 'warning' ? '⚠️ 警告' : 'ℹ️ 信息'}
       </h3>
       <p style="margin: 0 0 15px 0;">${message}</p>
       <button onclick="this.parentElement.remove()" style="
-        background: #ffd700;
+        background: #a67c00;
         color: black;
         border: none;
         padding: 8px 16px;
@@ -62,7 +62,7 @@ UI.prototype.showMerchantEvent = function(options) {
       color: white;
       padding: 30px;
       border-radius: 15px;
-      border: 3px solid #ffd700;
+      border: 3px solid #a67c00;
       z-index: 1000;
       min-width: 400px;
       text-align: center;
@@ -70,7 +70,7 @@ UI.prototype.showMerchantEvent = function(options) {
     `;
     
     dialog.innerHTML = `
-      <h2 style="color: #ffd700; margin: 0 0 20px 0;">🧙‍♂️ 神秘商人到访！</h2>
+      <h2 style="color: #a67c00; margin: 0 0 20px 0;">🧙‍♂️ 神秘商人到访！</h2>
       <p style="margin: 0 0 20px 0; font-size: 16px;">选择一项交易：</p>
       <div id="merchant-options"></div>
     `;

@@ -18,6 +18,7 @@
     <div id="main-menu">
         <canvas id="menu-ink-canvas"></canvas>
         <h1>墨守成规</h1>
+        <div id="game-version" class="game-version"></div>
         <div class="menu-buttons">
             <button class="menu-btn" id="btn-encyclopedia">图鉴</button>
             <button class="menu-btn" id="btn-levels">塔防模式</button>
@@ -160,7 +161,7 @@
                         <span class="step-number">3</span>
                         <div class="step-content">
                             <div class="step-title">确认融合</div>
-                            <div class="step-desc">消耗金币确认融合操作</div>
+                            <div class="step-desc">消耗墨水确认融合操作</div>
                         </div>
                     </div>
                     <div class="guide-step">
@@ -176,7 +177,7 @@
                     <ul class="notice-list">
                         <li>融合后材料炮塔会消失，请谨慎选择</li>
                         <li>融合炮塔无法再次进行融合</li>
-                        <li>需要足够的金币才能进行融合</li>
+                        <li>需要足够的墨水才能进行融合</li>
                         <li>并非所有炮塔组合都可以融合</li>
                         <li>融合后的炮塔继承材料炮塔的位置</li>
                     </ul>
@@ -327,8 +328,8 @@
                 <div id="game-container">
                     <div id="top-bar">
                         <div class="stat">
-                            <span class="label">金币</span>
-                            <span id="gold" class="value">300</span>
+                            <span class="label">墨水</span>
+                            <span id="ink" class="value">300</span>
                         </div>
                         <div class="stat">
                             <span class="label">波次</span>
@@ -346,10 +347,10 @@
                             <button id="start-wave">波次</button>
                         </div>
                         <div class="stat">
-                            <button id="fusion-encyclopedia-btn" title="融合图鉴" style="background:#1a1a1a;border:1px solid #3a3a3a;color:#c45c48;padding:6px 12px;cursor:pointer;font-family:'Ma Shan Zheng','ZCOOL XiaoWei','Microsoft YaHei',serif;transition:all 0.3s;">融合图鉴</button>
+                            <button id="fusion-encyclopedia-btn" title="融合图鉴" style="background:#f4efe4;border:1px solid #b8ac91;color:#c45c48;padding:6px 12px;cursor:pointer;font-family:'Ma Shan Zheng','ZCOOL XiaoWei','Microsoft YaHei',serif;transition:all 0.3s;">融合图鉴</button>
                         </div>
                         <div class="stat">
-                            <button id="back-to-menu-btn" title="主菜单" style="background:#1a1a1a;border:1px solid #3a3a3a;color:#666;padding:6px 12px;cursor:pointer;font-family:'Ma Shan Zheng','ZCOOL XiaoWei','Microsoft YaHei',serif;">主菜单</button>
+                            <button id="back-to-menu-btn" title="主菜单" style="background:#f4efe4;border:1px solid #b8ac91;color:#6a6459;padding:6px 12px;cursor:pointer;font-family:'Ma Shan Zheng','ZCOOL XiaoWei','Microsoft YaHei',serif;">主菜单</button>
                         </div>
                     </div>
 
@@ -399,13 +400,13 @@
                     <div class="conquest-title">征服模式</div>
                     <div class="summon-section">
                         <button id="conquest-summon-btn" class="summon-btn">召唤</button>
-                        <div class="summon-cost">80金</div>
+                        <div class="summon-cost">80墨</div>
                     </div>
                     <div class="conquest-divider"></div>
                     <div class="conquest-stats">
                         <div class="conquest-stat">
-                            <span class="conquest-label">金币</span>
-                            <span id="conquest-gold" class="conquest-value">300</span>
+                            <span class="conquest-label">墨水</span>
+                            <span id="conquest-ink" class="conquest-value">300</span>
                         </div>
                         <div class="conquest-stat">
                             <span class="conquest-label">波次</span>
@@ -417,7 +418,7 @@
                         </div>
                     </div>
                     <div class="conquest-divider"></div>
-                    <button id="conquest-fusion-encyclopedia-btn" title="融合图鉴" style="background:#1a1a1a;border:1px solid #3a3a3a;color:#c45c48;padding:6px 12px;cursor:pointer;font-family:'Ma Shan Zheng','ZCOOL XiaoWei','Microsoft YaHei',serif;transition:all 0.3s;width:100%;margin-bottom:8px;">融合图鉴</button>
+                    <button id="conquest-fusion-encyclopedia-btn" title="融合图鉴" style="background:#f4efe4;border:1px solid #b8ac91;color:#c45c48;padding:6px 12px;cursor:pointer;font-family:'Ma Shan Zheng','ZCOOL XiaoWei','Microsoft YaHei',serif;transition:all 0.3s;width:100%;margin-bottom:8px;">融合图鉴</button>
                     <button id="conquest-wave-btn" class="conquest-wave-btn">开始波次</button>
                     <button id="conquest-menu-btn" class="conquest-menu-btn">菜单</button>
                     <div class="conquest-rules">

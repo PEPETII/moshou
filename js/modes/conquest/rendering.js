@@ -122,7 +122,7 @@ ConquestGame.prototype.drawPath = function() {
     }
     this.ctx.stroke();
 
-    this.ctx.fillStyle = "#666";
+    this.ctx.fillStyle = "#6a6459";
     this.ctx.font = "12px Microsoft YaHei";
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
@@ -188,6 +188,18 @@ ConquestGame.prototype.drawDragPlacementPreview = function() {
         this.CELL_SIZE
       );
     }
+
+    // 显式描出"松手会落在哪一格"：触摸端没有光标，色块本身不够醒目
+    this.ctx.save();
+    this.ctx.strokeStyle = "rgba(255, 215, 0, 0.85)";
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeRect(
+      gx * this.CELL_SIZE,
+      gy * this.CELL_SIZE,
+      this.CELL_SIZE,
+      this.CELL_SIZE
+    );
+    this.ctx.restore();
   
 };
 ConquestGame.prototype.drawDragPreview = function() {
@@ -197,12 +209,17 @@ ConquestGame.prototype.drawDragPreview = function() {
     const x = (this.dragCurrentPos.x - this._dragRectLeft) * this._dragScaleX;
     const y = (this.dragCurrentPos.y - this._dragRectTop) * this._dragScaleY;
 
+    // 触摸端：手指压在触点上，把幽灵塔与射程圈整体上移，
+    // 否则玩家既看不到被拖的塔，也看不到它下方即将命中的目标格
+    const lift = this._dragSource === "touch" ? this.CELL_SIZE * 0.8 : 0;
+    const drawY = y - lift;
+
     const rangeInPixels = this.draggingTower.range * this.CELL_SIZE;
     this.ctx.beginPath();
-    this.ctx.arc(x, y, rangeInPixels, 0, Math.PI * 2);
-    this.ctx.strokeStyle = "rgba(255, 255, 0, 0.3)";
+    this.ctx.arc(x, drawY, rangeInPixels, 0, Math.PI * 2);
+    this.ctx.strokeStyle = "rgba(176, 58, 46, 0.35)";
     this.ctx.stroke();
-    this.ctx.fillStyle = "rgba(255, 255, 0, 0.1)";
+    this.ctx.fillStyle = "rgba(176, 58, 46, 0.1)";
     this.ctx.fill();
 
     this.ctx.save();
@@ -210,8 +227,8 @@ ConquestGame.prototype.drawDragPreview = function() {
     this.ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
-    this.ctx.fillStyle = this.draggingTower.isFusion ? "#888" : "#ffff00";
-    this.ctx.fillText(this.draggingTower.char, x, y);
+    this.ctx.fillStyle = this.draggingTower.isFusion ? "#6a6459" : "#ffff00";
+    this.ctx.fillText(this.draggingTower.char, x, drawY);
     this.ctx.restore();
   
 };
@@ -233,7 +250,7 @@ ConquestGame.prototype._clearDragCache = function() {
   
 };
 ConquestGame.prototype.drawInfo = function() {
-    this.ctx.fillStyle = "#888";
+    this.ctx.fillStyle = "#6a6459";
     this.ctx.font = '14px "Ma Shan Zheng", cursive';
     this.ctx.textAlign = "left";
     this.ctx.fillText("征服模式", 10, 20);

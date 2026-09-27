@@ -136,7 +136,7 @@ class InkRenderer {
   /**
    * 绘制墨点飞溅效果
    */
-  drawInkSplash(x, y, count = 8, color = '#2a2a2a', spread = 30) {
+  drawInkSplash(x, y, count = 8, color = '#3d382f', spread = 30) {
     if (isNaN(x) || isNaN(y)) return;
     this.ctx.save();
     
@@ -220,13 +220,13 @@ class InkRenderer {
   /**
    * 绘制水墨风格的文字
    */
-  drawInkText(text, x, y, fontSize = 24, color = '#e8e8e8', withShadow = true) {
+  drawInkText(text, x, y, fontSize = 24, color = '#1c1a17', withShadow = true) {
     if (isNaN(x) || isNaN(y)) return;
     this.ctx.save();
     
     // 墨晕阴影
     if (withShadow) {
-      this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      this.ctx.fillStyle = 'rgba(28, 26, 23, 0.22)';
       this.ctx.font = `${fontSize}px "Ma Shan Zheng", cursive`;
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
@@ -242,7 +242,7 @@ class InkRenderer {
     
     // 飞白高光
     if (Math.random() > 0.7) {
-      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      this.ctx.fillStyle = 'rgba(28, 26, 23, 0.14)';
       this.ctx.fillText(text, x - 1, y - 1);
     }
     
@@ -291,7 +291,7 @@ class InkRenderer {
    */
   drawWitheredTree(x, y, scale = 1) {
     this.ctx.save();
-    this.ctx.strokeStyle = '#1a1a1a';
+    this.ctx.strokeStyle = '#3d382f';
     this.ctx.lineWidth = 2 * scale;
     this.ctx.lineCap = 'round';
     

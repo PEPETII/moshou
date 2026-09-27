@@ -58,8 +58,8 @@ class FusionSystem {
     return this._recipes.get(this._normalizeKey(key));
   }
 
-  getPreview(type1, type2, gold) {
-    const cacheKey = `${type1}|${type2}|${gold}`;
+  getPreview(type1, type2, ink) {
+    const cacheKey = `${type1}|${type2}|${ink}`;
     if (this._previewCache.has(cacheKey)) {
       return this._previewCache.get(cacheKey);
     }
@@ -77,7 +77,7 @@ class FusionSystem {
       char: recipe.char,
       cost: recipe.cost,
       desc: recipe.desc,
-      canAfford: gold >= recipe.cost,
+      canAfford: ink >= recipe.cost,
       color: recipe.color,
       components: recipe.components,
       tier: recipe.tier || 1,
@@ -155,11 +155,11 @@ const fusionSystem = new FusionSystem();
 
 fusionSystem.registerBatch(CONFIG.FUSION_TOWERS);
 
-// 验证器 1: 金币验证（最快，优先执行）
+// 验证器 1: 墨水验证（最快，优先执行）
 fusionSystem.addValidator((recipe, context) => {
-  if (!context || context.gold === undefined) return { valid: true };
-  if (context.gold < recipe.cost) {
-    return { valid: false, reason: 'insufficient_gold' };
+  if (!context || context.ink === undefined) return { valid: true };
+  if (context.ink < recipe.cost) {
+    return { valid: false, reason: 'insufficient_ink' };
   }
   return { valid: true };
 });

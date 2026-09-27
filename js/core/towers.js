@@ -8,7 +8,7 @@ Game.prototype.canPlaceTower = function(type, gx, gy) {
     if (this.inkTrailAnimation && this.inkTrailAnimation.active) return false;
     const config = CONFIG.TOWERS[type];
     if (!config) return false;
-    if (this.gold < config.cost) return false;
+    if (this.ink < config.cost) return false;
 
     if (config.onPath) {
       return this._pathCellSet.has(gridKey(gx, gy)) && !this.runtimeIndexes.getTowerAt(gx, gy);
@@ -26,7 +26,7 @@ Game.prototype.canPlaceTower = function(type, gx, gy) {
  *
  * 与 canPlaceTower 严格等价：reason 为 null ⇔ canPlaceTower 为 true。
  * 存在的意义是触摸端：那里没有 hover 预览，旧实现放置失败时静默 return false，
- * 玩家只能看到"点了没反应"，无法区分金币不足 / 格子被占 / 位置非法。
+ * 玩家只能看到"点了没反应"，无法区分墨水不足 / 格子被占 / 位置非法。
  *
  * @param {string} type 炮塔类型
  * @param {number} gx 网格 x
@@ -54,7 +54,7 @@ Game.prototype.getPlacementBlockReason = function(type, gx, gy) {
     }
 
     if (this.runtimeIndexes.getTowerAt(gx, gy)) return '该位置已有炮塔';
-    if (this.gold < config.cost) return `金币不足（需 ${config.cost} 金）`;
+    if (this.ink < config.cost) return `墨水不足（需 ${config.cost} 墨）`;
 
     return null;
 };
@@ -63,9 +63,9 @@ Game.prototype.placeTower = function(type, gx, gy) {
     if (!this.canPlaceTower(type, gx, gy)) return false;
 
     const config = CONFIG.TOWERS[type];
-    if (this.gold < config.cost) return false;
-    this.gold -= config.cost;
-    if (this.gold < 0) this.gold = 0;
+    if (this.ink < config.cost) return false;
+    this.ink -= config.cost;
+    if (this.ink < 0) this.ink = 0;
 
     const tower = new Tower(type, gx, gy, this);
     this.towers.push(tower);
@@ -88,7 +88,7 @@ Game.prototype.removeTower = function(tower) {
   
 };
 Game.prototype.sellTower = function(tower) {
-    this.gold += tower.getSellValue();
+    this.ink += tower.getSellValue();
     this.removeTower(tower);
     this.updateUI();
   
@@ -101,7 +101,7 @@ Game.prototype.canFuse = function(tower1, tower2) {
     const result = fusionSystem.canFuse(tower1.type, tower2.type, {
       tower1,
       tower2,
-      gold: this.gold,
+      ink: this.ink,
       path: this.path
     });
     return result.canFuse;
@@ -112,16 +112,16 @@ Game.prototype.fuseTowers = function(tower1, tower2) {
       const result = fusionSystem.canFuse(tower1.type, tower2.type, {
         tower1,
         tower2,
-        gold: this.gold,
+        ink: this.ink,
         path: this.path
       });
       if (!result.canFuse) return false;
 
       const fusionType = result.key;
     const fusionConfig = result.recipe;
-    if (this.gold < fusionConfig.cost) return false;
-    this.gold -= fusionConfig.cost;
-    if (this.gold < 0) this.gold = 0;
+    if (this.ink < fusionConfig.cost) return false;
+    this.ink -= fusionConfig.cost;
+    if (this.ink < 0) this.ink = 0;
 
       let gx, gy;
       if (fusionConfig.onPath) {
@@ -152,6 +152,6 @@ Game.prototype.fuseTowers = function(tower1, tower2) {
   
 };
 Game.prototype.getFusionPreview = function(tower1, tower2) {
-    return fusionSystem.getPreview(tower1.type, tower2.type, this.gold);
+    return fusionSystem.getPreview(tower1.type, tower2.type, this.ink);
   
 };

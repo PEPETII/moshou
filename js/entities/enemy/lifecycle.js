@@ -2,10 +2,10 @@
 Enemy.prototype.die = function() {
     this.dead = true;
     this.deathTime = Date.now();
-    this.game.gold += this.reward;
+    this.game.ink += this.reward;
     this.game.updateUI();
 
-    // 播放死亡音效、金币音效和粒子效果
+    // 播放死亡音效、墨水音效和粒子效果
     this.game.particleSystem.createExplosion(this.x, this.y, 15);
 
     // 死亡爆炸

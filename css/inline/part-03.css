@@ -49,7 +49,7 @@
             transform: translateY(-50%);
             padding: 8px 20px;
             font-size: 14px;
-            background: #2d2d2d;
+            background: #cabfa6;
             border: 1px solid #c45c48;
             color: #c45c48;
             cursor: pointer;
@@ -60,15 +60,15 @@
 
         .guide-btn:hover {
             background: #c45c48;
-            color: #fff;
+            color: #f4efe4;
         }
 
         /* 融合配方卡片 */
         .fusion-item {
             aspect-ratio: 1;
             padding: 15px 10px;
-            background: #1a1a1a;
-            border: 2px solid #2d2d2d;
+            background: #f4efe4;
+            border: 2px solid #cabfa6;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -81,15 +81,15 @@
         }
 
         .fusion-item:hover {
-            border-color: #4a4a4a;
-            background: #1f1f1f;
+            border-color: #6a6459;
+            background: #ded5c0;
             transform: scale(1.05);
         }
 
         .fusion-item .fusion-result-char {
             font-size: 28px;
             font-family: "Ma Shan Zheng", cursive;
-            color: #e8e8e8;
+            color: #1c1a17;
             margin-bottom: 6px;
             line-height: 1.2;
         }
@@ -101,7 +101,7 @@
 
         .fusion-item .fusion-cost {
             font-size: 12px;
-            color: #ffd700;
+            color: #a67c00;
             font-family: "ZCOOL XiaoWei", serif;
         }
 
@@ -118,22 +118,22 @@
 
         .fusion-item .fusion-rarity-tag.common {
             background: #9e9e9e;
-            color: #000;
+            color: #1c1a17;
         }
 
         .fusion-item .fusion-rarity-tag.rare {
             background: #448aff;
-            color: #fff;
+            color: #f4efe4;
         }
 
         .fusion-item .fusion-rarity-tag.epic {
             background: #ab47bc;
-            color: #fff;
+            color: #f4efe4;
         }
 
         .fusion-item .fusion-rarity-tag.legendary {
-            background: #ffd700;
-            color: #000;
+            background: #a67c00;
+            color: #1c1a17;
         }
 
         #back-to-encyclopedia-from-fusion {
@@ -141,16 +141,16 @@
             padding: 10px 30px;
             font-size: 16px;
             background: transparent;
-            border: 1px solid #3a3a3a;
-            color: #666;
+            border: 1px solid #b8ac91;
+            color: #6a6459;
             cursor: pointer;
             font-family: "ZCOOL XiaoWei", serif;
             transition: all 0.3s;
         }
 
         #back-to-encyclopedia-from-fusion:hover {
-            border-color: #5a5a5a;
-            color: #999;
+            border-color: #6a6459;
+            color: #8a8377;
         }
 
         /* 融合详情面板 */
@@ -192,26 +192,26 @@
 
         .fusion-rarity.common {
             background: #9e9e9e;
-            color: #000;
+            color: #1c1a17;
         }
 
         .fusion-rarity.rare {
             background: #448aff;
-            color: #fff;
+            color: #f4efe4;
         }
 
         .fusion-rarity.epic {
             background: #ab47bc;
-            color: #fff;
+            color: #f4efe4;
         }
 
         .fusion-rarity.legendary {
-            background: #ffd700;
-            color: #000;
+            background: #a67c00;
+            color: #1c1a17;
         }
 
         .fusion-materials {
-            background: #151515;
+            background: #e0d9c9;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
@@ -219,7 +219,7 @@
 
         .materials-title {
             font-size: 14px;
-            color: #888;
+            color: #6a6459;
             margin-bottom: 10px;
             font-family: "ZCOOL XiaoWei", serif;
         }
@@ -240,17 +240,17 @@
         .material-char {
             font-size: 32px;
             font-family: "Ma Shan Zheng", cursive;
-            color: #e8e8e8;
+            color: #1c1a17;
         }
 
         .material-name {
             font-size: 12px;
-            color: #888;
+            color: #6a6459;
             font-family: "ZCOOL XiaoWei", serif;
         }
 
         .fusion-comparison {
-            background: #151515;
+            background: #e0d9c9;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
@@ -258,7 +258,7 @@
 
         .comparison-title {
             font-size: 14px;
-            color: #888;
+            color: #6a6459;
             margin-bottom: 10px;
             font-family: "ZCOOL XiaoWei", serif;
             text-align: center;
@@ -269,7 +269,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 8px 0;
-            border-bottom: 1px solid #2d2d2d;
+            border-bottom: 1px solid #cabfa6;
         }
 
         .comparison-row:last-child {
@@ -277,7 +277,7 @@
         }
 
         .comparison-label {
-            color: #888;
+            color: #6a6459;
             font-family: "ZCOOL XiaoWei", serif;
             font-size: 13px;
         }
@@ -289,7 +289,7 @@
         }
 
         .comparison-material {
-            color: #666;
+            color: #6a6459;
             font-size: 12px;
         }
 
@@ -299,7 +299,7 @@
         }
 
         .comparison-result {
-            color: #ffd700;
+            color: #a67c00;
             font-size: 14px;
             font-weight: bold;
         }
@@ -323,8 +323,8 @@
         }
 
         .guide-content {
-            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
-            border: 2px solid #3a3a3a;
+            background: linear-gradient(135deg, #f4efe4 0%, #dfd8c8 100%);
+            border: 2px solid #b8ac91;
             border-radius: 12px;
             padding: 40px;
             max-width: 450px;
@@ -337,7 +337,7 @@
             text-align: center;
             margin-bottom: 25px;
             padding-bottom: 20px;
-            border-bottom: 1px solid #2d2d2d;
+            border-bottom: 1px solid #cabfa6;
         }
 
         .guide-title {
@@ -356,7 +356,7 @@
             align-items: flex-start;
             gap: 15px;
             padding: 15px 0;
-            border-bottom: 1px solid #2d2d2d;
+            border-bottom: 1px solid #cabfa6;
         }
 
         .guide-step:last-child {
@@ -367,7 +367,7 @@
             width: 32px;
             height: 32px;
             background: #c45c48;
-            color: #fff;
+            color: #f4efe4;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -383,20 +383,20 @@
 
         .step-title {
             font-size: 16px;
-            color: #e8e8e8;
+            color: #1c1a17;
             font-family: "Ma Shan Zheng", cursive;
             margin-bottom: 4px;
         }
 
         .step-desc {
             font-size: 13px;
-            color: #888;
+            color: #6a6459;
             font-family: "ZCOOL XiaoWei", serif;
             line-height: 1.5;
         }
 
         .guide-notices {
-            background: #151515;
+            background: #e0d9c9;
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 25px;
@@ -418,7 +418,7 @@
 
         .notice-list li {
             font-size: 13px;
-            color: #aaa;
+            color: #8a8377;
             font-family: "ZCOOL XiaoWei", serif;
             padding: 6px 0;
             padding-left: 20px;
@@ -505,13 +505,13 @@
             align-items: center;
             width: 100%;
             padding-bottom: 30px;
-            border-bottom: 1px solid #2d2d2d;
+            border-bottom: 1px solid #cabfa6;
             margin-bottom: 30px;
         }
 
         .conquest-theme-title {
             font-size: 36px;
-            color: #e8e8e8;
+            color: #1c1a17;
             font-family: "Ma Shan Zheng", cursive;
             letter-spacing: 6px;
         }
@@ -527,8 +527,8 @@
 
         .conquest-theme-card {
             padding: 24px 16px;
-            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
-            border: 2px solid #2d2d2d;
+            background: linear-gradient(135deg, #f4efe4 0%, #dfd8c8 100%);
+            border: 2px solid #cabfa6;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;

@@ -1,8 +1,8 @@
 
 
 .level-item {
-  background: #1a1a1a;
-  border: 2px solid #2d2d2d;
+  background: #f4efe4;
+  border: 2px solid #cabfa6;
   padding: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -10,16 +10,16 @@
 }
 
 .level-item:hover {
-  border-color: #4a4a4a;
-  background: #1f1f1f;
+  border-color: #6a6459;
+  background: #ded5c0;
   transform: translateX(-3px);
   box-shadow:
     0 2px 8px rgba(0,0,0,0.3),
-    3px 0 10px rgba(255,255,255,0.02);
+    3px 0 10px rgba(28, 26, 23, 0.02);
 }
 
 .level-item.current {
-  border-color: #d4af37;
+  border-color: #8a6d1f;
   background: #242420;
   box-shadow:
     0 0 15px rgba(212, 175, 55, 0.2),
@@ -27,29 +27,34 @@
 }
 
 .level-item.current .level-name {
-  color: #d4af37;
+  color: #8a6d1f;
 }
 
 .level-id {
   font-size: 12px;
-  color: #666;
+  color: #6a6459;
   margin-bottom: 4px;
 }
 
 .level-name {
   font-size: 18px;
-  color: #e8e8e8;
+  color: #1c1a17;
   font-family: "Ma Shan Zheng", cursive;
 }
 
 .level-info {
   font-size: 11px;
-  color: #666;
+  color: #6a6459;
   margin-top: 6px;
 }
 
 /* 主菜单隐藏状态 */
 #main-container.hidden {
+    display: none;
+}
+
+/* 模式切换时，隐藏的塔防容器不能继续参与征服模式的 flex 布局和缩放测量 */
+#game-container.hidden {
     display: none;
 }
 
@@ -73,8 +78,11 @@
 
 /* 缩放容器 - 居中显示 */
 #scale-container {
+  width: max-content;
   transform-origin: center center;
   transition: transform 0.1s ease-out;
+  /* 先保留自然布局宽度，再由 viewport.js 做等比缩放；否则 flex shrink 会先压扁画布 */
+  flex-shrink: 0;
 }
 
 /* ========================================
@@ -216,11 +224,11 @@
   .tower-select:active,
   .menu-btn:active,
   .menu-level-item:active {
-    background: #242424 !important;
+    background: #d6cdb8 !important;
   }
 
   .tower-select.selected {
-    border-color: #ffd700 !important;
+    border-color: #a67c00 !important;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.3) !important;
   }
 }
@@ -270,7 +278,7 @@
 
 /* 炮塔选中状态优化 */
 .tower-select.selected {
-  border-color: #ffd700 !important;
+  border-color: #a67c00 !important;
 }
 
 /* ========================================
@@ -464,12 +472,12 @@
 
 #conquest-side-panel {
   width: 280px;
-  background: #141414;
-  border: 2px solid #2a2a2a;
+  background: #e0d9c9;
+  border: 2px solid #d0c6b0;
   padding: 20px;
   box-shadow:
     0 0 20px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    inset 0 1px 0 rgba(28, 26, 23, 0.05);
   position: relative;
 }
 
@@ -480,18 +488,18 @@
   left: 10%;
   right: 10%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #3a3a3a, transparent);
+  background: linear-gradient(90deg, transparent, #b8ac91, transparent);
 }
 
 .conquest-title {
   font-size: 28px;
   font-family: "Ma Shan Zheng", cursive;
-  color: #e8e8e8;
+  color: #1c1a17;
   text-align: center;
   letter-spacing: 6px;
   margin-bottom: 20px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid #d0c6b0;
 }
 
 .summon-section {
@@ -505,9 +513,9 @@
   font-size: 28px;
   font-family: "Ma Shan Zheng", cursive;
   letter-spacing: 8px;
-  background: #1a1a1a;
-  border: 2px solid #3a3a3a;
-  color: #d4af37;
+  background: #f4efe4;
+  border: 2px solid #b8ac91;
+  color: #8a6d1f;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
@@ -527,9 +535,9 @@
 }
 
 .summon-btn:hover {
-  background: #1f1f1f;
-  border-color: #d4af37;
-  color: #ffd700;
+  background: #ded5c0;
+  border-color: #8a6d1f;
+  color: #a67c00;
   box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
 }
 
@@ -545,8 +553,8 @@
 .summon-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-  border-color: #2d2d2d;
-  color: #666;
+  border-color: #cabfa6;
+  color: #6a6459;
 }
 
 .summon-btn:disabled::before {

@@ -47,13 +47,13 @@ class Particle {
     ctx.globalAlpha = inkAlpha;
 
     const size = 4 * alpha;
-    const fillColor = this.color || '#2a2a2a';
+    const fillColor = this.color || '#3d382f';
     ctx.fillStyle = fillColor;
     ctx.beginPath();
     ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
     ctx.fill();
 
-    const strokeColor = this.color || '#3a3a3a';
+    const strokeColor = this.color || '#6a6459';
     ctx.strokeStyle = strokeColor;
     ctx.lineWidth = 1;
     ctx.globalAlpha = inkAlpha * 0.5;

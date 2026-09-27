@@ -52,8 +52,8 @@ UI.prototype.showTowerInfo = function(tower, x, y, source) {
         stats += `<div class="stat-field"><span class="stat-label">照明</span><span class="stat-value">${tower.auraRange}格</span></div>`;
       }
     }
-    if (tower.goldPerWave) {
-      stats += `<div class="stat-field"><span class="stat-label">产金</span><span class="stat-value">${tower.goldPerWave}金/波</span></div>`;
+    if (tower.inkPerWave) {
+      stats += `<div class="stat-field"><span class="stat-label">产墨</span><span class="stat-value">${tower.inkPerWave}墨/波</span></div>`;
     }
     if (tower.healPerWave) {
       stats += `<div class="stat-field"><span class="stat-label">治疗</span><span class="stat-value">+${tower.healPerWave}HP/波</span></div>`;
@@ -94,11 +94,11 @@ UI.prototype.showTowerInfo = function(tower, x, y, source) {
       upgradeBtn.textContent = "已满级";
       upgradeBtn.disabled = true;
     } else {
-      upgradeBtn.textContent = `升级 ${tower.upgradeCost * tower.level}金`;
-      upgradeBtn.disabled = this.game.gold < tower.upgradeCost * tower.level;
+      upgradeBtn.textContent = `升级 ${tower.upgradeCost * tower.level}墨`;
+      upgradeBtn.disabled = this.game.ink < tower.upgradeCost * tower.level;
     }
 
-    sellBtn.textContent = `出售 +${tower.getSellValue()}金`;
+    sellBtn.textContent = `出售 +${tower.getSellValue()}墨`;
 
     // 取消选中提示：文案必须与当前输入方式一致
     // （触摸端没有右键；此前的硬编码"右键取消选择"会让移动端玩家无从下手）
@@ -108,7 +108,7 @@ UI.prototype.showTowerInfo = function(tower, x, y, source) {
     if (!cancelHint) {
       cancelHint = document.createElement("div");
       cancelHint.className = "right-click-hint";
-      cancelHint.style.cssText = "font-size:11px;color:#666;text-align:center;margin-top:8px;font-family:'ZCOOL XiaoWei',serif;";
+      cancelHint.style.cssText = "font-size:11px;color:#6a6459;text-align:center;margin-top:8px;font-family:'ZCOOL XiaoWei',serif;";
       this.towerInfo.appendChild(cancelHint);
     }
     cancelHint.textContent = isTouchInput ? "点击空白处取消选中" : "右键取消选择";
@@ -117,7 +117,7 @@ UI.prototype.showTowerInfo = function(tower, x, y, source) {
       const detonateBtn = document.createElement('button');
       detonateBtn.textContent = '引爆';
       detonateBtn.className = 'detonate-btn';
-      detonateBtn.style.cssText = 'background:#1a1a1a;border:1px solid #ff5722;color:#ff5722;padding:8px;flex:1;cursor:pointer;font-family:"Ma Shan Zheng",cursive;font-size:13px;';
+      detonateBtn.style.cssText = 'background:#f4efe4;border:1px solid #ff5722;color:#ff5722;padding:8px;flex:1;cursor:pointer;font-family:"Ma Shan Zheng",cursive;font-size:13px;';
       const detonateHandler = () => {
         const range = tower.explodeRange * CONFIG.CELL_SIZE;
         for (const enemy of this.game.enemies) {

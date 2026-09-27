@@ -66,13 +66,32 @@ ConquestGame.prototype.destroy = function() {
     this.dragStartPos = null;
     this.dragCurrentPos = null;
     this.isDragging = false;
+    this._touchState = null;
+    this._dragSource = null;
     this._clearDragCache();
+
+    // 清理触摸落点预览的延时器，避免销毁后仍回调
+    if (this._hoverClearTimer) {
+      clearTimeout(this._hoverClearTimer);
+      this._hoverClearTimer = null;
+    }
+    this.hoveredCell = null;
+
+    // 返回菜单/关卡列表时不能把征服模式的浮层和动态按钮带到下一页。
+    this.hideTowerInfo();
+    const modal = document.getElementById("modal");
+    if (modal) modal.classList.add("hidden");
+    const returnBtn = document.getElementById("modal-return-btn");
+    if (returnBtn) {
+      returnBtn.style.display = "none";
+      returnBtn.onclick = null;
+    }
   
 };
 ConquestGame.prototype.getDefaultLevelConfig = function() {
     return {
       id: 1,
-      startGold: 300,
+      startInk: 300,
       summonCost: 80,
       maxWave: 3,
       maxAliveEnemies: 50,
@@ -197,98 +216,12 @@ ConquestGame.prototype.setupUI = function() {
       this.hideTowerInfo();
     });
 
-    this.addTrackedEventListener(this.canvas, "touchstart", (e) => {
-      e.preventDefault();
-      if (this.gameEnded) return;
-      if (e.touches.length !== 1) return;
-      const touch = e.touches[0];
-      const result = getGridFromEvent(touch, this.canvas);
-      if (!result) return;
-
-      const { gx, gy } = result;
-      const tower = this.getTowerAt(gx, gy);
-      if (tower) {
-        this.draggingTower = tower;
-        this.dragStartPos = { x: touch.clientX, y: touch.clientY };
-        this.dragCurrentPos = { x: touch.clientX, y: touch.clientY };
-        this.isDragging = false;
-        this._cacheDragMetrics();
-      }
-    }, { passive: false });
-
-    this.addTrackedEventListener(this.canvas, "touchmove", (e) => {
-      e.preventDefault();
-      // 多点触控时取消拖拽状态
-      if (e.touches.length !== 1) {
-        this.draggingTower = null;
-        this.dragStartPos = null;
-        this.dragCurrentPos = null;
-        this.isDragging = false;
-        this._clearDragCache();
-        return;
-      }
-      if (this.draggingTower && !this.draggingTower.isFusion) {
-        const touch = e.touches[0];
-        this.dragCurrentPos = { x: touch.clientX, y: touch.clientY };
-        const dist = calculateDragDistance(this.dragStartPos.x, this.dragStartPos.y, this.dragCurrentPos.x, this.dragCurrentPos.y);
-        // 触摸端使用更宽松的滑点，避免手指自然抖动被判成拖拽
-        if (checkDragThreshold(dist, this.dragThresholdTouch)) {
-          this.isDragging = true;
-        }
-      }
-    }, { passive: false });
-
-    this.addTrackedEventListener(this.canvas, "touchend", (e) => {
-      e.preventDefault();
-      // 多点触控场景下，如果还有剩余触摸点，不处理拖拽结束
-      if (e.touches.length > 0) {
-        return;
-      }
-      if (this.draggingTower && this.isDragging) {
-        if (e.changedTouches.length > 0) {
-          const touch = e.changedTouches[0];
-          const result = getGridFromEvent(touch, this.canvas);
-          if (result) {
-            const { gx, gy } = result;
-            const targetTower = this.getTowerAt(gx, gy);
-            if (targetTower && targetTower !== this.draggingTower) {
-              this.attemptFusion(this.draggingTower, targetTower);
-            } else if (this.canPlaceAt(gx, gy)) {
-              this.moveTower(this.draggingTower, gx, gy);
-            }
-          }
-        }
-      } else if (this.draggingTower && !this.isDragging) {
-        if (e.changedTouches.length > 0) {
-          const touch = e.changedTouches[0];
-          const result = getGridFromEvent(touch, this.canvas);
-          if (result) {
-            const { gx, gy } = result;
-            const tower = this.getTowerAt(gx, gy);
-            if (tower) {
-              this.showTowerInfo(tower, touch.clientX, touch.clientY);
-            } else {
-              this.hideTowerInfo();
-            }
-          }
-        }
-      }
-
-      this.draggingTower = null;
-      this.dragStartPos = null;
-      this.dragCurrentPos = null;
-      this.isDragging = false;
-      this._clearDragCache();
-    }, { passive: false });
-
-    // 触摸取消时清理拖拽状态（不需要阻止默认行为，使用 passive: true）
-    this.addTrackedEventListener(this.canvas, "touchcancel", (e) => {
-      this.draggingTower = null;
-      this.dragStartPos = null;
-      this.dragCurrentPos = null;
-      this.isDragging = false;
-      this._clearDragCache();
-    }, { passive: true });
+    // === 触摸输入（移动端主路径） ===
+    // 实现见 js/modes/conquest/touch.js：按住预览 / 容差拾取 / 滑动取消 / 失败反馈。
+    // 仅在有触摸硬件时注册，避免与上面的鼠标链路重复处理同一次操作。
+    if (window.DeviceProfile && window.DeviceProfile.hasTouch) {
+      this.setupTouchInteraction();
+    }
 
     this._uiEventsActive = true;
   
@@ -397,7 +330,7 @@ ConquestGame.prototype.canFuse = function(tower1, tower2) {
     const result = fusionSystem.canFuse(tower1.type, tower2.type, {
       tower1,
       tower2,
-      gold: this.gold,
+      ink: this.ink,
     });
     return result.canFuse;
   
@@ -427,29 +360,30 @@ ConquestGame.prototype.showTowerInfo = function(tower, x, y) {
     info.querySelector(".info-stats").innerHTML = stats;
 
     const sellBtn = info.querySelector(".sell-btn");
-    sellBtn.textContent = `出售 +${tower.getSellValue()}金`;
+    sellBtn.textContent = `出售 +${tower.getSellValue()}墨`;
     sellBtn.onclick = () => {
       this.sellTower(tower);
       this.hideTowerInfo();
     };
 
-    // 添加右键取消选择提示
-    let rightClickHint = info.querySelector(".right-click-hint");
-    if (!rightClickHint) {
-      rightClickHint = document.createElement("div");
-      rightClickHint.className = "right-click-hint";
-      rightClickHint.style.cssText = "font-size:11px;color:#666;text-align:center;margin-top:8px;font-family:'ZCOOL XiaoWei',serif;";
-      info.appendChild(rightClickHint);
+    // 关闭方式的提示：桌面端是右键，移动端没有右键，只能提示"点击空白处"
+    let closeHint = info.querySelector(".right-click-hint");
+    if (!closeHint) {
+      closeHint = document.createElement("div");
+      closeHint.className = "right-click-hint";
+      closeHint.style.cssText = "font-size:11px;color:#6a6459;text-align:center;margin-top:8px;font-family:'ZCOOL XiaoWei',serif;";
+      info.appendChild(closeHint);
     }
-    rightClickHint.textContent = "右键取消选择";
+    const isTouchDevice = !!(window.DeviceProfile && window.DeviceProfile.isTouch);
+    closeHint.textContent = isTouchDevice ? "点击空白处关闭" : "右键取消选择";
 
     const upgradeBtn = info.querySelector(".upgrade-btn");
     if (tower.isFusion || tower.level >= tower.maxLevel) {
       upgradeBtn.textContent = tower.isFusion ? "融合不可升级" : "已满级";
       upgradeBtn.disabled = true;
     } else {
-      upgradeBtn.textContent = `升级 ${tower.upgradeCost * tower.level}金`;
-      upgradeBtn.disabled = this.gold < tower.upgradeCost * tower.level;
+      upgradeBtn.textContent = `升级 ${tower.upgradeCost * tower.level}墨`;
+      upgradeBtn.disabled = this.ink < tower.upgradeCost * tower.level;
       upgradeBtn.onclick = () => {
         const upgraded = tower.upgrade();
         if (upgraded) {
@@ -459,14 +393,23 @@ ConquestGame.prototype.showTowerInfo = function(tower, x, y) {
       };
     }
 
-    // 使用游戏容器尺寸计算面板位置，避免页面缩放或键盘弹出导致计算错误
-    const container = document.getElementById('game-container');
-    const rect = container.getBoundingClientRect();
-    const maxX = rect.width - 180;
-    const maxY = rect.height - 150;
-    info.style.left = Math.min(x, maxX) + "px";
-    info.style.top = Math.min(y, maxY) + "px";
+    // 面板定位：以视口为准做 clamp。
+    // 旧实现取 #game-container 的 rect —— 征服模式下该容器不可见（rect 全 0），
+    // 算出的 maxX/maxY 为 -180/-150，面板会被定位到屏幕外，玩家看不到任何反馈。
     info.classList.remove("hidden");
+
+    const panelRect = info.getBoundingClientRect();
+    const margin = 8;
+    const maxLeft = Math.max(margin, window.innerWidth - panelRect.width - margin);
+    const maxTop = Math.max(margin, window.innerHeight - panelRect.height - margin);
+
+    // 触屏：面板放在触点上方，避免被手指和手掌遮住
+    const preferAbove = !!(window.DeviceProfile && window.DeviceProfile.isTouch);
+    let top = preferAbove ? y - panelRect.height - 16 : y + 12;
+    if (preferAbove && top < margin) top = y + 20;
+
+    info.style.left = clamp(x + 12, margin, maxLeft) + "px";
+    info.style.top = clamp(top, margin, maxTop) + "px";
 
     tower.selected = true;
     for (const t of this.towers) {

@@ -74,7 +74,7 @@ Tower.prototype.reset = function(type, gx, gy, game) {
     this.maxTriggers = config.maxTriggers || config.triggerCount || 0;
     this.reflectDamage = config.reflectDamage || 0;
     this.damageReduction = config.damageReduction || 0;
-    this.goldPerWave = config.goldPerWave || 0;
+    this.inkPerWave = config.inkPerWave || 0;
     this.interestInterval = config.interestInterval || 3;
     this.interestBonus = config.interestBonus || 0;
     this.waveCount = 0;
@@ -134,9 +134,9 @@ Tower.prototype.reset = function(type, gx, gy, game) {
 };
 Tower.prototype.upgrade = function() {
     if (this.level >= this.maxLevel) return false;
-    if (this.game.gold < this.upgradeCost * this.level) return false;
+    if (this.game.ink < this.upgradeCost * this.level) return false;
 
-    this.game.gold -= this.upgradeCost * this.level;
+    this.game.ink -= this.upgradeCost * this.level;
     this.level++;
 
     const config = CONFIG.TOWERS[this.type];
@@ -174,7 +174,7 @@ Tower.prototype.upgrade = function() {
       if (params.triggerCountInc && this.triggerCount) this.triggerCount += params.triggerCountInc;
       if (params.reflectDamageInc && this.reflectDamage) this.reflectDamage += params.reflectDamageInc;
       if (params.damageReductionInc && this.damageReduction) this.damageReduction += params.damageReductionInc;
-      if (params.goldPerWaveInc && this.goldPerWave) this.goldPerWave += params.goldPerWaveInc;
+      if (params.inkPerWaveInc && this.inkPerWave) this.inkPerWave += params.inkPerWaveInc;
       if (params.interestBonusInc && this.interestBonus) this.interestBonus += params.interestBonusInc;
       if (params.healPerWaveInc && this.healPerWave) this.healPerWave += params.healPerWaveInc;
       if (params.emergencyBonusInc && this.emergencyBonus) this.emergencyBonus += params.emergencyBonusInc;

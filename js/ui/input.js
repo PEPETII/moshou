@@ -142,7 +142,7 @@ UI.prototype.clearTowerSelection = function() {
  * 在触点附近拾取炮塔（带容差）
  *
  * 容差只用于"点中一座已存在的塔"——这是一次没有副作用的读取操作，宽容一些更符合手指精度；
- * 放置炮塔则严格要求落在目标格上，避免误花金币。
+ * 放置炮塔则严格要求落在目标格上，避免误花墨水。
  */
 UI.prototype.pickTowerNear = function(clientX, clientY, options) {
     const opts = options || {};
@@ -266,7 +266,7 @@ UI.prototype.showFusionConfirm = function(tower1, tower2, preview) {
 
     let message = `将 ${tower1.char} 和 ${tower2.char} 融合成 ${preview.char}\n`;
     message += `效果: ${preview.desc}\n`;
-    message += `费用: ${preview.cost}金\n`;
+    message += `费用: ${preview.cost}墨\n`;
     if (preview.tier) {
       message += `阶位: T${preview.tier}${preview.isEvolution ? ' (进化)' : ''}\n`;
     }
@@ -275,7 +275,7 @@ UI.prototype.showFusionConfirm = function(tower1, tower2, preview) {
     }
 
     if (!canFuse && !preview.canAfford) {
-      message += `\n⚠️ 金币不足!`;
+      message += `\n⚠️ 墨水不足!`;
     } else if (!canFuse && preview.canAfford) {
       message += `\n⚠️ 当前组合不满足融合条件（进化白名单或路径限制）`;
     }
@@ -354,9 +354,9 @@ UI.prototype.drawDragPreview = function(ctx) {
     const rangeInPixels = this.draggingTower.range * CONFIG.CELL_SIZE;
     ctx.beginPath();
     ctx.arc(x, y, rangeInPixels, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255, 255, 0, 0.3)";
+    ctx.strokeStyle = "rgba(176, 58, 46, 0.35)";
     ctx.stroke();
-    ctx.fillStyle = "rgba(255, 255, 0, 0.1)";
+    ctx.fillStyle = "rgba(176, 58, 46, 0.1)";
     ctx.fill();
 
     ctx.save();
@@ -364,7 +364,7 @@ UI.prototype.drawDragPreview = function(ctx) {
     ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = this.draggingTower.isFusion ? '#888' : '#ffff00';
+    ctx.fillStyle = this.draggingTower.isFusion ? '#6a6459' : '#ffff00';
     ctx.fillText(this.draggingTower.char, x, y);
     ctx.restore();
 };

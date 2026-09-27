@@ -8,7 +8,7 @@
 | `UI` (`js/ui.js`) | 菜单/图鉴、HUD、塔面板、输入/拖拽、融合对话框、通知、conquest UI | 直接持有大量 Game 内部状态、所有场景规则、跨模式编排 | `js/ui/` 下 controller；`UI` 保留兼容外壳；每个 controller 自己 bind/unbind/destroy |
 | `Tower` / `FusionTower` (`js/tower.js`) | 生命周期、升级、目标选择、攻击、投射物、状态、光环、特殊技能、融合、绘制 | Game 主循环编排、DOM 操作、配置生成 | `js/entities/towers/`；保留 Tower/FusionTower 构造和兼容方法 |
 | `Enemy` (`js/enemy.js`) | 路径移动、山塔阻挡、伤害/状态、死亡/分裂/召唤、到达核心、绘制 | 直接决定 UI 结构或模式专属编排 | `js/entities/enemy/`；按实际职责最小拆分 |
-| `FusionSystem` (`js/fusionSystem.js`) | 配方注册、组件索引、预览缓存、金币/路径/进化校验 | 创建实体、扣金币、操作 DOM | `js/systems/fusion/`；校验通过上下文接口读取状态 |
+| `FusionSystem` (`js/fusionSystem.js`) | 配方注册、组件索引、预览缓存、墨水/路径/进化校验 | 创建实体、扣墨水、操作 DOM | `js/systems/fusion/`；校验通过上下文接口读取状态 |
 | `LevelManager` (`js/levelManager.js`) | 普通关卡 registry、主题、解锁、缓存、数据读取 | 关卡数据本体、Canvas 绘制、模式专属规则 | `js/systems/level/` + `js/data/levels/` |
 | `RuntimeIndexes` (`js/runtime.js`) | 炮塔/阻挡格索引、存活敌人索引 | 玩法规则、实体生命周期拥有权 | `js/core/runtime.js` 或 `js/shared/runtimeIndexes.js` |
 | `InkRenderer` (`js/inkRenderer.js`) | Canvas 水墨绘制辅助 | 关卡和模式状态管理 | `js/rendering/ink/` |

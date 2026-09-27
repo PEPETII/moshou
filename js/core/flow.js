@@ -9,7 +9,7 @@ Game.prototype.gameOver = function(victory) {
       this.markLevelCompleted(this.currentLevel);
 
       const reward = 100 + this.currentLevelData.difficulty * 10;
-      this.gold += reward;
+      this.ink += reward;
 
       const hpPercent = this.coreHp / this.maxCoreHp;
       let stars = 1;
@@ -36,7 +36,7 @@ Game.prototype.gameOver = function(victory) {
 
       this.ui.showModal(
         "胜利!",
-        `关卡 ${this.currentLevel} 完成!\n星级: ${"★".repeat(stars)}${"☆".repeat(3 - stars)}\n奖励: ${reward}金`,
+        `关卡 ${this.currentLevel} 完成!\n星级: ${"★".repeat(stars)}${"☆".repeat(3 - stars)}\n奖励: ${reward}墨`,
         buttonText,
         onClick
       );
@@ -137,6 +137,12 @@ Game.prototype.returnToLevelSelect = function() {
 Game.prototype.startGame = function(levelId) {
     document.getElementById("main-container").classList.remove("hidden");
     document.getElementById("main-menu").classList.add("hidden");
+    // 与征服容器互斥：两者同处一个 flex 行时缩放基准会按叠加宽度计算
+    const conquestContainer = document.getElementById("conquest-container");
+    if (conquestContainer) conquestContainer.classList.add("hidden");
+    // 上一次进入征服模式时塔防容器被隐藏过，这里必须解除
+    const gameContainer = document.getElementById("game-container");
+    if (gameContainer) gameContainer.classList.remove("hidden");
 
     if (this.menuInkBg) this.menuInkBg.stop();
 

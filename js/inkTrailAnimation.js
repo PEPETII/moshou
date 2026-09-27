@@ -3,7 +3,7 @@ const ENEMY_TRAIL_COLORS = {
   ghost: '#aaaaff',
   armor: '#aa8866',
   split: '#cc88cc',
-  giant: '#999999',
+  giant: '#8a8377',
   superGiant: '#887766',
   overlord: '#cc4444',
   shadow: '#8888aa',
@@ -14,9 +14,9 @@ const ENEMY_TRAIL_COLORS = {
 const TOWER_TRAIL_COLORS = {
   fire: '#ff6600',
   water: '#00aaff',
-  mountain: '#888888',
+  mountain: '#6a6459',
   wood: '#90b090',
-  gold: '#ffd700',
+  gold: '#a67c00',
   earth: '#8b7355',
   xinZhongYan: '#ff4400',
   ruFengSiZhen: '#88ccaa'
@@ -230,7 +230,7 @@ class InkTrailAnimation {
     for (let i = 0; i < towerTypes.length && i < maxTowerAnimations; i++) {
       const type = towerTypes[i];
       const config = CONFIG.TOWERS[type];
-      const color = TOWER_TRAIL_COLORS[type] || '#e8e8e8';
+      const color = TOWER_TRAIL_COLORS[type] || '#6a6459';
       const targetX = cardXPositions[i];
 
       this.entities.push({

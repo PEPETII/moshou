@@ -34,7 +34,7 @@ class ConquestGame {
     this.currentLevelId = this.levelConfig.id || 1;
 
     // 使用关卡配置初始化游戏参数
-    this.gold = this.levelConfig.startGold || 300;
+    this.ink = this.levelConfig.startInk || 300;
     this.summonCost = this.levelConfig.summonCost || 80;
     this.maxWave = this.levelConfig.maxWave || 3;
     this.maxAliveEnemies = this.levelConfig.maxAliveEnemies || 50;
@@ -167,7 +167,7 @@ class ConquestGame {
   getDefaultLevelConfig() {
     return {
       id: 1,
-      startGold: 300,
+      startInk: 300,
       summonCost: 80,
       maxWave: 3,
       maxAliveEnemies: 50,
@@ -500,7 +500,7 @@ class ConquestGame {
     const result = fusionSystem.canFuse(tower1.type, tower2.type, {
       tower1,
       tower2,
-      gold: this.gold,
+      ink: this.ink,
     });
     return result.canFuse;
   

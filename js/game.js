@@ -10,7 +10,7 @@ class Game {
 
     this.currentLevel = "1-1";
     this.currentLevelData = null;
-    this.gold = 300;
+    this.ink = 300;
     this.coreHp = 20;
     this.maxCoreHp = 20;
 
@@ -216,7 +216,7 @@ class Game {
 
     this.currentLevel = levelId;
     this.currentLevelData = level;
-    this.gold = level.startGold;
+    this.ink = level.startInk;
     this.coreHp = level.coreHp;
     this.maxCoreHp = level.coreHp;
     this.wave = 0;

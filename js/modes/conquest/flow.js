@@ -70,7 +70,7 @@ ConquestGame.prototype.startLevel = function(levelId) {
     this.currentLevelId = levelId;
 
     // 使用新配置初始化
-    this.gold = this.levelConfig.startGold || 300;
+    this.ink = this.levelConfig.startInk || 300;
     this.summonCost = this.levelConfig.summonCost || 80;
     this.maxWave = this.levelConfig.maxWave || 3;
     this.maxAliveEnemies = this.levelConfig.maxAliveEnemies || 50;
@@ -95,6 +95,10 @@ ConquestGame.prototype.startLevel = function(levelId) {
     // 只解除自身 hidden、父级仍 hidden 会导致整屏空白（实测已复现）。
     document.getElementById("main-container").classList.remove("hidden");
     document.getElementById("conquest-container").classList.remove("hidden");
+    // 与塔防容器互斥：两者同处一个 flex 行时内容宽会叠加到 2000px+，
+    // 缩放基准随之崩塌，手机上战场会被挤出屏幕。
+    const tdContainer = document.getElementById("game-container");
+    if (tdContainer) tdContainer.classList.add("hidden");
 
     // 更新UI并启动游戏
     this.updateUI();
@@ -177,12 +181,14 @@ ConquestGame.prototype.startGame = function() {
     document.getElementById("main-container").classList.remove("hidden");
     document.getElementById("conquest-container").classList.remove("hidden");
     document.getElementById("main-menu").classList.add("hidden");
+    const tdContainer = document.getElementById("game-container");
+    if (tdContainer) tdContainer.classList.add("hidden");
 
     if (window.gameInstance && window.gameInstance.menuInkBg) {
       window.gameInstance.menuInkBg.stop();
     }
 
-    this.gold = 300;
+    this.ink = 300;
     this.towers = [];
     this.enemies = [];
     this.wave = 0;
@@ -223,7 +229,7 @@ ConquestGame.prototype.removeTower = function(tower) {
   
 };
 ConquestGame.prototype.sellTower = function(tower) {
-    this.gold += tower.getSellValue();
+    this.ink += tower.getSellValue();
     this.removeTower(tower);
     this.updateUI();
   

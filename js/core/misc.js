@@ -149,7 +149,7 @@ Game.prototype.loadLevel = function(levelId) {
 
     this.currentLevel = levelId;
     this.currentLevelData = level;
-    this.gold = level.startGold;
+    this.ink = level.startInk;
     this.coreHp = level.coreHp;
     this.maxCoreHp = level.coreHp;
     this.wave = 0;

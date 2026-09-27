@@ -189,9 +189,9 @@ class MenuInkBackground {
     const wash = s.wash;
     if (wash.radius > 1) {
       const wGrad = c.createRadialGradient(wash.x, wash.y, 0, wash.x, wash.y, wash.radius);
-      wGrad.addColorStop(0, `rgba(30, 30, 30, ${wash.opacity * am})`);
-      wGrad.addColorStop(0.5, `rgba(25, 25, 25, ${wash.opacity * 0.5 * am})`);
-      wGrad.addColorStop(1, 'rgba(20, 20, 20, 0)');
+      wGrad.addColorStop(0, `rgba(66, 62, 55, ${wash.opacity * am})`);
+      wGrad.addColorStop(0.5, `rgba(55, 52, 46, ${wash.opacity * 0.5 * am})`);
+      wGrad.addColorStop(1, 'rgba(45, 42, 38, 0)');
       c.fillStyle = wGrad;
       c.beginPath();
       c.arc(wash.x, wash.y, wash.radius, 0, Math.PI * 2);
@@ -201,9 +201,9 @@ class MenuInkBackground {
     const m = s.main;
     if (m.radius > 1) {
       const mGrad = c.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.radius);
-      mGrad.addColorStop(0, `rgba(10, 10, 10, ${0.85 * am})`);
-      mGrad.addColorStop(0.6, `rgba(20, 20, 20, ${0.5 * am})`);
-      mGrad.addColorStop(1, 'rgba(30, 30, 30, 0)');
+      mGrad.addColorStop(0, `rgba(28, 26, 23, ${0.85 * am})`);
+      mGrad.addColorStop(0.6, `rgba(45, 42, 38, ${0.5 * am})`);
+      mGrad.addColorStop(1, 'rgba(66, 62, 55, 0)');
       c.fillStyle = mGrad;
       c.beginPath();
       const pts = 12;
@@ -219,7 +219,7 @@ class MenuInkBackground {
     }
 
     s.streaks.forEach(sk => {
-      c.strokeStyle = `rgba(15, 15, 15, ${sk.opacity * am})`;
+      c.strokeStyle = `rgba(35, 33, 29, ${sk.opacity * am})`;
       c.lineWidth = sk.width;
       c.lineCap = 'round';
       c.beginPath();
@@ -229,7 +229,7 @@ class MenuInkBackground {
     });
 
     s.dots.forEach(d => {
-      c.fillStyle = `rgba(10, 10, 10, ${d.opacity * am})`;
+      c.fillStyle = `rgba(28, 26, 23, ${d.opacity * am})`;
       c.beginPath();
       c.arc(d.x, d.y, d.size, 0, Math.PI * 2);
       c.fill();
@@ -278,9 +278,9 @@ class MenuInkBackground {
       const layerDensity = this.fogDensity * (0.3 + layer * 0.25);
       const yOffset = layer * 30;
       const gradient = ctx.createLinearGradient(0, this.h * 0.3 - yOffset, 0, this.h);
-      gradient.addColorStop(0, `rgba(60, 60, 65, ${layerDensity * 0.3})`);
-      gradient.addColorStop(0.4, `rgba(50, 50, 55, ${layerDensity * 0.6})`);
-      gradient.addColorStop(1, `rgba(40, 40, 45, ${layerDensity * 0.8})`);
+      gradient.addColorStop(0, `rgba(132, 126, 115, ${layerDensity * 0.3})`);
+      gradient.addColorStop(0.4, `rgba(110, 104, 94, ${layerDensity * 0.6})`);
+      gradient.addColorStop(1, `rgba(88, 83, 75, ${layerDensity * 0.8})`);
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, this.w, this.h);
     }
@@ -291,8 +291,8 @@ class MenuInkBackground {
       const fy = this.h * 0.3 + i * 25 + Math.sin(time * 0.7 + i) * 15;
       const fr = 60 + i * 15;
       const fogGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, fr);
-      fogGrad.addColorStop(0, `rgba(80, 80, 85, ${this.fogDensity * 0.35})`);
-      fogGrad.addColorStop(1, 'rgba(80, 80, 85, 0)');
+      fogGrad.addColorStop(0, `rgba(150, 143, 130, ${this.fogDensity * 0.35})`);
+      fogGrad.addColorStop(1, 'rgba(150, 143, 130, 0)');
       ctx.fillStyle = fogGrad;
       ctx.beginPath();
       ctx.arc(fx, fy, fr, 0, Math.PI * 2);
@@ -301,7 +301,7 @@ class MenuInkBackground {
 
     if (this.fogDensity > 0.5) {
       const coverAlpha = (this.fogDensity - 0.5) * 2;
-      ctx.fillStyle = `rgba(30, 30, 35, ${coverAlpha * 0.5})`;
+      ctx.fillStyle = `rgba(66, 62, 58, ${coverAlpha * 0.5})`;
       ctx.fillRect(0, 0, this.w, this.h * 0.5);
     }
   }

@@ -82,7 +82,7 @@ UI.prototype.populateGameFusionEncyclopedia = function() {
         <span class="fusion-rarity-tag ${rarity.level}">${rarity.name}</span>
         <span class="fusion-result-char">${config.char}</span>
         <span class="fusion-components">${componentChars}</span>
-        <span class="fusion-cost">${config.cost}金 ${tierText}${evoTag}</span>
+        <span class="fusion-cost">${config.cost}墨 ${tierText}${evoTag}</span>
       `;
 
       const clickHandler = () => {
@@ -146,7 +146,7 @@ UI.prototype.showGameFusionDetail = function(fusionType, config) {
       statsHtml += this.createGameFusionStatRow("生命值", config.hp);
     }
     if (config.cost !== undefined) {
-      statsHtml += this.createGameFusionStatRow("融合费用", config.cost + "金", true);
+      statsHtml += this.createGameFusionStatRow("融合费用", config.cost + "墨", true);
     }
     if (config.onPath) {
       statsHtml += this.createGameFusionStatRow("放置位置", "路径上");
@@ -230,7 +230,7 @@ UI.prototype.populateFusionEncyclopedia = function() {
         <span class="fusion-rarity-tag ${rarity.level}">${rarity.name}</span>
         <span class="fusion-result-char">${config.char}</span>
         <span class="fusion-components">${componentChars}</span>
-        <span class="fusion-cost">${config.cost}金 ${tierText}${evoTag}</span>
+        <span class="fusion-cost">${config.cost}墨 ${tierText}${evoTag}</span>
       `;
 
       const clickHandler = () => {

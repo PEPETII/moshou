@@ -34,10 +34,10 @@
 .custom-title {
   font-size: 48px;
   font-family: "Ma Shan Zheng", cursive;
-  color: #e8e8e8;
+  color: #1c1a17;
   margin-bottom: 50px;
   letter-spacing: 8px;
-  text-shadow: 0 0 30px rgba(255,255,255,0.1);
+  text-shadow: 0 0 30px rgba(28, 26, 23, 0.1);
 }
 
 .custom-buttons {
@@ -50,8 +50,8 @@
 .custom-card {
   width: 260px;
   padding: 40px 30px;
-  background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
-  border: 2px solid #2d2d2d;
+  background: linear-gradient(135deg, #f4efe4 0%, #dfd8c8 100%);
+  border: 2px solid #cabfa6;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -73,7 +73,7 @@
 
 .custom-card:hover {
   border-color: #c45c48;
-  background: linear-gradient(135deg, #1f1f1f 0%, #151515 100%);
+  background: linear-gradient(135deg, #ded5c0 0%, #e0d9c9 100%);
   transform: translateY(-8px);
   box-shadow: 0 15px 40px rgba(0,0,0,0.6);
 }
@@ -86,7 +86,7 @@
 
 .custom-card .custom-card-name {
   font-size: 28px;
-  color: #e8e8e8;
+  color: #1c1a17;
   font-family: "Ma Shan Zheng", cursive;
   margin-bottom: 12px;
   letter-spacing: 4px;
@@ -94,7 +94,7 @@
 
 .custom-card .custom-card-desc {
   font-size: 14px;
-  color: #888;
+  color: #6a6459;
   font-family: "ZCOOL XiaoWei", serif;
   line-height: 1.6;
 }
@@ -104,16 +104,16 @@
   padding: 12px 40px;
   font-size: 16px;
   background: transparent;
-  border: 1px solid #3a3a3a;
-  color: #666;
+  border: 1px solid #b8ac91;
+  color: #6a6459;
   cursor: pointer;
   font-family: "ZCOOL XiaoWei", serif;
   transition: all 0.3s;
 }
 
 #back-to-menu-from-custom:hover {
-  border-color: #5a5a5a;
-  color: #999;
+  border-color: #6a6459;
+  color: #8a8377;
 }
 
 /* 自定义子界面（占位） */
@@ -142,13 +142,13 @@
   align-items: center;
   width: 100%;
   padding-bottom: 20px;
-  border-bottom: 1px solid #2d2d2d;
+  border-bottom: 1px solid #cabfa6;
   margin-bottom: 25px;
 }
 
 .custom-sub-title {
   font-size: 36px;
-  color: #e8e8e8;
+  color: #1c1a17;
   font-family: "Ma Shan Zheng", cursive;
   letter-spacing: 6px;
 }
@@ -160,8 +160,8 @@
   align-items: center;
   justify-content: center;
   padding: 60px 40px;
-  background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
-  border: 2px solid #2d2d2d;
+  background: linear-gradient(135deg, #f4efe4 0%, #dfd8c8 100%);
+  border: 2px solid #cabfa6;
   border-radius: 12px;
   margin-bottom: 30px;
   min-width: 400px;
@@ -175,7 +175,7 @@
 
 .custom-placeholder .placeholder-text {
   font-size: 24px;
-  color: #e8e8e8;
+  color: #1c1a17;
   font-family: "Ma Shan Zheng", cursive;
   margin-bottom: 12px;
   letter-spacing: 4px;
@@ -183,7 +183,7 @@
 
 .custom-placeholder .placeholder-desc {
   font-size: 14px;
-  color: #666;
+  color: #6a6459;
   font-family: "ZCOOL XiaoWei", serif;
   text-align: center;
 }
@@ -195,8 +195,8 @@
   padding: 10px 30px;
   font-size: 16px;
   background: transparent;
-  border: 1px solid #3a3a3a;
-  color: #666;
+  border: 1px solid #b8ac91;
+  color: #6a6459;
   cursor: pointer;
   font-family: "ZCOOL XiaoWei", serif;
   transition: all 0.3s;
@@ -205,8 +205,8 @@
 #back-to-custom-from-towers:hover,
 #back-to-custom-from-levels:hover,
 #back-to-custom-from-export:hover {
-  border-color: #5a5a5a;
-  color: #999;
+  border-color: #6a6459;
+  color: #8a8377;
 }
 
 /* 手机横屏（矮视口）：压缩自定义子界面尺寸，保证返回按钮留在可视区内 */

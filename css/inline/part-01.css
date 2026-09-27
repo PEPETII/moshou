@@ -5,7 +5,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #0c0c0c;
+            background: #e7e1d2;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -38,10 +38,20 @@
         #main-menu h1 {
             font-size: 72px;
             font-family: "Ma Shan Zheng", cursive;
-            color: #e8e8e8;
+            color: #1c1a17;
             margin-bottom: 60px;
             letter-spacing: 12px;
-            text-shadow: 0 0 40px rgba(255,255,255,0.1);
+            text-shadow: 0 0 40px rgba(28, 26, 23, 0.1);
+        }
+
+        #main-menu .game-version {
+            position: relative;
+            z-index: 1;
+            font-size: 14px;
+            font-family: "ZCOOL XiaoWei", serif;
+            color: #6a6459;
+            letter-spacing: 2px;
+            margin: -48px 0 28px;
         }
 
         /* 加载进度条 */
@@ -51,7 +61,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #0c0c0c;
+            background: #e7e1d2;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -68,7 +78,7 @@
         #loading-text {
             font-size: 24px;
             font-family: "Ma Shan Zheng", cursive;
-            color: #888;
+            color: #6a6459;
             margin-bottom: 20px;
             letter-spacing: 4px;
         }
@@ -76,7 +86,7 @@
         #loading-bar {
             width: 300px;
             height: 4px;
-            background: #1f1f1f;
+            background: #ded5c0;
             border-radius: 2px;
             overflow: hidden;
         }
@@ -84,16 +94,16 @@
         #loading-progress {
             width: 0%;
             height: 100%;
-            background: linear-gradient(90deg, #c45c48, #e8e8e8);
+            background: linear-gradient(90deg, #c45c48, #1c1a17);
             transition: width 0.3s ease;
         }
 
         #loading-percent {
             font-size: 14px;
             font-family: "ZCOOL XiaoWei", serif;
-            color: #666;
+            color: #6a6459;
             margin-top: 10px;
-            text-shadow: 0 0 40px rgba(255,255,255,0.1);
+            text-shadow: 0 0 40px rgba(28, 26, 23, 0.1);
         }
 
         .menu-buttons {
@@ -108,9 +118,9 @@
         .menu-btn {
             padding: 18px 60px;
             font-size: 24px;
-            background: #1a1a1a;
-            border: 2px solid #3a3a3a;
-            color: #d4d4d4;
+            background: #f4efe4;
+            border: 2px solid #b8ac91;
+            color: #3d382f;
             cursor: pointer;
             transition: all 0.3s ease;
             font-family: "Ma Shan Zheng", cursive;
@@ -170,15 +180,15 @@
             left: 50%;
             width: 0;
             height: 0;
-            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(28, 26, 23, 0.08) 0%, transparent 70%);
             transform: translate(-50%, -50%);
             transition: width 0.4s, height 0.4s;
         }
 
         .menu-btn:hover {
-            background: #1f1f1f;
-            border-color: #5a5a5a;
-            color: #f5f5f5;
+            background: #ded5c0;
+            border-color: #6a6459;
+            color: #1c1a17;
         }
 
         .menu-btn:hover::before {
@@ -266,8 +276,8 @@
         .theme-card {
             width: 220px;
             padding: 24px 20px;
-            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
-            border: 2px solid #2d2d2d;
+            background: linear-gradient(135deg, #f4efe4 0%, #dfd8c8 100%);
+            border: 2px solid #cabfa6;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -283,13 +293,13 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, transparent, var(--theme-color, #666), transparent);
+            background: linear-gradient(90deg, transparent, var(--theme-color, #6a6459), transparent);
             opacity: 0.6;
         }
 
         .theme-card:hover {
-            border-color: var(--theme-color, #4a4a4a);
-            background: linear-gradient(135deg, #1f1f1f 0%, #151515 100%);
+            border-color: var(--theme-color, #6a6459);
+            background: linear-gradient(135deg, #ded5c0 0%, #e0d9c9 100%);
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
@@ -302,7 +312,7 @@
 
         .theme-card .theme-name {
             font-size: 24px;
-            color: #e8e8e8;
+            color: #1c1a17;
             font-family: "Ma Shan Zheng", cursive;
             margin-bottom: 8px;
             letter-spacing: 4px;
@@ -310,7 +320,7 @@
 
         .theme-card .theme-desc {
             font-size: 13px;
-            color: #888;
+            color: #6a6459;
             font-family: "ZCOOL XiaoWei", serif;
             line-height: 1.5;
         }
@@ -318,7 +328,7 @@
         .theme-card .theme-progress {
             margin-top: 12px;
             font-size: 12px;
-            color: #666;
+            color: #6a6459;
         }
 
         .theme-card.locked {
@@ -329,7 +339,7 @@
 
         .theme-card.locked:hover {
             transform: none;
-            border-color: #2d2d2d;
+            border-color: #cabfa6;
             box-shadow: none;
         }
 
@@ -395,13 +405,13 @@
             justify-content: space-between;
             width: 100%;
             padding: 0 20px 20px;
-            border-bottom: 1px solid #2d2d2d;
+            border-bottom: 1px solid #cabfa6;
             margin-bottom: 20px;
         }
 
         .level-list-title {
             font-size: 28px;
-            color: #e8e8e8;
+            color: #1c1a17;
             font-family: "Ma Shan Zheng", cursive;
             letter-spacing: 6px;
         }
@@ -417,8 +427,8 @@
         .level-item {
             aspect-ratio: 1;
             padding: 12px;
-            background: #1a1a1a;
-            border: 2px solid #2d2d2d;
+            background: #f4efe4;
+            border: 2px solid #cabfa6;
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -430,20 +440,20 @@
         }
 
         .level-item:hover {
-            border-color: #4a4a4a;
-            background: #1f1f1f;
+            border-color: #6a6459;
+            background: #ded5c0;
             transform: scale(1.05);
         }
 
         .level-item .level-num {
             font-size: 11px;
-            color: #666;
+            color: #6a6459;
             margin-bottom: 4px;
         }
 
         .level-item .level-name {
             font-size: 16px;
-            color: #e8e8e8;
+            color: #1c1a17;
             font-family: "Ma Shan Zheng", cursive;
         }
 
@@ -454,7 +464,7 @@
 
         .level-item.locked:hover {
             transform: none;
-            border-color: #2d2d2d;
+            border-color: #cabfa6;
         }
 
         .level-item.completed {
@@ -476,8 +486,8 @@
             padding: 10px 30px;
             font-size: 16px;
             background: transparent;
-            border: 1px solid #3a3a3a;
-            color: #666;
+            border: 1px solid #b8ac91;
+            color: #6a6459;
             cursor: pointer;
             font-family: "ZCOOL XiaoWei", serif;
             transition: all 0.3s;
@@ -485,8 +495,8 @@
 
         #back-to-themes:hover,
         #back-to-menu:hover {
-            border-color: #5a5a5a;
-            color: #999;
+            border-color: #6a6459;
+            color: #8a8377;
         }
 
         #back-to-menu.hidden {
@@ -508,7 +518,7 @@
             color: white;
             padding: 20px;
             border-radius: 10px;
-            border: 2px solid #ffd700;
+            border: 2px solid #a67c00;
             min-width: 300px;
             text-align: center;
             font-family: 'Microsoft YaHei', sans-serif;
@@ -516,12 +526,12 @@
         }
 
         .event-notification h3 {
-            color: #ffd700;
+            color: #a67c00;
             margin: 0 0 10px 0;
         }
 
         .event-notification button {
-            background: #ffd700;
+            background: #a67c00;
             color: black;
             border: none;
             padding: 8px 16px;
@@ -539,12 +549,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #0c0c0c;
+            background: #e7e1d2;
             z-index: 9999;
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            color: #888;
+            color: #6a6459;
             font-family: "Ma Shan Zheng", cursive;
         }
 

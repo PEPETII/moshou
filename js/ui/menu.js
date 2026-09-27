@@ -14,7 +14,7 @@ UI.prototype.createTowerSelects = function() {
       el.className = 'tower-select';
       el.dataset.type = type;
 
-      if (this.game.gold < config.cost) {
+      if (this.game.ink < config.cost) {
         el.classList.add('locked');
       }
 
@@ -27,12 +27,12 @@ UI.prototype.createTowerSelects = function() {
 
       const clickHandler = () => {
         const config = CONFIG.TOWERS[el.dataset.type];
-        // 必须用"当前金币"判断，而不是关卡加载时打上的 .locked 快照：
-        // 旧实现在关卡加载时评估一次金币，之后攒够钱卡仍是灰的、点击被直接 return，
+        // 必须用"当前墨水"判断，而不是关卡加载时打上的 .locked 快照：
+        // 旧实现在关卡加载时评估一次墨水，之后攒够钱卡仍是灰的、点击被直接 return，
         // 触摸端的表现就是"点了完全没反应"。
-        if (config && this.game.gold < config.cost) {
+        if (config && this.game.ink < config.cost) {
           el.classList.add('locked');
-          this.showToast(`金币不足（需 ${config.cost} 金）`, 'warning');
+          this.showToast(`墨水不足（需 ${config.cost} 墨）`, 'warning');
           this.refreshTowerSelectAffordability();
           return;
         }
@@ -60,7 +60,7 @@ UI.prototype.createTowerSelects = function() {
   
 };
 /**
- * 把"金币不足"状态同步到塔卡（由 Game.updateUI 驱动，保证与金币实时一致）
+ * 把"墨水不足"状态同步到塔卡（由 Game.updateUI 驱动，保证与墨水实时一致）
  */
 UI.prototype.refreshTowerSelectAffordability = function() {
     const bottomBar = document.getElementById('bottom-bar');
@@ -70,7 +70,7 @@ UI.prototype.refreshTowerSelectAffordability = function() {
       const config = CONFIG.TOWERS[el.dataset.type];
       if (!config) continue;
 
-      const locked = this.game.gold < config.cost;
+      const locked = this.game.ink < config.cost;
       if (el.classList.contains('locked') !== locked) {
         el.classList.toggle('locked', locked);
       }

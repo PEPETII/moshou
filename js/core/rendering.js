@@ -1,6 +1,6 @@
 // Game：普通模式绘制和 HUD
 Game.prototype.updateUI = function() {
-    document.getElementById("gold").textContent = this.gold;
+    document.getElementById("ink").textContent = this.ink;
     document.getElementById("wave").textContent =
       `${this.wave}/${this.maxWave}`;
     this.runtimeIndexes.rebuildEnemies();
@@ -14,7 +14,7 @@ Game.prototype.updateUI = function() {
       this.waveInProgress || this.wave >= this.maxWave || this.gameEnded;
     waveBtn.textContent = this.wave >= this.maxWave ? "通关" : "开始波次";
 
-    // 塔卡的"金币不足"状态必须随金币实时刷新，
+    // 塔卡的"墨水不足"状态必须随墨水实时刷新，
     // 否则玩家攒够钱后卡仍是灰的、点击无响应（移动端表现为"点了没反应"）
     if (this.ui && this.ui.refreshTowerSelectAffordability) {
       this.ui.refreshTowerSelectAffordability();
@@ -135,7 +135,7 @@ Game.prototype.drawPath = function() {
       }
       this.ctx.stroke();
 
-      this.ctx.fillStyle = "#666";
+      this.ctx.fillStyle = "#6a6459";
       this.ctx.font = "12px Microsoft YaHei";
       this.ctx.textAlign = "center";
       this.ctx.textBaseline = "middle";
@@ -150,7 +150,7 @@ Game.prototype.drawCore = function() {
 
     const pos = gridToPixel(this.core.x, this.core.y);
 
-    this.inkRenderer.drawInkWash(pos.x, pos.y + 15, 35, '#1a1a1a', 0.4);
+    this.inkRenderer.drawInkWash(pos.x, pos.y + 15, 35, '#1c1a17', 0.4);
 
     const size = 22;
     const height = 16;
@@ -205,7 +205,7 @@ Game.prototype.drawCore = function() {
     this.ctx.closePath();
     this.ctx.fill();
 
-    this.inkRenderer.drawInkText("★", pos.x, pos.y - 2, 28, "#f5f5f5", true);
+    this.inkRenderer.drawInkText("★", pos.x, pos.y - 2, 28, "#f4efe4", true);
 
     this.ctx.font = '12px "ZCOOL XiaoWei", serif';
     this.ctx.textAlign = "center";
@@ -255,7 +255,7 @@ Game.prototype.drawPlacementPreview = function() {
         0,
         Math.PI * 2,
       );
-      this.ctx.strokeStyle = "rgba(255, 255, 0, 0.5)";
+      this.ctx.strokeStyle = "rgba(176, 58, 46, 0.5)";
       this.ctx.stroke();
     }
   
@@ -263,7 +263,7 @@ Game.prototype.drawPlacementPreview = function() {
 Game.prototype.drawLevelInfo = function() {
     const level = this.currentLevelData;
 
-    this.ctx.fillStyle = "#888";
+    this.ctx.fillStyle = "#6a6459";
     this.ctx.font = "14px Microsoft YaHei";
     this.ctx.textAlign = "left";
     this.ctx.fillText(

@@ -17,11 +17,11 @@ Game.prototype.startWave = function() {
     for (const tower of this.towers) {
       if (tower.type === 'treasure') {
         tower.waveCount++;
-        let gold = tower.goldPerWave;
+        let ink = tower.inkPerWave;
         if (tower.waveCount % tower.interestInterval === 0) {
-          gold += tower.interestBonus;
+          ink += tower.interestBonus;
         }
-        this.gold += gold;
+        this.ink += ink;
       }
     }
 

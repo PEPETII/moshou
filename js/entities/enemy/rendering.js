@@ -14,13 +14,13 @@ Enemy.prototype.draw = function(ctx, inkRenderer) {
     // 确定敌人颜色状态
     let color = CONFIG.COLORS.enemy;
     if (this.vaporizeMark) {
-      color = "#c0c0c0";  // 蒸发状态显示淡灰
+      color = "#8a8377";  // 蒸发状态显示干墨（墨色转淡）
     } else if (this.burning || this.fireMarked) {
-      color = "#a0a0a0";  // 灼烧状态显示浅墨
+      color = "#b03a2e";  // 灼烧状态显示朱砂
     } else if (this.blocked) {
-      color = "#909090";
+      color = "#5d4037";  // 阻挡状态显示滞墨
     } else if (this.slowed) {
-      color = "#b0b0b0";
+      color = "#6a6459";  // 减速状态显示淡墨
     }
 
     // 绘制敌人文字（水墨风格）
@@ -83,7 +83,7 @@ Enemy.prototype.draw = function(ctx, inkRenderer) {
     // 飞行标记
     if (this.flying) {
       ctx.font = '10px "ZCOOL XiaoWei", serif';
-      ctx.fillStyle = "#666";
+      ctx.fillStyle = "#6a6459";
       ctx.textAlign = "center";
       ctx.fillText("·飞·", this.x, this.y + 28);
     }
