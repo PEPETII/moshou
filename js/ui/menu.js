@@ -433,64 +433,6 @@ UI.prototype.renderThemeSelect = function() {
   
 };
 /**
-   * 渲染关卡选择界面
-   * @param {number} themeId - 主题ID
-   */
-UI.prototype.renderLevelSelect = function(themeId) {
-    const container = document.getElementById("level-list-container");
-    if (!container) return;
-
-    const titleEl = container.querySelector(".level-list-title");
-    const gridEl = container.querySelector(".level-grid");
-
-    if (!titleEl || !gridEl) return;
-
-    const theme = levelManager.getTheme(themeId);
-    const levels = levelManager.getLevelsByTheme(themeId);
-    const completedLevels = this.game && this.game.completedLevels ? this.game.completedLevels : [];
-
-    // 保存当前主题ID
-    this.currentThemeId = themeId;
-
-    // 设置标题
-    titleEl.textContent = theme.name;
-    titleEl.style.color = theme.color;
-
-    // 清空并重新填充关卡网格
-    gridEl.innerHTML = "";
-
-    for (let i = 0; i < levels.length; i++) {
-      const level = levels[i];
-      const item = document.createElement("div");
-      item.className = "level-item";
-
-      // 检查关卡完成状态
-      const isCompleted = completedLevels.includes(level.id);
-
-      // 所有关卡默认解锁
-      const isUnlocked = true;
-
-      // 设置样式
-      if (isCompleted) {
-        item.classList.add("completed");
-      }
-
-      item.innerHTML = `
-        <span class="level-num">${level.id.split('-')[1]}</span>
-        <span class="level-name">${level.name}</span>
-      `;
-
-      // 绑定点击事件：所有关卡都可以点击
-      const levelClickHandler = () => {
-        this.game.startGame(level.id);
-      };
-      this.addTrackedEventListener(item, "click", levelClickHandler);
-
-      gridEl.appendChild(item);
-    }
-  
-};
-/**
    * 显示主题选择界面
    */
 UI.prototype.showThemeSelect = function() {

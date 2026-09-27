@@ -91,10 +91,12 @@ ConquestGame.prototype.attemptFusion = function(tower1, tower2) {
     // 避免面板遮住移动端的确认/取消按钮。
     this.hideTowerInfo();
 
-    titleEl.textContent = "融合炮塔";
+    InkUI.setModalScene('fusion', { left: tower1.char, right: tower2.char, result: preview.char });
+    titleEl.textContent = "合字";
     textEl.textContent = message;
-    btnEl.textContent = canFuse ? "确认融合" : "知道了";
+    btnEl.textContent = canFuse ? "合 字" : "知道了";
     btnEl.disabled = false;
+    btnEl.onclick = null;
     modal.classList.remove("hidden");
 
     // 清理之前可能存在的事件监听器
@@ -105,6 +107,7 @@ ConquestGame.prototype.attemptFusion = function(tower1, tower2) {
     const closeModal = () => {
       this._cleanupFusionModalListeners();
       modal.classList.add("hidden");
+      InkUI.hideReturnButton();
       if (returnBtn) {
         returnBtn.style.display = "none";
         returnBtn.onclick = null;
@@ -124,7 +127,8 @@ ConquestGame.prototype.attemptFusion = function(tower1, tower2) {
       btnEl.disabled = true;
 
       if (pendingFusion) {
-        this.fuseTowers(pendingFusion.tower1, pendingFusion.tower2);
+        const fused = this.fuseTowers(pendingFusion.tower1, pendingFusion.tower2);
+        if (fused) InkUI.showFusionFeedback(preview.char);
         this.hideTowerInfo();
       }
       closeModal();

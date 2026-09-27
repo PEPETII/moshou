@@ -1,0 +1,237 @@
+:root {
+  --ink-paper: #f4efe4;
+  --ink-shadow-paper: #e8e1d2;
+  --ink-grid: #ded5c0;
+  --ink-strong: #1c1a17;
+  --ink-soft: #6a6459;
+  --ink-faint: #9b9386;
+  --ink-seal: #b4473a;
+  --ink-seal-dark: #7d342c;
+}
+
+html, body, #main-menu, #game-container, #conquest-side-panel {
+  background-color: var(--ink-paper);
+  color: var(--ink-strong);
+}
+
+button { touch-action: manipulation; }
+button:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid var(--ink-seal);
+  outline-offset: 4px;
+}
+
+#loading-container {
+  background: var(--ink-paper);
+}
+#loading-text { color: var(--ink-strong); font-size: 40px; }
+#loading-progress { background: var(--ink-seal); }
+#loading-bar { border-radius: 0; }
+
+.rotate-tip { background: var(--ink-paper); color: var(--ink-strong); }
+.rotate-icon { color: var(--ink-seal); font: 48px "Ma Shan Zheng", cursive; animation: none; }
+
+#main-menu {
+  overflow: hidden;
+  isolation: isolate;
+  padding: 20px;
+  background: var(--ink-paper);
+}
+#main-menu::before {
+  content: '';
+  position: absolute;
+  inset: 18px;
+  pointer-events: none;
+  border-top: 1px solid var(--ink-grid);
+  border-bottom: 1px solid var(--ink-grid);
+  opacity: .8;
+}
+#menu-ink-canvas { opacity: .25; }
+#main-menu h1 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin: 0 0 6px;
+  font-size: 58px;
+  line-height: 1;
+  letter-spacing: 0;
+  text-shadow: none;
+  font-weight: normal;
+  animation: title-write .8s ease-out both;
+}
+#main-menu .title-ink {
+  font-size: 1.8em;
+  line-height: .92;
+  color: var(--ink-strong);
+}
+#main-menu .title-script { letter-spacing: .34em; padding-left: .34em; }
+#main-menu .menu-seal {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: 4px 0 14px;
+  border: 2px solid var(--ink-seal);
+  color: var(--ink-seal);
+  font: 19px "Ma Shan Zheng", cursive;
+  transform: rotate(-8deg);
+  animation: seal-fall .35s .7s both;
+}
+#main-menu .game-version {
+  position: absolute;
+  bottom: 25px;
+  margin: 0;
+  font-size: 11px;
+  color: var(--ink-faint);
+}
+#main-menu .menu-buttons {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0;
+  max-height: none;
+  width: min(920px, 96vw);
+  padding: 8px 0;
+  overflow: visible;
+  border-top: 1px solid var(--ink-grid);
+  border-bottom: 1px solid var(--ink-grid);
+}
+#main-menu .menu-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1 1 16%;
+  min-width: 98px;
+  min-height: 100px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 0;
+  border-right: 1px solid var(--ink-grid);
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--ink-strong);
+  font: 22px "Ma Shan Zheng", cursive;
+  letter-spacing: .16em;
+  overflow: visible;
+  animation: ink-appear .45s both;
+}
+#main-menu .menu-btn:last-child { border-right: 0; }
+#main-menu .menu-btn:nth-child(2) { animation-delay: .08s; }
+#main-menu .menu-btn:nth-child(3) { animation-delay: .16s; }
+#main-menu .menu-btn:nth-child(4) { animation-delay: .24s; }
+#main-menu .menu-btn:nth-child(5) { animation-delay: .32s; }
+#main-menu .menu-btn::before { display: none; }
+#main-menu .menu-btn::after {
+  content: '';
+  position: absolute;
+  inset: auto 28% 0;
+  height: 2px;
+  background: var(--ink-seal);
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+#main-menu .menu-btn:hover,
+#main-menu .menu-btn:focus-visible {
+  background: transparent;
+  border-color: var(--ink-grid);
+  color: var(--ink-strong);
+  transform: none;
+  box-shadow: none;
+}
+#main-menu .menu-btn:hover::after,
+#main-menu .menu-btn:focus-visible::after { opacity: 1; }
+#main-menu .menu-glyph {
+  color: var(--ink-strong);
+  font-size: 38px;
+  line-height: 1;
+}
+#main-menu .menu-btn small {
+  display: block;
+  margin-top: 5px;
+  color: var(--ink-soft);
+  font: 12px "ZCOOL XiaoWei", serif;
+  letter-spacing: .12em;
+}
+#main-menu button:not(.menu-btn) {
+  min-height: 44px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ink-grid);
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--ink-strong);
+  font-family: "ZCOOL XiaoWei", serif;
+  transform: none;
+}
+#main-menu button:not(.menu-btn):hover,
+#main-menu button:not(.menu-btn):focus-visible {
+  color: var(--ink-seal);
+  border-color: var(--ink-seal);
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+#main-menu button:not(.menu-btn)::before { display: none; }
+
+#settings-container {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 28px 50px;
+  background: var(--ink-paper);
+  border-top: 1px solid var(--ink-grid);
+  border-bottom: 1px solid var(--ink-grid);
+}
+#settings-container.hidden { display: none; }
+#settings-container h2 { font: 32px "Ma Shan Zheng", cursive; }
+#settings-container p { color: var(--ink-soft); font: 13px "ZCOOL XiaoWei", serif; }
+#settings-container button { padding: 8px 24px; }
+
+@keyframes title-write {
+  from { opacity: 0; filter: blur(5px); clip-path: inset(0 100% 0 0); }
+  to { opacity: 1; filter: blur(0); clip-path: inset(0 0 0 0); }
+}
+@keyframes seal-fall {
+  from { opacity: 0; transform: translateY(-14px) scale(1.3) rotate(-8deg); }
+  to { opacity: 1; transform: translateY(0) scale(1) rotate(-8deg); }
+}
+@keyframes ink-appear {
+  from { opacity: 0; filter: blur(3px); }
+  to { opacity: 1; filter: blur(0); }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  #main-menu h1 { font-size: 32px; margin: 0 0 2px; }
+  #main-menu .menu-seal { width: 22px; height: 22px; font-size: 13px; margin: 0 0 5px; }
+  #main-menu .menu-buttons { max-height: none; flex-direction: row; gap: 0; padding: 2px 0; }
+  #main-menu .menu-btn { min-height: 78px; padding: 5px 7px; font-size: 17px; }
+  #main-menu .menu-glyph { font-size: 26px; }
+  #main-menu .menu-btn small { font-size: 10px; margin-top: 2px; }
+}
+@media (max-height: 400px) and (orientation: landscape) {
+  #main-menu h1 { font-size: 26px; }
+  #main-menu .menu-btn { min-height: 64px; font-size: 15px; }
+  #main-menu .menu-glyph { font-size: 21px; }
+  #main-menu .menu-btn small { font-size: 9px; }
+  #main-menu .game-version { bottom: 8px; }
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  #main-menu h1 { font-size: 35px; }
+  #main-menu .menu-buttons { max-height: 56vh; overflow-y: auto; }
+  #main-menu .menu-btn { flex-basis: 45%; border-bottom: 1px solid var(--ink-grid); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #main-menu h1, #main-menu .menu-seal, #main-menu .menu-btn { animation: none; }
+}
+html[data-ink-motion="reduced"] #main-menu h1,
+html[data-ink-motion="reduced"] #main-menu .menu-seal,
+html[data-ink-motion="reduced"] #main-menu .menu-btn { animation: none; }
+html[data-ink-motion="reduced"] #menu-ink-canvas { opacity: 0; }

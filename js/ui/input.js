@@ -275,20 +275,26 @@ UI.prototype.showFusionConfirm = function(tower1, tower2, preview) {
     }
 
     if (!canFuse && !preview.canAfford) {
-      message += `\n⚠️ 墨水不足!`;
+      message += `\n※ 墨水不足!`;
     } else if (!canFuse && preview.canAfford) {
-      message += `\n⚠️ 当前组合不满足融合条件（进化白名单或路径限制）`;
+      message += `\n※ 当前组合不满足融合条件（进化白名单或路径限制）`;
     }
 
     const modal = document.getElementById('modal');
     const titleEl = document.getElementById('modal-title');
     const textEl = document.getElementById('modal-text');
     const btnEl = document.getElementById('modal-btn');
+    const returnBtn = InkUI.ensureReturnButton();
 
-    titleEl.textContent = '融合炮塔';
+    InkUI.setModalScene('fusion', { left: tower1.char, right: tower2.char, result: preview.char });
+    titleEl.textContent = '合字';
     textEl.textContent = message;
-    btnEl.textContent = canFuse ? '确认融合' : '取消';
+    btnEl.textContent = canFuse ? '合 字' : '知道了';
     btnEl.disabled = false;
+    btnEl.onclick = null;
+    returnBtn.textContent = '取消';
+    returnBtn.style.display = canFuse ? 'inline-block' : 'none';
+    returnBtn.onclick = () => this.hideModal();
     modal.classList.remove('hidden');
 
     // 清理之前可能存在的事件监听器
@@ -308,7 +314,8 @@ UI.prototype.showFusionConfirm = function(tower1, tower2, preview) {
       btnEl.disabled = true;
 
       if (this.pendingFusion) {
-        this.game.fuseTowers(this.pendingFusion.tower1, this.pendingFusion.tower2);
+        const fused = this.game.fuseTowers(this.pendingFusion.tower1, this.pendingFusion.tower2);
+        if (fused) InkUI.showFusionFeedback(preview.char);
         this.pendingFusion = null;
         this.selectedTower = null;
         this.hideTowerInfo();
@@ -341,7 +348,7 @@ UI.prototype.drawDragPreview = function(ctx) {
     // 触摸端看不到鼠标光标，必须显式画出"松手会落在哪一格"
     const target = pixelToGrid(x, y);
     ctx.save();
-    ctx.strokeStyle = "rgba(255, 215, 0, 0.85)";
+    ctx.strokeStyle = "rgba(180, 71, 58, 0.85)";
     ctx.lineWidth = 2;
     ctx.strokeRect(
       target.gx * CONFIG.CELL_SIZE,
@@ -364,7 +371,7 @@ UI.prototype.drawDragPreview = function(ctx) {
     ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = this.draggingTower.isFusion ? '#6a6459' : '#ffff00';
+    ctx.fillStyle = this.draggingTower.isFusion ? '#6a6459' : '#1c1a17';
     ctx.fillText(this.draggingTower.char, x, y);
     ctx.restore();
 };

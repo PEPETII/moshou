@@ -1,0 +1,453 @@
+/* 大界面共用同一册宣纸版式。 */
+#theme-select-container,
+#level-list-container,
+#encyclopedia-container,
+#tower-encyclopedia-container,
+#enemy-encyclopedia-container,
+#fusion-encyclopedia-container,
+#conquest-theme-select-container,
+#conquest-level-select-container,
+#custom-container,
+#custom-towers-container,
+#custom-levels-container,
+#custom-export-container {
+  position: relative;
+  z-index: 1;
+  width: min(1000px, 94vw);
+  max-width: none;
+  max-height: calc(100dvh - 210px);
+  margin: 8px auto 0;
+  padding: 12px 24px;
+  overflow: auto;
+  background: transparent;
+}
+#theme-select-container,
+#conquest-theme-select-container { justify-content: center; }
+#main-menu :is(.encyclopedia-title, .custom-title, .conquest-theme-title,
+  .conquest-level-title, .custom-sub-title, .level-list-title) {
+  color: var(--ink-strong) !important;
+  font-family: "Ma Shan Zheng", cursive;
+  font-weight: normal;
+  text-shadow: none;
+}
+#main-menu :is(.encyclopedia-header, .level-list-header,
+  .conquest-theme-header, .conquest-level-header, .custom-sub-header) {
+  border-bottom: 1px solid var(--ink-grid);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+}
+
+/* 主题是长卷的分章，不再使用彩色卡片。 */
+#theme-select-container {
+  gap: 0;
+  border-top: 1px solid var(--ink-grid);
+  border-bottom: 1px solid var(--ink-grid);
+}
+#main-menu .theme-card,
+#main-menu .conquest-theme-card {
+  flex: 1 1 155px;
+  min-width: 145px;
+  max-width: 190px;
+  min-height: 148px;
+  padding: 14px 12px;
+  background: transparent;
+  border: 0;
+  border-right: 1px solid var(--ink-grid);
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--ink-strong);
+  transform: none;
+  cursor: pointer;
+}
+#main-menu .theme-card:last-child,
+#main-menu .conquest-theme-card:last-child { border-right: 0; }
+#main-menu .theme-card::before,
+#main-menu .conquest-theme-card::before { display: none; }
+#main-menu .theme-card:hover,
+#main-menu .conquest-theme-card:hover,
+#main-menu .theme-card:focus-visible,
+#main-menu .conquest-theme-card:focus-visible {
+  background: rgba(28, 26, 23, .035);
+  border-color: var(--ink-grid);
+  box-shadow: none;
+  transform: none;
+}
+#main-menu :is(.theme-card, .conquest-theme-card) .theme-icon {
+  color: var(--ink-strong);
+  display: block;
+  margin: 0 0 7px;
+  font: 48px "Ma Shan Zheng", cursive;
+}
+#main-menu :is(.theme-card, .conquest-theme-card) .theme-name {
+  margin: 0 0 5px;
+  color: var(--ink-strong);
+  font-size: 22px;
+}
+#main-menu :is(.theme-card, .conquest-theme-card) :is(.theme-desc, .theme-progress) {
+  color: var(--ink-soft);
+  font: 12px "ZCOOL XiaoWei", serif;
+  line-height: 1.5;
+}
+#main-menu :is(.theme-card, .conquest-theme-card) .theme-progress {
+  border-top: 1px solid var(--ink-grid);
+  margin-top: 8px;
+  padding-top: 5px;
+}
+#main-menu .theme-card.locked { opacity: 1; color: var(--ink-faint); }
+#main-menu .theme-card.locked .theme-icon { color: var(--ink-faint); }
+
+/* 山河长卷：横向拖看，节点先展开石碑，再入境。 */
+#level-list-container {
+  align-items: stretch;
+  width: min(1100px, 96vw);
+  max-height: calc(100dvh - 190px);
+  overflow: visible;
+}
+#level-list-container .level-list-header { justify-content: center; }
+#level-list-container .level-grid,
+#conquest-level-select-container .conquest-level-grid {
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  width: 100%;
+  min-height: 150px;
+  padding: 12px 18px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-faint) transparent;
+  touch-action: pan-x;
+}
+#level-list-container .level-grid::before,
+#conquest-level-select-container .conquest-level-grid::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 58%;
+  border-top: 1px dashed var(--ink-faint);
+  pointer-events: none;
+}
+#level-list-container .level-grid::before { width: 1200px; right: auto; }
+#level-list-container .level-grid::after,
+#conquest-level-select-container .conquest-level-grid::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  width: 1200px;
+  height: 150px;
+  background: url('./landscape.svg') left center / 1200px 150px no-repeat;
+  pointer-events: none;
+}
+#conquest-level-select-container .conquest-level-grid::after {
+  width: 100%;
+  background-size: 100% 150px;
+}
+#main-menu .level-item,
+#main-menu .conquest-level-item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 0 0 112px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 112px;
+  height: 112px;
+  min-height: 112px;
+  padding: 8px 5px;
+  aspect-ratio: auto;
+  background: var(--ink-paper);
+  border: 0;
+  border-bottom: 1px solid var(--ink-faint);
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--ink-strong);
+  cursor: pointer;
+  transform: none;
+}
+#main-menu .level-item:nth-child(even),
+#main-menu .conquest-level-item:nth-child(even) { margin-top: 24px; }
+#main-menu .level-item::before,
+#main-menu .conquest-level-item::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  margin-bottom: 4px;
+  border: 2px solid var(--ink-strong);
+  border-radius: 50%;
+  background: var(--ink-paper);
+}
+#main-menu .level-item:hover,
+#main-menu .level-item.selected,
+#main-menu .conquest-level-item:hover {
+  background: var(--ink-shadow-paper);
+  border-color: var(--ink-strong);
+  box-shadow: none;
+  transform: none;
+}
+#main-menu .level-item.selected::before,
+#main-menu .level-item.completed::before,
+#main-menu .conquest-level-item.completed::before {
+  border-color: var(--ink-seal);
+  background: var(--ink-seal);
+}
+#main-menu .level-item.completed::after,
+#main-menu .conquest-level-item.completed::after {
+  content: '成';
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  color: var(--ink-seal);
+  font: 13px "Ma Shan Zheng", cursive;
+}
+#main-menu .level-item .level-num,
+#main-menu .conquest-level-item .level-num { color: var(--ink-soft); font-size: 12px; }
+#main-menu .level-item .level-name { color: var(--ink-strong); font-size: 22px; }
+#main-menu .conquest-level-item .level-status { color: var(--ink-seal); }
+#level-inscription {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px 20px;
+  min-height: 86px;
+  padding: 10px 22px;
+  border-top: 1px solid var(--ink-grid);
+  border-bottom: 1px solid var(--ink-grid);
+  background: var(--ink-shadow-paper);
+  font-family: "ZCOOL XiaoWei", serif;
+}
+#level-inscription.hidden { display: none; }
+#level-inscription-number { color: var(--ink-seal); font-size: 13px; }
+#level-inscription-name { font: 30px "Ma Shan Zheng", cursive; }
+#level-inscription-note { grid-column: 1 / 3; color: var(--ink-soft); font-size: 12px; }
+#main-menu #enter-level { grid-column: 3; grid-row: 1 / 3; padding: 8px 20px; color: var(--ink-seal); font: 23px "Ma Shan Zheng", cursive; }
+
+/* 百字谱：左侧字目，详情从右侧展开为墨签。 */
+#encyclopedia-container .encyclopedia-title { margin-bottom: 14px; }
+#encyclopedia-container .encyclopedia-buttons,
+#custom-container .custom-buttons {
+  gap: 0;
+  width: min(800px, 100%);
+  border-top: 1px solid var(--ink-grid);
+  border-bottom: 1px solid var(--ink-grid);
+}
+#main-menu .encyclopedia-card,
+#main-menu .custom-card {
+  flex: 1 1 200px;
+  width: auto;
+  min-width: 180px;
+  min-height: 160px;
+  padding: 18px;
+  background: transparent;
+  border: 0;
+  border-right: 1px solid var(--ink-grid);
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+}
+#main-menu :is(.encyclopedia-card, .custom-card)::before { display: none; }
+#main-menu :is(.encyclopedia-card, .custom-card):last-child { border-right: 0; }
+#main-menu :is(.encyclopedia-card, .custom-card):hover {
+  background: rgba(28, 26, 23, .035);
+  border-color: var(--ink-grid);
+  box-shadow: none;
+  transform: none;
+}
+#main-menu :is(.encyclopedia-icon, .custom-icon, .placeholder-icon) {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ink-strong);
+  font: 50px "Ma Shan Zheng", cursive;
+}
+#main-menu :is(.encyclopedia-card-name, .custom-card-name) {
+  margin-bottom: 4px;
+  color: var(--ink-strong);
+  font: 24px "Ma Shan Zheng", cursive;
+}
+#main-menu :is(.encyclopedia-card-desc, .custom-card-desc) { color: var(--ink-soft); font-size: 12px; }
+#tower-encyclopedia-container,
+#enemy-encyclopedia-container,
+#fusion-encyclopedia-container { align-items: stretch; width: min(1000px, 96vw); }
+#main-menu .encyclopedia-header { align-items: flex-start; }
+#main-menu .encyclopedia-header .encyclopedia-title { font-size: 32px; margin: 0; }
+#main-menu .filter-tabs { justify-content: flex-start; gap: 6px; margin-top: 5px; }
+#main-menu .filter-tab { padding: 5px 15px; min-height: 44px; color: var(--ink-soft); }
+#main-menu .filter-tab.active { color: var(--ink-seal); border-color: var(--ink-seal); }
+#main-menu .encyclopedia-grid {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-self: flex-start;
+  gap: 0;
+  width: min(380px, 45%);
+  max-height: min(46vh, 350px);
+  padding: 0 12px 0 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--ink-grid);
+}
+#main-menu .encyclopedia-item,
+#main-menu .fusion-item {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: center;
+  justify-items: start;
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 54px;
+  padding: 5px 8px;
+  aspect-ratio: auto;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ink-grid);
+  border-radius: 0;
+  box-shadow: none;
+  text-align: left;
+  transform: none;
+}
+#main-menu :is(.encyclopedia-item, .fusion-item):hover {
+  background: var(--ink-shadow-paper);
+  border-color: var(--ink-grid);
+  transform: none;
+  box-shadow: none;
+}
+#main-menu :is(.encyclopedia-item .item-char, .fusion-item .fusion-result-char) {
+  grid-row: span 2;
+  color: var(--ink-strong);
+  font-size: 29px;
+  margin: 0;
+}
+#main-menu :is(.item-cost, .fusion-cost, .fusion-components) {
+  color: var(--ink-soft);
+  font-size: 12px;
+  margin: 0;
+}
+#main-menu .fusion-rarity-tag,
+#main-menu .fusion-rarity {
+  position: static;
+  grid-column: 2;
+  padding: 0;
+  background: transparent;
+  color: var(--ink-seal);
+  border: 0;
+  border-radius: 0;
+  font-size: 11px;
+}
+#main-menu .fusion-item .fusion-result-char { grid-column: 1; grid-row: 1 / 4; }
+#main-menu .fusion-item :is(.fusion-components, .fusion-cost) { grid-column: 2; }
+#main-menu :is(.fusion-rarity-tag.rare, .fusion-rarity-tag.epic, .fusion-rarity-tag.legendary,
+  .fusion-rarity.rare, .fusion-rarity.epic, .fusion-rarity.legendary) {
+  background: transparent;
+  color: var(--ink-seal);
+}
+#tower-encyclopedia-container::after,
+#enemy-encyclopedia-container::after,
+#fusion-encyclopedia-container::after {
+  content: '择字观其形 · 翻谱知其意';
+  position: absolute;
+  top: 52%;
+  right: 6%;
+  color: var(--ink-faint);
+  font: 19px "Ma Shan Zheng", cursive;
+  pointer-events: none;
+}
+
+/* 书页详情和指南：保留原操作按钮与关闭链路。 */
+#tower-detail-panel,
+#enemy-detail-panel,
+#fusion-detail-panel,
+#fusion-guide-panel {
+  inset: 12px 12px 12px auto;
+  width: min(43vw, 470px);
+  height: auto;
+  padding: 6px;
+  background: var(--ink-paper);
+  border-left: 2px solid var(--ink-strong);
+  box-shadow: -8px 0 0 var(--ink-shadow-paper);
+}
+#main-menu .detail-content,
+#main-menu .guide-content {
+  width: 100%;
+  max-width: none;
+  max-height: 100%;
+  padding: 18px 22px;
+  overflow-y: auto;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+#main-menu .detail-header { justify-content: flex-start; margin-bottom: 12px; padding-bottom: 10px; }
+#main-menu .detail-char { font-size: 70px; color: var(--ink-strong); }
+#main-menu .detail-name { color: var(--ink-soft); font-size: 22px; }
+#main-menu :is(.detail-desc, .fusion-materials, .fusion-comparison, .guide-notices) {
+  background: transparent;
+  color: var(--ink-soft);
+  border-top: 1px solid var(--ink-grid);
+  border-radius: 0;
+  padding: 10px 0;
+}
+#main-menu :is(.detail-stat-row, .comparison-row) { border-color: var(--ink-grid); }
+#main-menu :is(.detail-stat-value.highlight, .comparison-result) { color: var(--ink-seal); }
+#main-menu :is(.guide-btn, .detail-close-btn) { min-height: 44px; }
+#main-menu .guide-btn { position: static; transform: none; }
+#main-menu .guide-step { background: transparent; border-color: var(--ink-grid); border-radius: 0; }
+#main-menu .step-number { background: transparent; color: var(--ink-seal); border: 1px solid var(--ink-seal); border-radius: 0; }
+
+/* 征服与自定沿用长卷。 */
+#conquest-theme-select-container .conquest-theme-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0;
+  width: 100%;
+  border-top: 1px solid var(--ink-grid);
+  border-bottom: 1px solid var(--ink-grid);
+}
+#conquest-level-select-container .conquest-level-grid { max-width: 800px; }
+#main-menu .custom-placeholder {
+  min-width: 0;
+  padding: 18px 30px;
+  background: transparent;
+  border: 1px solid var(--ink-grid);
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+#main-menu .custom-placeholder .placeholder-icon { margin: 0; opacity: 1; }
+
+@media (max-height: 500px) and (orientation: landscape) {
+  #theme-select-container, #level-list-container, #encyclopedia-container,
+  #tower-encyclopedia-container, #enemy-encyclopedia-container,
+  #fusion-encyclopedia-container, #conquest-theme-select-container,
+  #conquest-level-select-container, #custom-container,
+  #custom-towers-container, #custom-levels-container,
+  #custom-export-container { max-height: calc(100dvh - 130px); margin-top: 2px; padding: 4px 12px; }
+  #main-menu .theme-card, #main-menu .conquest-theme-card { min-height: 100px; padding: 5px 8px; }
+  #main-menu :is(.theme-card, .conquest-theme-card) .theme-icon { font-size: 30px; margin: 0; }
+  #main-menu :is(.theme-card, .conquest-theme-card) .theme-name { font-size: 17px; }
+  #main-menu :is(.theme-card, .conquest-theme-card) :is(.theme-desc, .theme-progress) { font-size: 10px; }
+  #main-menu .level-grid, #conquest-level-select-container .conquest-level-grid { min-height: 112px; }
+  #main-menu .level-item, #main-menu .conquest-level-item { flex-basis: 84px; width: 84px; height: 76px; min-height: 76px; }
+  #main-menu .level-item .level-name { font-size: 17px; }
+  #level-inscription { min-height: 60px; padding: 5px 12px; }
+  #level-inscription-name { font-size: 22px; }
+  #main-menu .encyclopedia-item, #main-menu .fusion-item { min-height: 48px; }
+  #main-menu .encyclopedia-grid { max-height: 42vh; }
+  #tower-detail-panel, #enemy-detail-panel, #fusion-detail-panel, #fusion-guide-panel { width: min(52vw, 470px); }
+  #main-menu .detail-content, #main-menu .guide-content { padding: 8px 15px; }
+  #main-menu .detail-char { font-size: 45px; }
+  #main-menu .detail-header { margin-bottom: 6px; padding-bottom: 5px; }
+}
+@media (orientation: portrait) and (max-width: 650px) {
+  #tower-detail-panel, #enemy-detail-panel, #fusion-detail-panel, #fusion-guide-panel { inset: 0; width: 100%; }
+  #main-menu .encyclopedia-grid { width: 100%; max-height: 45vh; border-right: 0; }
+  #tower-encyclopedia-container::after, #enemy-encyclopedia-container::after,
+  #fusion-encyclopedia-container::after { display: none; }
+  #level-inscription { grid-template-columns: auto 1fr; }
+  #main-menu #enter-level { grid-column: 1 / 3; grid-row: 3; }
+}

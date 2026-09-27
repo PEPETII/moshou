@@ -171,7 +171,7 @@ ConquestGame.prototype.drawDragPlacementPreview = function() {
         const pos = gridToPixel(gx, gy);
         this.ctx.fillText(preview.char, pos.x, pos.y);
       } else {
-        this.ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
+        this.ctx.fillStyle = "rgba(125, 52, 44, 0.2)";
         this.ctx.fillRect(
           gx * this.CELL_SIZE,
           gy * this.CELL_SIZE,
@@ -180,7 +180,7 @@ ConquestGame.prototype.drawDragPlacementPreview = function() {
         );
       }
     } else if (this.canPlaceAt(gx, gy)) {
-      this.ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
+      this.ctx.fillStyle = "rgba(28, 26, 23, 0.16)";
       this.ctx.fillRect(
         gx * this.CELL_SIZE,
         gy * this.CELL_SIZE,
@@ -191,7 +191,7 @@ ConquestGame.prototype.drawDragPlacementPreview = function() {
 
     // 显式描出"松手会落在哪一格"：触摸端没有光标，色块本身不够醒目
     this.ctx.save();
-    this.ctx.strokeStyle = "rgba(255, 215, 0, 0.85)";
+    this.ctx.strokeStyle = "rgba(180, 71, 58, 0.85)";
     this.ctx.lineWidth = 2;
     this.ctx.strokeRect(
       gx * this.CELL_SIZE,
@@ -315,7 +315,7 @@ ConquestGame.prototype.drawSummonFlash = function() {
 
     const alpha = 0.3 * (1 - elapsed / 400);
     if (this.summonFlashType === "success") {
-      this.ctx.fillStyle = `rgba(255, 215, 0, ${alpha})`;
+      this.ctx.fillStyle = `rgba(180, 71, 58, ${alpha})`;
     } else {
       this.ctx.fillStyle = `rgba(255, 50, 50, ${alpha})`;
     }

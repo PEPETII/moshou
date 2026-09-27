@@ -109,7 +109,7 @@ UI.prototype.showGameFusionDetail = function(fusionType, config) {
     const rarity = this.getFusionRarity(config.cost);
 
     charEl.textContent = config.char;
-    nameEl.textContent = fusionType;
+    nameEl.textContent = `合字 · ${config.char}`;
     rarityEl.textContent = rarity.name;
     rarityEl.className = `fusion-rarity ${rarity.level}`;
 
@@ -257,7 +257,7 @@ UI.prototype.showFusionDetail = function(fusionType, config) {
     const rarity = this.getFusionRarity(config.cost);
 
     charEl.textContent = config.char;
-    nameEl.textContent = fusionType;
+    nameEl.textContent = `合字 · ${config.char}`;
     rarityEl.textContent = rarity.name;
     rarityEl.className = `fusion-rarity ${rarity.level}`;
 

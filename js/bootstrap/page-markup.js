@@ -10,20 +10,28 @@
 
     <!-- 横屏提示 -->
     <div class="rotate-tip">
-        <div class="rotate-icon">📱</div>
+        <div class="rotate-icon">转</div>
         <div class="rotate-text">请旋转至横屏</div>
     </div>
 
     <!-- 主菜单 -->
     <div id="main-menu">
         <canvas id="menu-ink-canvas"></canvas>
-        <h1>墨守成规</h1>
+        <h1 aria-label="墨守成规"><span class="title-ink">墨</span><span class="title-script">守 成 规</span></h1>
+        <span class="menu-seal" aria-hidden="true">守</span>
         <div id="game-version" class="game-version"></div>
         <div class="menu-buttons">
-            <button class="menu-btn" id="btn-encyclopedia">图鉴</button>
-            <button class="menu-btn" id="btn-levels">塔防模式</button>
-            <button class="menu-btn" id="btn-conquest">征服模式</button>
-            <button class="menu-btn" id="btn-custom">自定义</button>
+            <button class="menu-btn" id="btn-levels"><span class="menu-glyph">守</span><span>塔 防<small>守一方墨境</small></span></button>
+            <button class="menu-btn" id="btn-conquest"><span class="menu-glyph">征</span><span>征 服<small>拓四方疆土</small></span></button>
+            <button class="menu-btn" id="btn-encyclopedia"><span class="menu-glyph">谱</span><span>图 鉴<small>百字成卷</small></span></button>
+            <button class="menu-btn" id="btn-custom"><span class="menu-glyph">作</span><span>自 定<small>自书新章</small></span></button>
+            <button class="menu-btn" id="btn-settings"><span class="menu-glyph">设</span><span>设 置<small>调墨理卷</small></span></button>
+        </div>
+        <div id="settings-container" class="hidden">
+            <h2>设 · 墨卷</h2>
+            <button id="ink-motion-toggle" type="button" aria-pressed="false">墨迹动效 · 开</button>
+            <p>减少动效时，书页与印章仍会清晰呈现。</p>
+            <button id="back-to-menu-from-settings" type="button">返回墨卷</button>
         </div>
         <div id="theme-select-container" class="hidden"></div>
         <div id="level-list-container" class="hidden">
@@ -31,6 +39,12 @@
                 <span class="level-list-title"></span>
             </div>
             <div class="level-grid"></div>
+            <div id="level-inscription" class="hidden" aria-live="polite">
+                <span id="level-inscription-number"></span>
+                <strong id="level-inscription-name"></strong>
+                <span id="level-inscription-note"></span>
+                <button id="enter-level" type="button">入 境</button>
+            </div>
             <button id="back-to-themes">主题</button>
         </div>
         
@@ -39,18 +53,18 @@
             <div class="encyclopedia-title">图鉴</div>
             <div class="encyclopedia-buttons">
                 <div class="encyclopedia-card" id="btn-tower-encyclopedia">
-                    <span class="encyclopedia-icon">🏯</span>
-                    <div class="encyclopedia-card-name">炮塔图鉴</div>
+                    <span class="encyclopedia-icon">塔</span>
+                    <div class="encyclopedia-card-name">炮塔志</div>
                     <div class="encyclopedia-card-desc">查看所有防御塔详细信息</div>
                 </div>
                 <div class="encyclopedia-card" id="btn-enemy-encyclopedia">
-                    <span class="encyclopedia-icon">👹</span>
-                    <div class="encyclopedia-card-name">怪物图鉴</div>
+                    <span class="encyclopedia-icon">鬼</span>
+                    <div class="encyclopedia-card-name">妖异录</div>
                     <div class="encyclopedia-card-desc">查看所有敌人详细信息</div>
                 </div>
                 <div class="encyclopedia-card" id="btn-fusion-encyclopedia">
-                    <span class="encyclopedia-icon">⚡</span>
-                    <div class="encyclopedia-card-name">融合图鉴</div>
+                    <span class="encyclopedia-icon">合</span>
+                    <div class="encyclopedia-card-name">合字谱</div>
                     <div class="encyclopedia-card-desc">查看所有融合配方和属性</div>
                 </div>
             </div>
@@ -193,17 +207,17 @@
             <div class="custom-title">自定义</div>
             <div class="custom-buttons">
                 <div class="custom-card" id="btn-custom-towers">
-                    <span class="custom-icon">⚔️</span>
+                    <span class="custom-icon">塔</span>
                     <div class="custom-card-name">自定义炮塔</div>
                     <div class="custom-card-desc">创建和编辑自定义炮塔</div>
                 </div>
                 <div class="custom-card" id="btn-custom-levels">
-                    <span class="custom-icon">🗺️</span>
+                    <span class="custom-icon">境</span>
                     <div class="custom-card-name">自定义关卡</div>
                     <div class="custom-card-desc">设计和保存自定义关卡</div>
                 </div>
                 <div class="custom-card" id="btn-custom-export">
-                    <span class="custom-icon">💾</span>
+                    <span class="custom-icon">卷</span>
                     <div class="custom-card-name">导出/导入</div>
                     <div class="custom-card-desc">分享你的自定义内容</div>
                 </div>
@@ -217,7 +231,7 @@
                 <span class="custom-sub-title">自定义炮塔</span>
             </div>
             <div class="custom-placeholder">
-                <div class="placeholder-icon">⚔️</div>
+                <div class="placeholder-icon">塔</div>
                 <div class="placeholder-text">自定义炮塔功能开发中...</div>
                 <div class="placeholder-desc">此功能将允许您创建和编辑自定义炮塔</div>
             </div>
@@ -230,7 +244,7 @@
                 <span class="custom-sub-title">自定义关卡</span>
             </div>
             <div class="custom-placeholder">
-                <div class="placeholder-icon">🗺️</div>
+                <div class="placeholder-icon">境</div>
                 <div class="placeholder-text">自定义关卡功能开发中...</div>
                 <div class="placeholder-desc">此功能将允许您设计和保存自定义关卡</div>
             </div>
@@ -243,7 +257,7 @@
                 <span class="custom-sub-title">导出/导入</span>
             </div>
             <div class="custom-placeholder">
-                <div class="placeholder-icon">💾</div>
+                <div class="placeholder-icon">卷</div>
                 <div class="placeholder-text">导出/导入功能开发中...</div>
                 <div class="placeholder-desc">此功能将允许您分享自定义内容</div>
             </div>
@@ -257,31 +271,31 @@
             </div>
             <div class="conquest-theme-grid">
                 <div class="conquest-theme-card" data-theme="1">
-                    <span class="theme-icon">🔥</span>
+                    <span class="theme-icon">火</span>
                     <div class="theme-name">烈焰试炼</div>
                     <div class="theme-desc">火焰主题的极限挑战</div>
                     <div class="theme-progress">进度: 0/5</div>
                 </div>
                 <div class="conquest-theme-card" data-theme="2">
-                    <span class="theme-icon">💧</span>
+                    <span class="theme-icon">水</span>
                     <div class="theme-name">寒霜之路</div>
                     <div class="theme-desc">冰霜主题的艰难征程</div>
                     <div class="theme-progress">进度: 0/5</div>
                 </div>
                 <div class="conquest-theme-card" data-theme="3">
-                    <span class="theme-icon">⛰️</span>
+                    <span class="theme-icon">山</span>
                     <div class="theme-name">山岳考验</div>
                     <div class="theme-desc">山地主题的坚固防线</div>
                     <div class="theme-progress">进度: 0/5</div>
                 </div>
                 <div class="conquest-theme-card" data-theme="4">
-                    <span class="theme-icon">🌪️</span>
+                    <span class="theme-icon">风</span>
                     <div class="theme-name">风暴中心</div>
                     <div class="theme-desc">风暴主题的混乱战场</div>
                     <div class="theme-progress">进度: 0/5</div>
                 </div>
                 <div class="conquest-theme-card" data-theme="5">
-                    <span class="theme-icon">⚡</span>
+                    <span class="theme-icon">合</span>
                     <div class="theme-name">终极挑战</div>
                     <div class="theme-desc">融合所有元素的终极试炼</div>
                     <div class="theme-progress">进度: 0/5</div>
@@ -310,11 +324,11 @@
                 </div>
                 <div class="conquest-level-item locked" data-level="4">
                     <span class="level-num">关卡 4</span>
-                    <span class="level-status">🔒</span>
+                    <span class="level-status">未悟</span>
                 </div>
                 <div class="conquest-level-item locked" data-level="5">
                     <span class="level-num">关卡 5</span>
-                    <span class="level-status">🔒</span>
+                    <span class="level-status">未悟</span>
                 </div>
             </div>
             <button id="back-to-conquest-themes">主题列表</button>
@@ -328,29 +342,29 @@
                 <div id="game-container">
                     <div id="top-bar">
                         <div class="stat">
-                            <span class="label">墨水</span>
+                            <span class="label">墨</span>
                             <span id="ink" class="value">300</span>
                         </div>
                         <div class="stat">
-                            <span class="label">波次</span>
+                            <span class="label">阵</span>
                             <span id="wave" class="value">0/3</span>
                         </div>
                         <div class="stat">
-                            <span class="label">敌人</span>
+                            <span class="label">尸</span>
                             <span id="enemies" class="value">0</span>
                         </div>
-                        <div class="stat">
-                            <span class="label">核心</span>
+                        <div class="stat core-stat">
+                            <span class="label">守</span>
                             <span id="core-hp" class="value">20/20</span>
                         </div>
                         <div id="wave-btn-small">
                             <button id="start-wave">波次</button>
                         </div>
                         <div class="stat">
-                            <button id="fusion-encyclopedia-btn" title="融合图鉴" style="background:#f4efe4;border:1px solid #b8ac91;color:#c45c48;padding:6px 12px;cursor:pointer;font-family:'Ma Shan Zheng','ZCOOL XiaoWei','Microsoft YaHei',serif;transition:all 0.3s;">融合图鉴</button>
+                            <button id="fusion-encyclopedia-btn" title="融合图鉴">合字谱</button>
                         </div>
                         <div class="stat">
-                            <button id="back-to-menu-btn" title="主菜单" style="background:#f4efe4;border:1px solid #b8ac91;color:#6a6459;padding:6px 12px;cursor:pointer;font-family:'Ma Shan Zheng','ZCOOL XiaoWei','Microsoft YaHei',serif;">主菜单</button>
+                            <button id="back-to-menu-btn" title="主菜单">归卷</button>
                         </div>
                     </div>
 
@@ -418,7 +432,7 @@
                         </div>
                     </div>
                     <div class="conquest-divider"></div>
-                    <button id="conquest-fusion-encyclopedia-btn" title="融合图鉴" style="background:#f4efe4;border:1px solid #b8ac91;color:#c45c48;padding:6px 12px;cursor:pointer;font-family:'Ma Shan Zheng','ZCOOL XiaoWei','Microsoft YaHei',serif;transition:all 0.3s;width:100%;margin-bottom:8px;">融合图鉴</button>
+                    <button id="conquest-fusion-encyclopedia-btn" title="融合图鉴">合字谱</button>
                     <button id="conquest-wave-btn" class="conquest-wave-btn">开始波次</button>
                     <button id="conquest-menu-btn" class="conquest-menu-btn">菜单</button>
                     <div class="conquest-rules">
@@ -441,11 +455,14 @@
 
     <div id="modal" class="hidden">
         <div id="modal-content">
+            <div id="modal-ritual" aria-hidden="true"><span id="ritual-left"></span><span id="ritual-right"></span><span id="ritual-result"></span></div>
             <h2 id="modal-title"></h2>
             <p id="modal-text"></p>
+            <span id="modal-seal" aria-hidden="true">印</span>
             <button id="modal-btn">确定</button>
         </div>
     </div>
+    <div id="fusion-ink-feedback" class="hidden" aria-live="polite"><span class="fusion-feedback-word"></span><span class="fusion-feedback-seal">合</span></div>
 
     <!-- 游戏内融合图鉴模态窗口 -->
     <div id="game-fusion-encyclopedia-modal" class="hidden">

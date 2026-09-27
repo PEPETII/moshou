@@ -194,7 +194,7 @@ UI.prototype.showTowerDetail = function(type, config) {
     if (!panel) return;
 
     charEl.textContent = config.char;
-    nameEl.textContent = type;
+    nameEl.textContent = `五行 · ${config.char}`;
 
     // 构建属性列表
     let statsHtml = "";
@@ -287,7 +287,7 @@ UI.prototype.showEnemyDetail = function(type, config) {
     if (!panel) return;
 
     charEl.textContent = config.char;
-    nameEl.textContent = type;
+    nameEl.textContent = `妖异 · ${config.char}`;
 
     // 构建属性列表
     let statsHtml = "";

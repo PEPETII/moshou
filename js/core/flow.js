@@ -35,8 +35,8 @@ Game.prototype.gameOver = function(victory) {
       }
 
       this.ui.showModal(
-        "胜利!",
-        `关卡 ${this.currentLevel} 完成!\n星级: ${"★".repeat(stars)}${"☆".repeat(3 - stars)}\n奖励: ${reward}墨`,
+        "胜",
+        `守境已成 · 第 ${this.currentLevel} 境\n星级: ${"★".repeat(stars)}${"☆".repeat(3 - stars)}\n赏墨: ${reward}`,
         buttonText,
         onClick
       );
@@ -47,8 +47,8 @@ Game.prototype.gameOver = function(victory) {
       const onClick = isConquestMode ? () => this.returnToLevelSelect() : () => this.returnToMenu();
       
       this.ui.showModal(
-        "失败",
-        `核心被摧毁...\n关卡 ${this.currentLevel}`,
+        "破",
+        `守印已裂 · 第 ${this.currentLevel} 境`,
         buttonText,
         onClick
       );
@@ -68,7 +68,7 @@ Game.prototype.nextLevel = function() {
       if (this.inkTrailAnimation.active) {
         this.inkTrailAnimation.stop();
       }
-      this.inkTrailAnimation.play(this.currentLevelData);
+      if (!InkUI.motionReduced()) this.inkTrailAnimation.play(this.currentLevelData);
     }
 
     this.gameStarted = true;
@@ -86,7 +86,7 @@ Game.prototype.restartLevel = function() {
       if (this.inkTrailAnimation.active) {
         this.inkTrailAnimation.stop();
       }
-      this.inkTrailAnimation.play(this.currentLevelData);
+      if (!InkUI.motionReduced()) this.inkTrailAnimation.play(this.currentLevelData);
     }
 
     this.gameStarted = true;
@@ -153,7 +153,7 @@ Game.prototype.startGame = function(levelId) {
       if (this.inkTrailAnimation.active) {
         this.inkTrailAnimation.stop();
       }
-      this.inkTrailAnimation.play(this.currentLevelData);
+      if (!InkUI.motionReduced()) this.inkTrailAnimation.play(this.currentLevelData);
     }
 
     this.gameStarted = true;

@@ -8,6 +8,7 @@ Game.prototype.updateUI = function() {
     document.getElementById("enemies").textContent = remainingEnemies;
     document.getElementById("core-hp").textContent =
       `${this.coreHp}/${this.maxCoreHp}`;
+    document.querySelector('#top-bar .core-stat').classList.toggle('critical', this.coreHp <= this.maxCoreHp * 0.3);
 
     const waveBtn = document.getElementById("start-wave");
     waveBtn.disabled =

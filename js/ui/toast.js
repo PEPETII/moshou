@@ -16,9 +16,9 @@
   const MAX_VISIBLE = 3;
 
   const STYLES = {
-    info: { border: '#b8ac91', color: '#3d382f', icon: '·' },
-    success: { border: '#7a9a6a', color: '#a8c49a', icon: '✓' },
-    warning: { border: '#c45c48', color: '#e0a094', icon: '!' }
+    info: { border: '#9b9386', color: '#1c1a17', icon: '·' },
+    success: { border: '#b4473a', color: '#1c1a17', icon: '成' },
+    warning: { border: '#7d342c', color: '#7d342c', icon: '戒' }
   };
 
   function ensureContainer() {
@@ -61,8 +61,8 @@
     el.style.cssText = [
       'box-sizing:border-box',
       'padding:9px 16px',
-      'background:rgba(20,20,20,0.94)',
-      'border:1px solid ' + palette.border,
+      'background:rgba(244,239,228,0.96)',
+      'border-left:3px solid ' + palette.border,
       'color:' + palette.color,
       'font-family:"ZCOOL XiaoWei", "Ma Shan Zheng", serif',
       'font-size:15px',
@@ -70,7 +70,7 @@
       'letter-spacing:1px',
       'white-space:nowrap',
       'text-align:center',
-      'box-shadow:0 4px 16px rgba(0,0,0,0.5)',
+      'box-shadow:5px 5px 0 #e8e1d2',
       'opacity:0',
       'transition:opacity 0.15s ease-out'
     ].join(';');

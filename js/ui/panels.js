@@ -202,6 +202,8 @@ UI.prototype.hideTowerInfo = function() {
   
 };
 UI.prototype.showModal = function(title, text, buttonText = "确定", onBtnClick = null) {
+    InkUI.setModalScene(title.includes('胜') ? 'victory' : title.includes('破') || title.includes('失败') ? 'defeat' : 'notice');
+    InkUI.hideReturnButton();
     document.getElementById("modal-title").textContent = title;
     document.getElementById("modal-text").textContent = text;
     document.getElementById("modal-btn").textContent = buttonText;
@@ -219,6 +221,7 @@ UI.prototype.showModal = function(title, text, buttonText = "确定", onBtnClick
 };
 UI.prototype.hideModal = function() {
     this.modal.classList.add("hidden");
+    InkUI.hideReturnButton();
     // 清理待处理的融合状态和事件监听器
     this._cleanupFusionModalListeners();
   

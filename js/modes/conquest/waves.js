@@ -151,10 +151,10 @@ ConquestGame.prototype.gameOver = function(victory) {
         this.showVictoryModalWithNextLevel(nextLevelId);
       } else {
         // 没有下一关，显示通关所有关卡
-        this.showModal("胜利!", "恭喜! 你已通关所有征服关卡!", "关卡列表", () => this.returnToLevelSelect());
+        this.showModal("胜", "山河尽入卷 · 征服诸境已成", "关卡列表", () => this.returnToLevelSelect());
       }
     } else {
-      this.showModal("失败", "场上怪物过多，防线崩溃...", "关卡列表", () => this.returnToLevelSelect());
+      this.showModal("破", "群邪越境 · 防线失守", "关卡列表", () => this.returnToLevelSelect());
     }
   
 };
@@ -164,7 +164,8 @@ ConquestGame.prototype.showVictoryModalWithNextLevel = function(nextLevelId) {
     const textEl = document.getElementById("modal-text");
     const btnEl = document.getElementById("modal-btn");
 
-    titleEl.textContent = "胜利!";
+    InkUI.setModalScene('victory');
+    titleEl.textContent = "胜";
     textEl.textContent = `关卡 ${this.currentLevelId} 完成! 所有波次已清除!`;
     btnEl.textContent = "下一关";
     btnEl.disabled = false;
@@ -196,6 +197,7 @@ ConquestGame.prototype.showVictoryModalWithNextLevel = function(nextLevelId) {
 };
 ConquestGame.prototype.showModal = function(title, text, buttonText, onClick) {
     const modal = document.getElementById("modal");
+    InkUI.setModalScene(title.includes('胜') ? 'victory' : title.includes('破') || title.includes('失败') ? 'defeat' : 'notice');
     const returnBtn = document.getElementById("modal-return-btn");
     document.getElementById("modal-title").textContent = title;
     document.getElementById("modal-text").textContent = text;
