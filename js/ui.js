@@ -4,7 +4,17 @@ class UI {
   constructor(game) {
     this.game = game;
     this.canvas = game.canvas;
-    this.selectedTowerType = null;
+    this.placementDrag = {
+      active: false,
+      type: null,
+      pointerId: null,
+      pointerType: null,
+      clientX: 0,
+      clientY: 0,
+      gx: null,
+      gy: null,
+    };
+    this.suppressNextCanvasClick = false;
     this.hoveredCell = null;
     this.selectedTower = null;
 

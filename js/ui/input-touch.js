@@ -1,16 +1,7 @@
 // UI：触摸输入（移动端主路径）
 //
-// 设计取舍（关键）
-// ------------------------------------------------------------------
-// 1. 放置必须"精确"：不做就近吸附。20×9 的战场在手机上单格约 31px，
-//    自动吸附会把玩家没想点的格子也花掉墨水，属于不可逆损失。
-//    改为用"按住即预览"让玩家在松手前看到落点与合法性，可自行微调。
-// 2. 选塔可以"宽容"：点中一座已存在的塔是一次无副作用的读取，
-//    允许 0.75 格容差，符合手指精度。
-// 3. 落点取"按下格"而非"抬起格"：手指抖动不应改变目标。
-// 4. 位移超过 slop（触屏 12px）后抬起 = 滑动取消，不落子。
-//    旧实现用 5px（鼠标参数）且以抬起点落子，实测"按下 A 滑到 B 抬起"会在 B 落塔。
-// 5. 点空白处 = 取消选中。旧实现只有右键能取消，触屏等于没有取消路径。
+// Canvas 触摸只负责查看炮塔与拖动已有炮塔融合。
+// 新炮塔放置由卡片 Pointer Events 处理，避免这里再出现第二套建造入口。
 (function initTouchInteraction() {
   'use strict';
 
@@ -92,10 +83,6 @@
         dragging: false
       };
 
-      // 按住即预览：这是移动端唯一的"落子前确认"通道
-      if (this.selectedTowerType) {
-        this.hoveredCell = { gx: cell.gx, gy: cell.gy };
-      }
     };
     this.addTrackedEventListener(canvas, 'touchstart', onTouchStart, { passive: false });
 
@@ -118,14 +105,6 @@
       // 触屏 slop 放宽到 12px：手指按下后的自然抖动普遍 6~10px，
       // 用鼠标的 5px 阈值会把"轻点"误判成"拖拽"，实测会导致放置直接失败
       if (dist > profile().slop) st.moved = true;
-
-      if (this.selectedTowerType) {
-        const cell = getGridFromEvent(touch, canvas);
-        if (cell) {
-          this.hoveredCell = { gx: cell.gx, gy: cell.gy };
-          st.currentCell = { gx: cell.gx, gy: cell.gy };
-        }
-      }
 
       // 拖拽融合：只有真正移动了才进入拖拽态
       if (st.moved && st.tower && !st.tower.isFusion) {
@@ -165,7 +144,7 @@
         return;
       }
 
-      // ② 滑动取消：手指滑过再抬起，视为放弃操作
+      // ② 滑动取消：空白处滑过再抬起，不触发塔信息查看
       if (st.moved) {
         this._resetDragState();
         clearPreviewSoon();
@@ -176,11 +155,8 @@
       if (st.tower) {
         // 点中已有炮塔：显示信息面板（触摸端无 hover，这是唯一入口）
         this.selectAndShowTower(st.tower, st.origin.x, st.origin.y, 'touch');
-      } else if (this.selectedTowerType) {
-        // 落点用按下格，防止抬起瞬间的手指位移影响判断
-        this.tryPlaceTowerAt(st.cell.gx, st.cell.gy);
       } else {
-        // 点空白处 = 取消选中（同时清掉卡牌高亮）
+        // 点空白处 = 关闭已选炮塔的信息面板
         this.clearTowerSelection();
       }
 

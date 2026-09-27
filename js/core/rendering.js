@@ -215,10 +215,15 @@ Game.prototype.drawCore = function() {
   
 };
 Game.prototype.drawPlacementPreview = function() {
-    if (!this.ui.selectedTowerType || !this.ui.hoveredCell) return;
+    const drag = this.ui.placementDrag;
+    if (!drag || !drag.active || drag.gx === null || drag.gy === null) return;
 
-    const { gx, gy } = this.ui.hoveredCell;
-    const canPlace = this.canPlaceTower(this.ui.selectedTowerType, gx, gy);
+    const { type, gx, gy } = drag;
+    const config = CONFIG.TOWERS[type];
+    if (!config) return;
+    const canPlace = this.getPlacementBlockReason
+      ? this.getPlacementBlockReason(type, gx, gy) === null
+      : this.canPlaceTower(type, gx, gy);
 
     this.ctx.fillStyle = canPlace
       ? "rgba(0, 255, 0, 0.3)"
@@ -244,8 +249,7 @@ Game.prototype.drawPlacementPreview = function() {
     );
     this.ctx.lineWidth = 1;
 
-    if (canPlace) {
-      const config = CONFIG.TOWERS[this.ui.selectedTowerType];
+    if (canPlace && Number.isFinite(config.range) && config.range > 0) {
       const pos = gridToPixel(gx, gy);
 
       this.ctx.beginPath();
@@ -259,6 +263,30 @@ Game.prototype.drawPlacementPreview = function() {
       this.ctx.strokeStyle = "rgba(176, 58, 46, 0.5)";
       this.ctx.stroke();
     }
+
+    const rect = this.canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const pointerX = (drag.clientX - rect.left) * (this.canvas.width / rect.width);
+    const pointerY = (drag.clientY - rect.top) * (this.canvas.height / rect.height);
+    const fingerOffset = drag.pointerType === "touch"
+      ? 52 * (this.canvas.height / rect.height)
+      : 0;
+    const ghostY = pointerY - fingerOffset;
+
+    this.ctx.save();
+    this.ctx.globalAlpha = 0.68;
+    this.ctx.font = `bold ${config.char.length > 2 ? 24 : 34}px ${CONFIG.FONTS.BRUSH}`;
+    this.ctx.textAlign = "center";
+    this.ctx.textBaseline = "middle";
+    this.ctx.lineJoin = "round";
+    this.ctx.lineWidth = 4;
+    this.ctx.strokeStyle = "rgba(250, 248, 241, 0.92)";
+    this.ctx.fillStyle = canPlace ? "#1c1a17" : "#b4473a";
+    this.ctx.strokeText(config.char, pointerX, ghostY);
+    this.ctx.fillText(config.char, pointerX, ghostY);
+    this.ctx.font = `12px ${CONFIG.FONTS.TEXT}`;
+    this.ctx.fillText(`${config.cost}墨`, pointerX, ghostY + 23);
+    this.ctx.restore();
   
 };
 Game.prototype.drawLevelInfo = function() {

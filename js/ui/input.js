@@ -17,6 +17,11 @@ UI.prototype.setupEventListeners = function() {
     this.addTrackedEventListener(this.canvas, "mouseleave", mouseLeaveHandler);
 
     const clickHandler = (e) => {
+      if (this.suppressNextCanvasClick) {
+        this.suppressNextCanvasClick = false;
+        return;
+      }
+
       // 如果拖拽刚完成，忽略点击
       if (this.dragJustCompleted) return;
 
@@ -25,24 +30,19 @@ UI.prototype.setupEventListeners = function() {
 
       const { gx, gy } = result;
 
-      if (this.selectedTowerType) {
-        this.tryPlaceTowerAt(gx, gy);
+      const tower = this.game.getTowerAt(gx, gy);
+      if (tower) {
+        this.selectAndShowTower(tower, e.clientX, e.clientY, "mouse");
       } else {
-        const tower = this.game.getTowerAt(gx, gy);
-        if (tower) {
-          this.selectAndShowTower(tower, e.clientX, e.clientY, "mouse");
-        } else {
-          this.clearTowerSelection();
-        }
+        this.clearTowerSelection();
       }
     };
     this.addTrackedEventListener(this.canvas, "click", clickHandler);
 
-    // 桌面端保留"右键取消选中"；移动端的等价能力是"点击空白处取消"
-    // （见 tryPlaceTowerAt / clearTowerSelection 与 input-touch.js）
+    // 右键也可关闭当前炮塔信息面板。
     const contextMenuHandler = (e) => {
       e.preventDefault();
-      this.cancelTowerTypeSelection();
+      this.clearTowerSelection();
     };
     this.addTrackedEventListener(this.canvas, "contextmenu", contextMenuHandler);
 
@@ -79,6 +79,7 @@ UI.prototype.setupEventListeners = function() {
 
     // === 拖拽融合事件监听（鼠标） ===
     this.setupDragAndDrop();
+    this.setupPlacementDragEvents();
 
     // === 触摸输入（仅在有触摸硬件时注册，避免与鼠标路径重复） ===
     if (window.DeviceProfile && window.DeviceProfile.hasTouch) {
@@ -89,10 +90,9 @@ UI.prototype.setupEventListeners = function() {
 
 // === 共用交互助手 ===
 /**
- * 放置炮塔；失败时给出可见原因（触摸端没有 hover 预览，静默失败等于"点了没反应"）
+ * 按显式类型放置炮塔；失败时沿用现有原因提示。
  */
-UI.prototype.tryPlaceTowerAt = function(gx, gy) {
-    const type = this.selectedTowerType;
+UI.prototype.tryPlaceTowerAt = function(gx, gy, type) {
     if (!type) return false;
 
     const reason = this.game.getPlacementBlockReason
@@ -120,22 +120,109 @@ UI.prototype.selectAndShowTower = function(tower, x, y, source) {
 };
 
 /**
- * 取消"待放置炮塔类型"的选中态（含卡片高亮）
- */
-UI.prototype.cancelTowerTypeSelection = function() {
-    this.selectedTowerType = null;
-    document
-      .querySelectorAll(".tower-select")
-      .forEach((t) => t.classList.remove("selected"));
-};
-
-/**
- * 清空所有选中（塔类型 + 已选炮塔 + 信息面板）
+ * 清空已选炮塔和信息面板。
  */
 UI.prototype.clearTowerSelection = function() {
-    this.cancelTowerTypeSelection();
     this.selectedTower = null;
     this.hideTowerInfo();
+};
+
+// === 从塔卡到战场的新炮塔拖放 ===
+UI.prototype.setupPlacementDragEvents = function() {
+    this.addTrackedEventListener(document, "pointermove", (e) => {
+      this.updatePlacementDrag(e);
+    });
+    this.addTrackedEventListener(document, "pointerup", (e) => {
+      this.finishPlacementDrag(e);
+    });
+    this.addTrackedEventListener(document, "pointercancel", (e) => {
+      this.cancelPlacementDrag(e.pointerId);
+    });
+    this.addTrackedEventListener(document, "lostpointercapture", (e) => {
+      this.cancelPlacementDrag(e.pointerId);
+    });
+};
+
+UI.prototype.beginPlacementDrag = function(e, type) {
+    if ((e.button !== undefined && e.button !== 0) || e.isPrimary === false) return;
+    if (e.preventDefault) e.preventDefault();
+
+    const config = CONFIG.TOWERS[type];
+    if (!config) return;
+    if (this.game.ink < config.cost) {
+      this.showToast(`墨水不足（需 ${config.cost} 墨）`, "warning");
+      this.refreshTowerSelectAffordability();
+      return;
+    }
+    if (this.placementDrag && this.placementDrag.active) return;
+
+    this.placementDrag = {
+      active: true,
+      type,
+      pointerId: e.pointerId,
+      pointerType: e.pointerType || "mouse",
+      clientX: e.clientX,
+      clientY: e.clientY,
+      gx: null,
+      gy: null,
+    };
+    if (e.currentTarget && e.currentTarget.setPointerCapture && e.pointerId !== undefined) {
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch (error) {
+        // Pointer 捕获不可用时，document 级监听仍可处理普通拖动。
+      }
+    }
+    this.selectedTower = null;
+    this.hideTowerInfo();
+};
+
+UI.prototype.updatePlacementDrag = function(e) {
+    const drag = this.placementDrag;
+    if (!drag || !drag.active || drag.pointerId !== e.pointerId) return;
+
+    drag.clientX = e.clientX;
+    drag.clientY = e.clientY;
+    const cell = getGridFromEvent(e, this.canvas);
+    drag.gx = cell ? cell.gx : null;
+    drag.gy = cell ? cell.gy : null;
+    this.hoveredCell = cell ? { gx: cell.gx, gy: cell.gy } : null;
+};
+
+UI.prototype.finishPlacementDrag = function(e) {
+    const drag = this.placementDrag;
+    if (!drag || !drag.active || drag.pointerId !== e.pointerId) return;
+
+    this.updatePlacementDrag(e);
+    const { type, gx, gy } = drag;
+    this.resetPlacementDrag();
+
+    // pointerup 后浏览器可能合成 click；不要让它变成一次额外的 Canvas 点选。
+    this.suppressNextCanvasClick = true;
+    setTimeout(() => { this.suppressNextCanvasClick = false; }, 0);
+
+    if (gx !== null && gy !== null) this.tryPlaceTowerAt(gx, gy, type);
+};
+
+UI.prototype.cancelPlacementDrag = function(pointerId) {
+    const drag = this.placementDrag;
+    if (!drag || !drag.active) return;
+    if (pointerId !== undefined && drag.pointerId !== pointerId) return;
+    this.resetPlacementDrag();
+};
+
+UI.prototype.resetPlacementDrag = function() {
+    this.placementDrag = {
+      active: false,
+      type: null,
+      pointerId: null,
+      pointerType: null,
+      clientX: 0,
+      clientY: 0,
+      gx: null,
+      gy: null,
+    };
+    this.hoveredCell = null;
 };
 
 /**

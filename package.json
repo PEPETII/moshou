@@ -7,7 +7,8 @@
     "test:balance": "node tests/test-balance.js",
     "test:fusion": "node tests/test-fusion-recipes.js",
     "test:conquest-touch": "node tests/test-conquest-touch.js",
-    "test": "npm run check:line-count && npm run test:balance && npm run test:fusion && npm run test:conquest-touch",
+    "test:placement-drag": "node tests/test-tower-placement-drag.js",
+    "test": "npm run check:line-count && npm run test:balance && npm run test:fusion && npm run test:conquest-touch && npm run test:placement-drag",
     "posters": "node scripts/generate-posters.js"
   }
 }

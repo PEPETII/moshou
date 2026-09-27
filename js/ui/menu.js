@@ -25,33 +25,9 @@ UI.prototype.createTowerSelects = function() {
 
       el.innerHTML = '<span class="tower-char">' + charHtml + '</span><span class="tower-cost">' + config.cost + '</span>';
 
-      const clickHandler = () => {
-        const config = CONFIG.TOWERS[el.dataset.type];
-        // 必须用"当前墨水"判断，而不是关卡加载时打上的 .locked 快照：
-        // 旧实现在关卡加载时评估一次墨水，之后攒够钱卡仍是灰的、点击被直接 return，
-        // 触摸端的表现就是"点了完全没反应"。
-        if (config && this.game.ink < config.cost) {
-          el.classList.add('locked');
-          this.showToast(`墨水不足（需 ${config.cost} 墨）`, 'warning');
-          this.refreshTowerSelectAffordability();
-          return;
-        }
-
-        el.classList.remove('locked');
-        document.querySelectorAll('.tower-select').forEach(t => t.classList.remove('selected'));
-
-        if (this.selectedTowerType === el.dataset.type) {
-          this.selectedTowerType = null;
-        } else {
-          el.classList.add('selected');
-          this.selectedTowerType = el.dataset.type;
-        }
-
-        this.selectedTower = null;
-        this.hideTowerInfo();
-      };
-
-      this.addTrackedEventListener(el, 'click', clickHandler);
+      this.addTrackedEventListener(el, 'pointerdown', (e) => {
+        this.beginPlacementDrag(e, el.dataset.type);
+      });
 
       bottomBar.appendChild(el);
     }
