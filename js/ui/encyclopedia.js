@@ -76,18 +76,16 @@ UI.prototype.setupEncyclopediaEventListeners = function() {
 };
 // === 图鉴系统方法 ===
 UI.prototype.showEncyclopedia = function() {
-    const menuButtons = document.querySelector(".menu-buttons");
     const encyclopediaContainer = document.getElementById("encyclopedia-container");
 
-    if (menuButtons) menuButtons.style.display = "none";
+    this.setMainMenuButtonsVisible(false);
     if (encyclopediaContainer) encyclopediaContainer.classList.remove("hidden");
   
 };
 UI.prototype.hideEncyclopedia = function() {
-    const menuButtons = document.querySelector(".menu-buttons");
     const encyclopediaContainer = document.getElementById("encyclopedia-container");
 
-    if (menuButtons) menuButtons.style.display = "flex";
+    this.setMainMenuButtonsVisible(true);
     if (encyclopediaContainer) encyclopediaContainer.classList.add("hidden");
   
 };

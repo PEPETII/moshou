@@ -6,11 +6,10 @@
    */
 UI.prototype.showConquestThemeSelect = function() {
     const conquestThemeSelect = document.getElementById("conquest-theme-select-container");
-    const menuButtons = document.querySelector(".menu-buttons");
     const backBtn = document.getElementById("back-to-menu");
 
     // 隐藏其他面板
-    if (menuButtons) menuButtons.style.display = "none";
+    this.setMainMenuButtonsVisible(false);
 
     // 隐藏其他容器
     const containers = [

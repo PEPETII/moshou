@@ -178,6 +178,7 @@ UI.prototype.returnToMainMenu = function() {
       this.longPressTimer = null;
     }
     this.hideAllMenuPanels();
+    this.setMainMenuButtonsVisible(true);
     this.currentConquestThemeId = null;
   
 };
@@ -189,7 +190,6 @@ UI.prototype.hideAllMenuPanels = function() {
     const levelList = document.getElementById("level-list-container");
     const backBtn = document.getElementById("back-to-menu");
     const backToThemes = document.getElementById("back-to-themes");
-    const menuButtons = document.querySelector(".menu-buttons");
     const encyclopediaContainer = document.getElementById("encyclopedia-container");
     const towerEncyclopediaContainer = document.getElementById("tower-encyclopedia-container");
     const enemyEncyclopediaContainer = document.getElementById("enemy-encyclopedia-container");
@@ -201,7 +201,7 @@ UI.prototype.hideAllMenuPanels = function() {
     if (levelList) levelList.classList.add("hidden");
     if (backBtn) backBtn.classList.add("hidden");
     if (backToThemes) backToThemes.classList.add("hidden");
-    if (menuButtons) menuButtons.style.display = "flex";
+    this.setMainMenuButtonsVisible(true);
     if (encyclopediaContainer) encyclopediaContainer.classList.add("hidden");
     if (towerEncyclopediaContainer) towerEncyclopediaContainer.classList.add("hidden");
     if (enemyEncyclopediaContainer) enemyEncyclopediaContainer.classList.add("hidden");
@@ -220,6 +220,16 @@ UI.prototype.hideAllMenuPanels = function() {
     if (customLevelsContainer) customLevelsContainer.classList.add("hidden");
     if (customExportContainer) customExportContainer.classList.add("hidden");
   
+};
+/**
+ * 同步首页入口按钮和区域1标题的显示状态。
+ * @param {boolean} visible - 是否显示主菜单首页入口
+ */
+UI.prototype.setMainMenuButtonsVisible = function(visible) {
+    const menuButtons = document.querySelector(".menu-buttons");
+    const title = document.getElementById("main-menu-title");
+    if (menuButtons) menuButtons.style.display = visible ? "flex" : "none";
+    if (title) title.classList.toggle("hidden", !visible);
 };
 // ==================== 自定义功能方法 ====================
 
@@ -289,10 +299,9 @@ UI.prototype.setupCustomEventListeners = function() {
    * 显示自定义主界面
    */
 UI.prototype.showCustomMenu = function() {
-    const menuButtons = document.querySelector(".menu-buttons");
     const customContainer = document.getElementById("custom-container");
 
-    if (menuButtons) menuButtons.style.display = "none";
+    this.setMainMenuButtonsVisible(false);
     if (customContainer) customContainer.classList.remove("hidden");
   
 };
@@ -415,12 +424,10 @@ UI.prototype.showThemeSelect = function() {
     const levelList = document.getElementById("level-list-container");
     const backBtn = document.getElementById("back-to-menu");
     const backToThemes = document.getElementById("back-to-themes");
-    const menuButtons = document.querySelector(".menu-buttons");
-
     // 隐藏其他面板
     if (levelList) levelList.classList.add("hidden");
     if (backToThemes) backToThemes.classList.add("hidden");
-    if (menuButtons) menuButtons.style.display = "none";
+    this.setMainMenuButtonsVisible(false);
 
     // 显示主题选择
     if (themeSelect) {
@@ -447,6 +454,8 @@ UI.prototype.showLevelSelect = function(themeId) {
     const levelList = document.getElementById("level-list-container");
     const backBtn = document.getElementById("back-to-menu");
     const backToThemes = document.getElementById("back-to-themes");
+
+    this.setMainMenuButtonsVisible(false);
 
     // 隐藏主题选择
     if (themeSelect) themeSelect.classList.add("hidden");

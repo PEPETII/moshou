@@ -17,7 +17,7 @@
     <!-- 主菜单 -->
     <div id="main-menu">
         <canvas id="menu-ink-canvas"></canvas>
-        <h1 aria-label="墨守成规"><span class="title-ink">墨</span><span class="title-script">守 成 规</span></h1>
+        <h1 id="main-menu-title" aria-label="墨守成规"><span class="title-ink">墨</span><span class="title-script">守 成 规</span></h1>
         <span class="menu-seal" aria-hidden="true">守</span>
         <div id="game-version" class="game-version"></div>
         <div class="menu-buttons">
