@@ -67,7 +67,6 @@ UI.prototype.renderConquestThemeSelect = function() {
       card.innerHTML = `
         <span class="theme-icon">${theme.icon}</span>
         <div class="theme-name">${theme.name}</div>
-        <div class="theme-desc">${theme.desc}</div>
         <div class="theme-progress">进度: ${themeProgress.completed}/${themeProgress.total}</div>
       `;
 

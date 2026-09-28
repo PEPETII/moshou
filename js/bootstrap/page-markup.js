@@ -21,11 +21,11 @@
         <span class="menu-seal" aria-hidden="true">守</span>
         <div id="game-version" class="game-version"></div>
         <div class="menu-buttons">
-            <button class="menu-btn" id="btn-levels"><span class="menu-glyph">守</span><span>塔 防<small>守一方墨境</small></span></button>
-            <button class="menu-btn" id="btn-conquest"><span class="menu-glyph">征</span><span>征 服<small>拓四方疆土</small></span></button>
-            <button class="menu-btn" id="btn-encyclopedia"><span class="menu-glyph">谱</span><span>图 鉴<small>百字成卷</small></span></button>
-            <button class="menu-btn" id="btn-custom"><span class="menu-glyph">作</span><span>自 定<small>自书新章</small></span></button>
-            <button class="menu-btn" id="btn-settings"><span class="menu-glyph">设</span><span>设 置<small>调墨理卷</small></span></button>
+            <button class="menu-btn" id="btn-levels"><span class="menu-glyph">守</span><span>塔 防</span></button>
+            <button class="menu-btn" id="btn-conquest"><span class="menu-glyph">征</span><span>征 服</span></button>
+            <button class="menu-btn" id="btn-encyclopedia"><span class="menu-glyph">谱</span><span>图 鉴</span></button>
+            <button class="menu-btn" id="btn-custom"><span class="menu-glyph">作</span><span>自 定</span></button>
+            <button class="menu-btn" id="btn-settings"><span class="menu-glyph">设</span><span>设 置</span></button>
         </div>
         <div id="settings-container" class="hidden">
             <h2>设 · 墨卷</h2>
@@ -273,31 +273,26 @@
                 <div class="conquest-theme-card" data-theme="1">
                     <span class="theme-icon">火</span>
                     <div class="theme-name">烈焰试炼</div>
-                    <div class="theme-desc">火焰主题的极限挑战</div>
                     <div class="theme-progress">进度: 0/5</div>
                 </div>
                 <div class="conquest-theme-card" data-theme="2">
                     <span class="theme-icon">水</span>
                     <div class="theme-name">寒霜之路</div>
-                    <div class="theme-desc">冰霜主题的艰难征程</div>
                     <div class="theme-progress">进度: 0/5</div>
                 </div>
                 <div class="conquest-theme-card" data-theme="3">
                     <span class="theme-icon">山</span>
                     <div class="theme-name">山岳考验</div>
-                    <div class="theme-desc">山地主题的坚固防线</div>
                     <div class="theme-progress">进度: 0/5</div>
                 </div>
                 <div class="conquest-theme-card" data-theme="4">
                     <span class="theme-icon">风</span>
                     <div class="theme-name">风暴中心</div>
-                    <div class="theme-desc">风暴主题的混乱战场</div>
                     <div class="theme-progress">进度: 0/5</div>
                 </div>
                 <div class="conquest-theme-card" data-theme="5">
                     <span class="theme-icon">合</span>
                     <div class="theme-name">终极挑战</div>
-                    <div class="theme-desc">融合所有元素的终极试炼</div>
                     <div class="theme-progress">进度: 0/5</div>
                 </div>
             </div>

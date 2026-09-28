@@ -392,7 +392,6 @@ UI.prototype.renderThemeSelect = function() {
       card.innerHTML = `
         <span class="theme-icon">${theme.icon}</span>
         <div class="theme-name">${theme.name}</div>
-        <div class="theme-desc">${theme.desc}</div>
         ${progressHtml}
       `;
 
