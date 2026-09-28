@@ -20,6 +20,7 @@ UI.prototype.createTowerSelects = function() {
 
       let charHtml = config.char;
       if (config.char && config.char.length >= 3) {
+        el.classList.add('multi-character');
         charHtml = '<span>' + config.char.slice(0, 2) + '</span><span>' + config.char.slice(2) + '</span>';
       }
 
@@ -228,8 +229,10 @@ UI.prototype.hideAllMenuPanels = function() {
 UI.prototype.setMainMenuButtonsVisible = function(visible) {
     const menuButtons = document.querySelector(".menu-buttons");
     const title = document.getElementById("main-menu-title");
+    const seal = document.querySelector(".menu-seal");
     if (menuButtons) menuButtons.style.display = visible ? "flex" : "none";
     if (title) title.classList.toggle("hidden", !visible);
+    if (seal) seal.classList.toggle("hidden", !visible);
 };
 // ==================== 自定义功能方法 ====================
 

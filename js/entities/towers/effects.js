@@ -52,7 +52,7 @@ Tower.prototype.updateShadowCopy = function(now) {
       this._lastCopyAttack = now;
       const target = bestTower.findTarget(this.getAliveEnemies());
       if (target) {
-        this.triggerAttackAnimation();
+        this.triggerAttackAnimation(now);
         target.takeDamage(bestTower.damage * this.copyEfficiency);
       }
     }

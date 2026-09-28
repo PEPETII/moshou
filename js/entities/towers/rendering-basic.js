@@ -1,4 +1,24 @@
 // Tower：基础炮塔绘制
+Tower.prototype.getAttackAnimationProgress = function(timestamp) {
+    if (!this.isAttacking) return 0;
+    if (this.attackAnimTime <= 0) {
+      this.isAttacking = false;
+      return 0;
+    }
+
+    const now = Number.isFinite(timestamp)
+      ? timestamp
+      : (typeof performance !== "undefined" && typeof performance.now === "function"
+        ? performance.now()
+        : Date.now());
+    const progress = Math.min(1, Math.max(0, (now - this.attackAnimTime) / this.attackAnimDuration));
+    if (progress >= 1) {
+      this.isAttacking = false;
+      this.attackAnimTime = 0;
+    }
+    return progress;
+};
+
 Tower.prototype.draw = function(ctx, timestamp) {
     ctx.save();
 
@@ -11,20 +31,7 @@ Tower.prototype.draw = function(ctx, timestamp) {
       ctx.fill();
     }
 
-    // 计算攻击动画进度（使用传入的 timestamp 或当前时间）
-    const now = timestamp || Date.now();
-    let attackProgress = 0;
-
-    if (this.isAttacking && this.attackAnimTime > 0) {
-      attackProgress = Math.min(1, (now - this.attackAnimTime) / this.attackAnimDuration);
-      if (attackProgress >= 1) {
-        this.isAttacking = false;
-        this.attackAnimTime = 0;
-      }
-    } else if (this.isAttacking && this.attackAnimTime === 0) {
-      // 如果正在攻击但没有设置动画时间，重置状态
-      this.isAttacking = false;
-    }
+    const attackProgress = this.getAttackAnimationProgress(timestamp);
 
     if (this.onPath && this.hp > 0) {
       if (this.type === 'mountain') {
@@ -170,11 +177,11 @@ Tower.prototype.drawFireTower = function(ctx, progress) {
 
     if (this.isAttacking && progress > 0 && progress < 1) {
       // 抖动效果 - 使用基于时间的正弦波，避免每帧随机导致的高频抖动
-      const shakeIntensity = 4 * (1 - progress);
-      offsetX = Math.sin(progress * Math.PI * 4) * shakeIntensity * 0.5;
-      offsetY = Math.cos(progress * Math.PI * 3) * shakeIntensity * 0.5;
+      const shakeIntensity = 2 * (1 - progress);
+      offsetX = Math.sin(progress * Math.PI) * shakeIntensity * 0.6;
+      offsetY = -Math.sin(progress * Math.PI) * shakeIntensity * 0.4;
       // 放大脉冲
-      scale = 1 + 0.2 * Math.sin(progress * Math.PI);
+      scale = 1 + 0.08 * Math.sin(progress * Math.PI);
     }
 
     ctx.font = `bold ${28 * scale}px ${CONFIG.FONTS.BRUSH}`;
@@ -205,7 +212,7 @@ Tower.prototype.drawWaterTower = function(ctx, progress) {
     let waveOffset = 0;
 
     if (this.isAttacking && progress < 1) {
-      waveOffset = Math.sin(progress * Math.PI * 4) * 3;
+      waveOffset = Math.sin(progress * Math.PI) * 0.8;
     }
 
     ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
@@ -237,7 +244,7 @@ Tower.prototype.drawWoodTower = function(ctx, progress) {
 
     if (this.isAttacking && progress < 1) {
       // 弹跳曲线
-      bounceOffset = -Math.sin(progress * Math.PI) * 4;
+      bounceOffset = -Math.sin(progress * Math.PI) * 2.5;
     }
 
     ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
@@ -291,8 +298,8 @@ Tower.prototype.drawEarthTower = function(ctx, progress) {
 
     if (this.isAttacking && progress > 0 && progress < 1) {
       // 使用基于时间的正弦波替代随机，避免高频抖动
-      shakeX = Math.sin(progress * Math.PI * 5) * 1.5;
-      shakeY = Math.sin(progress * Math.PI) * 3; // 下沉效果
+      shakeX = Math.sin(progress * Math.PI) * 0.5;
+      shakeY = Math.sin(progress * Math.PI) * 1.5; // 下沉效果
     }
 
     ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
@@ -314,7 +321,7 @@ Tower.prototype.drawXinZhongYanTower = function(ctx, progress) {
     let glowIntensity = 0;
 
     if (this.isAttacking && progress < 1) {
-      scale = 1 + 0.2 * Math.sin(progress * Math.PI);
+      scale = 1 + 0.1 * Math.sin(progress * Math.PI);
       glowIntensity = Math.sin(progress * Math.PI);
     }
 
@@ -348,7 +355,7 @@ Tower.prototype.drawRuFengSiZhenTower = function(ctx, progress) {
     let windOffset = 0;
 
     if (this.isAttacking && progress < 1) {
-      windOffset = Math.sin(progress * Math.PI * 3) * 3;
+      windOffset = Math.sin(progress * Math.PI) * 0.8;
     }
 
     ctx.strokeStyle = 'rgba(100, 200, 255, 0.2)';
@@ -356,7 +363,7 @@ Tower.prototype.drawRuFengSiZhenTower = function(ctx, progress) {
     for (let i = 0; i < 3; i++) {
       ctx.beginPath();
       const startX = this.x - 25 + i * 20;
-      const startY = this.y - 10 + Math.sin(Date.now() / 400 + i) * 5;
+      const startY = this.y - 10 + Math.sin(Date.now() / 900 + i) * 2.5;
       ctx.moveTo(startX, startY);
       ctx.quadraticCurveTo(startX + 10, startY - 5, startX + 20, startY);
       ctx.stroke();
@@ -404,7 +411,7 @@ Tower.prototype.drawThunderTower = function(ctx, progress) {
 Tower.prototype.drawIceTower = function(ctx, progress) {
     let waveOffset = 0;
     if (this.isAttacking && progress < 1) {
-      waveOffset = Math.sin(progress * Math.PI * 4) * 3;
+      waveOffset = Math.sin(progress * Math.PI) * 0.8;
     }
     ctx.font = 'bold 28px "Ma Shan Zheng", cursive';
     ctx.textAlign = "center";
@@ -429,7 +436,7 @@ Tower.prototype.drawIceTower = function(ctx, progress) {
 Tower.prototype.drawPoisonTower = function(ctx, progress) {
     let bounceOffset = 0;
     if (this.isAttacking && progress < 1) {
-      bounceOffset = -Math.sin(progress * Math.PI) * 3;
+      bounceOffset = -Math.sin(progress * Math.PI) * 2;
     }
     ctx.font = 'bold 28px "Ma Shan Zheng", cursive';
     ctx.textAlign = "center";
@@ -446,7 +453,7 @@ Tower.prototype.drawPoisonTower = function(ctx, progress) {
 Tower.prototype.drawWindTower = function(ctx, progress) {
     let windOffset = 0;
     if (this.isAttacking && progress < 1) {
-      windOffset = Math.sin(progress * Math.PI * 6) * 3;
+      windOffset = Math.sin(progress * Math.PI) * 0.8;
     }
     ctx.font = 'bold 28px "Ma Shan Zheng", cursive';
     ctx.textAlign = "center";
@@ -456,7 +463,7 @@ Tower.prototype.drawWindTower = function(ctx, progress) {
     for (let i = 0; i < 3; i++) {
       ctx.beginPath();
       const startX = this.x - 20 + i * 15;
-      const startY = this.y - 8 + Math.sin(Date.now() / 300 + i) * 4;
+      const startY = this.y - 8 + Math.sin(Date.now() / 900 + i) * 2.5;
       ctx.moveTo(startX, startY);
       ctx.quadraticCurveTo(startX + 8, startY - 4, startX + 16, startY);
       ctx.stroke();

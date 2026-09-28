@@ -42,7 +42,6 @@
             <div id="level-inscription" class="hidden" aria-live="polite">
                 <span id="level-inscription-number"></span>
                 <strong id="level-inscription-name"></strong>
-                <span id="level-inscription-note"></span>
                 <button id="enter-level" type="button">入 境</button>
             </div>
             <button id="back-to-themes">主题</button>

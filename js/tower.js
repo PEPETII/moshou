@@ -265,7 +265,7 @@ class Tower {
       const pTarget = this.findTarget(enemies);
       if (pTarget) {
         this._cooldownAccum = 0;
-        this.triggerAttackAnimation();
+        this.triggerAttackAnimation(now);
         this.addProjectile({
           x: this.x, y: this.y, target: pTarget,
           damage: this.damage, speed: 6, trail: [], type: 'parasite'

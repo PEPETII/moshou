@@ -74,8 +74,8 @@ Tower.prototype.drawFrostTower = function(ctx, progress) {
     let shakeX = 0, shakeY = 0;
     if (this.isAttacking && progress > 0 && progress < 1) {
       // 使用基于时间的正弦波替代随机，避免高频抖动
-      shakeX = Math.sin(progress * Math.PI * 4) * 1.5;
-      shakeY = Math.sin(progress * Math.PI) * 3;
+      shakeX = Math.sin(progress * Math.PI) * 0.5;
+      shakeY = Math.sin(progress * Math.PI) * 1.5;
     }
     ctx.font = 'bold 28px "Ma Shan Zheng", cursive';
     ctx.textAlign = "center";
@@ -208,7 +208,7 @@ Tower.prototype.drawZitherTower = function(ctx, progress) {
 Tower.prototype.drawTalismanTower = function(ctx, progress) {
     let bounceOffset = 0;
     if (this.isAttacking && progress < 1) {
-      bounceOffset = -Math.sin(progress * Math.PI) * 3;
+      bounceOffset = -Math.sin(progress * Math.PI) * 2;
     }
     ctx.font = 'bold 28px "Ma Shan Zheng", cursive';
     ctx.textAlign = "center";
@@ -347,7 +347,7 @@ Tower.prototype.drawDetonatorTower = function(ctx, progress) {
 Tower.prototype.drawParasiteTower = function(ctx, progress) {
     let bounceOffset = 0;
     if (this.isAttacking && progress < 1) {
-      bounceOffset = -Math.sin(progress * Math.PI) * 3;
+      bounceOffset = -Math.sin(progress * Math.PI) * 2;
     }
     ctx.font = 'bold 28px "Ma Shan Zheng", cursive';
     ctx.textAlign = "center";

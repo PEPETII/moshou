@@ -1,7 +1,7 @@
 // Tower：攻击与目标交互
 Tower.prototype.attack = function(target, now) {
     this.lastAttack = now;
-    this.triggerAttackAnimation();
+    this.triggerAttackAnimation(now);
 
     if (this.type === "fire") {
       this.addProjectile({
@@ -74,9 +74,13 @@ Tower.prototype.attack = function(target, now) {
     }
   
 };
-Tower.prototype.triggerAttackAnimation = function() {
+Tower.prototype.triggerAttackAnimation = function(timestamp) {
     this.isAttacking = true;
-    this.attackAnimTime = Date.now();
+    this.attackAnimTime = Number.isFinite(timestamp)
+      ? timestamp
+      : (typeof performance !== "undefined" && typeof performance.now === "function"
+        ? performance.now()
+        : Date.now());
   
 };
 Tower.prototype.pierceAttack = function(target) {

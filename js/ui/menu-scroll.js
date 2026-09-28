@@ -20,14 +20,8 @@ UI.prototype.renderLevelSelect = function(themeId) {
       node.setAttribute('aria-pressed', node === item ? 'true' : 'false');
     });
 
-    const enemies = [...new Set(level.waves.flatMap(wave =>
-      wave.enemies.map(enemy => CONFIG.ENEMIES[enemy.type]?.char || enemy.type)
-    ))].join(' · ');
-    const unlocks = level.unlocks?.map(type => CONFIG.TOWERS[type]?.char || type).join(' · ');
     document.getElementById('level-inscription-number').textContent = `第 ${level.id.split('-')[1]} 境`;
     document.getElementById('level-inscription-name').textContent = level.name;
-    document.getElementById('level-inscription-note').textContent =
-      `${theme.desc}  ·  ${level.waves.length} 阵  ·  来敌 ${enemies}${unlocks ? `  ·  新悟 ${unlocks}` : ''}`;
     enter.onclick = () => this.game.startGame(level.id);
     inscription.classList.remove('hidden');
   };

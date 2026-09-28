@@ -37,7 +37,9 @@ class MenuInkBackground {
 
     this.MAX_SPLASHES = 6;
     this.SPLASH_INTERVAL = 180;
-    this.SPLASH_LIFESPAN = 5000;
+    // 泼墨从创建到完全消失的总时长（含最后的淡出阶段）。
+    this.SPLASH_LIFESPAN = 12000;
+    this.SPLASH_FADE_DURATION = 1000;
 
     this.resize();
     this._initStaticCache();
@@ -84,9 +86,6 @@ class MenuInkBackground {
   _redrawStaticCache() {
     const c = this.staticCtx;
     c.clearRect(0, 0, this.w, this.h);
-    this.splashes.forEach(s => {
-      if (s.done && !s.fading) this._drawSplashToCtx(c, s);
-    });
   }
 
   _initRain() {
@@ -256,14 +255,15 @@ class MenuInkBackground {
 
     if (s.done && !s.fading) {
       const elapsed = Date.now() - s.createdAt;
-      if (elapsed >= this.SPLASH_LIFESPAN) {
+      if (elapsed >= this.SPLASH_LIFESPAN - this.SPLASH_FADE_DURATION) {
         s.fading = true;
-        s.fadeAlpha = 1;
+        s.fadeStartedAt = s.createdAt + this.SPLASH_LIFESPAN - this.SPLASH_FADE_DURATION;
       }
     }
 
     if (s.fading) {
-      s.fadeAlpha -= 0.015;
+      const fadeElapsed = Date.now() - s.fadeStartedAt;
+      s.fadeAlpha = Math.max(0, 1 - fadeElapsed / this.SPLASH_FADE_DURATION);
       if (s.fadeAlpha <= 0) {
         s.fadeAlpha = 0;
         s.removed = true;
@@ -405,7 +405,7 @@ class MenuInkBackground {
             this._updateSplash(s);
             if (s.fading) {
               this._drawSplashToCtx(this.ctx, s, s.fadeAlpha);
-            } else if (!s.done) {
+            } else {
               this._drawSplashToCtx(this.ctx, s);
             }
           }

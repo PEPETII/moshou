@@ -118,6 +118,17 @@ html[data-input="touch"] #bottom-bar .tower-select.locked {
   font: 10px "ZCOOL XiaoWei", serif;
 }
 #bottom-bar .tower-char { color: var(--ink-strong); font-size: 31px; }
+#bottom-bar .tower-select.multi-character .tower-char {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  letter-spacing: 1px;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+#bottom-bar .tower-select.multi-character .tower-char > span { display: block; }
 #bottom-bar .tower-cost { margin-top: 4px; color: var(--ink-soft); font-size: 12px; }
 #bottom-bar .tower-select.stamp-anim { animation: seal-fall .3s ease-out both; box-shadow: none !important; }
 

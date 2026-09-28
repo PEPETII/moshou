@@ -128,7 +128,7 @@ class FusionTower extends Tower {
 
   attack(target, now) {
     this.lastAttack = now;
-    this.triggerAttackAnimation();
+    this.triggerAttackAnimation(now);
     if (!FusionSkillExecutor.execute(this, target)) {
       for (const componentType of this.components) {
         this.executeComponentAttack(componentType, target);
@@ -262,17 +262,7 @@ class FusionTower extends Tower {
       ctx.fill();
     }
 
-    // 攻击动画进度
-    let attackProgress = 0;
-    if (this.isAttacking && this.attackAnimTime > 0) {
-      attackProgress = Math.min(1, (Date.now() - this.attackAnimTime) / this.attackAnimDuration);
-      if (attackProgress >= 1) {
-        this.isAttacking = false;
-        this.attackAnimTime = 0;
-      }
-    } else if (this.isAttacking && this.attackAnimTime === 0) {
-      this.isAttacking = false;
-    }
+    const attackProgress = this.getAttackAnimationProgress(timestamp);
 
     // 山塔融合时的阻挡绘制
     if (this.onPath && this.hp > 0) {

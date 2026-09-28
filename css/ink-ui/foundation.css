@@ -59,6 +59,7 @@ button:focus-visible, [role="button"]:focus-visible {
   font-weight: normal;
   animation: title-write .8s ease-out both;
 }
+#main-menu h1.hidden { display: none; }
 #main-menu .title-ink {
   font-size: 1.8em;
   line-height: .92;
@@ -79,6 +80,7 @@ button:focus-visible, [role="button"]:focus-visible {
   transform: rotate(-8deg);
   animation: seal-fall .35s .7s both;
 }
+#main-menu .menu-seal.hidden { display: none; }
 #main-menu .game-version {
   position: absolute;
   bottom: 25px;
