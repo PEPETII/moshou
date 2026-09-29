@@ -5,7 +5,8 @@ Enemy.prototype.die = function() {
     this.game.ink += this.reward;
     this.game.updateUI();
 
-    // 播放死亡音效、墨水音效和粒子效果
+    // 击杀时播放墨散音效并生成粒子。
+    if (window.InkAudio) window.InkAudio.play('death');
     this.game.particleSystem.createExplosion(this.x, this.y, 15);
 
     // 死亡爆炸
@@ -94,7 +95,8 @@ Enemy.prototype.reachCore = function() {
     
     this.game.updateUI();
 
-    // 播放核心受伤音效
+    // 核心受击时播放纸裂音效。
+    if (window.InkAudio) window.InkAudio.play('core');
 
     if (this.game.coreHp <= 0) {
       this.game.gameOver(false);

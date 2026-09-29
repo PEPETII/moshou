@@ -72,6 +72,7 @@ Game.prototype.placeTower = function(type, gx, gy) {
     this.runtimeIndexes.rebuildTowers();
 
     this.updateUI();
+    if (window.InkAudio) window.InkAudio.play('place');
     return true;
   
 };
@@ -144,6 +145,7 @@ Game.prototype.fuseTowers = function(tower1, tower2) {
       this.particleSystem.createExplosion(pos.x, pos.y, 20, fusionConfig.color);
 
       this.updateUI();
+      if (window.InkAudio) window.InkAudio.play('fusion');
       return true;
     } finally {
       // 确保无论融合成功与否，缓存都会被清理

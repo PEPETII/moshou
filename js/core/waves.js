@@ -13,6 +13,7 @@ Game.prototype.startWave = function() {
 
     this.wave++;
     this.waveInProgress = true;
+    if (window.InkAudio) window.InkAudio.play('wave');
 
     for (const tower of this.towers) {
       if (tower.type === 'treasure') {

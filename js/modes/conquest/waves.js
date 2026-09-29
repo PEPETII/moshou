@@ -36,6 +36,7 @@ ConquestGame.prototype.summonTower = function() {
     this.summonFlashTime = Date.now();
     this.summonFlashType = "success";
     this.updateUI();
+    if (window.InkAudio) window.InkAudio.play('place');
   
 };
 ConquestGame.prototype.getNextPlacementPosition = function() {
@@ -54,6 +55,7 @@ ConquestGame.prototype.startWave = function() {
 
     this.wave++;
     this.waveInProgress = true;
+    if (window.InkAudio) window.InkAudio.play('wave');
 
     // 标记已开始自动波次，禁用按钮
     this._autoWaveStarted = true;

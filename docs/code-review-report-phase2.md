@@ -5,16 +5,18 @@
 **走查人员**: AI 代码审查助手  
 **审查范围**: 核心游戏循环、状态机、更新渲染分离
 
+> **历史走查记录**：本报告的问题、文件职责、行号和行数描述的是 2026-04-29 的代码状态，不是当前缺陷清单。代码已拆分；请以当前实现和 [结构基线](architecture/current-structure.md) 为准。下文行号仅供还原当时记录。
+
 ---
 
 ## 📋 走查摘要
 
 - **检查范围**: 
-  - [js/game.js](js/game.js) - 游戏主循环
-  - [js/ui.js](js/ui.js) - UI交互
-  - [js/inkTrailAnimation.js](js/inkTrailAnimation.js) - 开场动画
-  - [js/tower.js](js/tower.js) - 炮塔系统
-  - [js/enemy.js](js/enemy.js) - 敌人系统
+  - `js/game.js` - 游戏主循环
+  - `js/ui.js` - UI交互
+  - `js/inkTrailAnimation.js` - 开场动画
+  - `js/tower.js` - 炮塔系统
+  - `js/enemy.js` - 敌人系统
 - **发现问题总数**: 15
 - **严重程度分布**: 🔴 严重 4 | 🟠 中等 6 | 🟡 轻微 3 | 💡 建议 2
 
@@ -27,7 +29,7 @@
 | 项目 | 内容 |
 |------|------|
 | **描述** | `update()` 在暂停时直接返回，但 `draw()` 仍继续渲染，且 `lastTime` 未更新导致恢复时产生巨大 deltaTime |
-| **位置** | [js/game.js:735-768](js/game.js#L735-L768) |
+| **位置** | `js/game.js:735-768` |
 | **复现步骤** | 1. 开始游戏 2. 点击暂停（如果存在）3. 恢复后敌人瞬间移动 |
 | **建议修复** | 暂停时也应更新 `lastTime`，或记录暂停开始时间并在恢复时补偿 |
 
@@ -59,7 +61,7 @@ update(now) {
 | 项目 | 内容 |
 |------|------|
 | **描述** | 游戏结束时未清理待执行的 setTimeout |
-| **位置** | [js/game.js:398-419](js/game.js#L398-L419) |
+| **位置** | `js/game.js:398-419` |
 | **复现步骤** | 1. 开始波次 2. 在敌人生成间隔内结束游戏/返回菜单 3. setTimeout 回调仍可能执行 |
 | **建议修复** | 保存 timer ID 并在游戏结束时清理，或使用可取消的 Promise |
 
@@ -102,7 +104,7 @@ returnToMenu() {
 | 项目 | 内容 |
 |------|------|
 | **描述** | `setupEventListeners` 中的事件监听器每次切换关卡都会重新绑定，但 `this._eventsBound` 只在构造函数中检查 |
-| **位置** | [js/ui.js:973-1110](js/ui.js#L973-L1110) |
+| **位置** | `js/ui.js:973-1110` |
 | **复现步骤** | 1. 完成一关进入下一关 2. 多次点击画布会发现事件触发多次 |
 | **建议修复** | 将 `_eventsBound` 改为静态变量，或在 `destroy()` 中正确解绑事件 |
 
@@ -137,7 +139,7 @@ constructor(game) {
 | 项目 | 内容 |
 |------|------|
 | **描述** | `returnToMenu()` 和 `returnToLevelSelect()` 未清理 `particleSystem`、`projectilePool` 等对象的状态 |
-| **位置** | [js/game.js:693-717](js/game.js#L693-L717) |
+| **位置** | `js/game.js:693-717` |
 | **复现步骤** | 1. 游戏中产生大量粒子 2. 返回菜单 3. 重新开始游戏，粒子可能残留 |
 | **建议修复** | 添加 `particleSystem.clear()` 和 `projectilePool.clear()` 调用 |
 
@@ -163,7 +165,7 @@ returnToMenu() {
 | 项目 | 内容 |
 |------|------|
 | **描述** | 敌人移动、塔攻击冷却等逻辑依赖帧率而非时间 |
-| **位置** | [js/game.js:735-768](js/game.js#L735-L768) |
+| **位置** | `js/game.js:735-768` |
 | **影响范围** | 高帧率设备上游戏速度过快，低帧率设备上过慢 |
 | **建议修复** | 使用 `deltaTime` 标准化所有时间相关计算 |
 
@@ -174,7 +176,7 @@ returnToMenu() {
 | 项目 | 内容 |
 |------|------|
 | **描述** | 动画播放期间游戏结束可能导致 `this.game` 为 null 的错误 |
-| **位置** | [js/inkTrailAnimation.js:251-322](js/inkTrailAnimation.js#L251-L322) |
+| **位置** | `js/inkTrailAnimation.js:251-322` |
 | **影响范围** | 玩家在开场动画期间返回菜单可能报错 |
 | **建议修复** | 在 `update()` 中添加 `if (!this.game) return` 检查 |
 
@@ -185,7 +187,7 @@ returnToMenu() {
 | 项目 | 内容 |
 |------|------|
 | **描述** | 子弹追踪逻辑未检查敌人是否已死亡 |
-| **位置** | [js/tower.js](js/tower.js) |
+| **位置** | `js/tower.js` |
 | **影响范围** | 子弹可能追踪已死亡的敌人，导致空引用 |
 | **建议修复** | 在追踪逻辑中添加 `enemy.dead` 检查 |
 
@@ -196,7 +198,7 @@ returnToMenu() {
 | 项目 | 内容 |
 |------|------|
 | **描述** | `this.path[this.pathIndex]` 可能越界 |
-| **位置** | [js/enemy.js:181-250](js/enemy.js#L181-L250) |
+| **位置** | `js/enemy.js:181-250` |
 | **影响范围** | 敌人到达路径终点后可能继续访问数组 |
 | **建议修复** | 添加边界检查 `if (this.pathIndex >= this.path.length)` |
 
@@ -207,7 +209,7 @@ returnToMenu() {
 | 项目 | 内容 |
 |------|------|
 | **描述** | 拖拽融合后可能触发点击事件 |
-| **位置** | [js/ui.js:1153-1270](js/ui.js#L1153-L1270) |
+| **位置** | `js/ui.js:1153-1270` |
 | **影响范围** | 拖拽融合后可能同时触发塔的选中 |
 | **建议修复** | 在拖拽结束时设置标志位阻止点击事件 |
 
@@ -218,7 +220,7 @@ returnToMenu() {
 | 项目 | 内容 |
 |------|------|
 | **描述** | `gameOver` 后仍可放置炮塔、开始波次 |
-| **位置** | [js/game.js:578-631](js/game.js#L578-L631) |
+| **位置** | `js/game.js:578-631` |
 | **影响范围** | 游戏结束后仍可操作，导致状态混乱 |
 | **建议修复** | 在 `gameOver` 后立即设置 `this.inputLocked = true` |
 
@@ -231,7 +233,7 @@ returnToMenu() {
 | 项目 | 内容 |
 |------|------|
 | **描述** | `lastTime` 初始为 0，第一次 update 时 `now - 0` 会产生巨大 deltaTime |
-| **位置** | [js/game.js:39](js/game.js#L39) |
+| **位置** | `js/game.js:39` |
 | **建议修复** | 在 `start()` 中初始化 `this.lastTime = performance.now()` |
 
 ---
@@ -241,7 +243,7 @@ returnToMenu() {
 | 项目 | 内容 |
 |------|------|
 | **描述** | `spawnNextEnemy` 中 `this.spawnQueue[0].delay` 可能访问空数组 |
-| **位置** | [js/game.js:413-418](js/game.js#L413-L418) |
+| **位置** | `js/game.js:413-418` |
 | **建议修复** | 添加数组长度检查后再访问 |
 
 ---
@@ -251,7 +253,7 @@ returnToMenu() {
 | 项目 | 内容 |
 |------|------|
 | **描述** | `fuseTowers` 后调用 `clearCache()` 但 `canFuse` 的缓存策略不明确 |
-| **位置** | [js/game.js:353](js/game.js#L353) |
+| **位置** | `js/game.js:353` |
 | **建议修复** | 明确缓存策略，或移除不必要的缓存 |
 
 ---
@@ -365,11 +367,11 @@ returnToMenu() {
 
 | 文件 | 作用 | 代码行数 |
 |------|------|----------|
-| [js/game.js](js/game.js) | 游戏主循环、状态管理 | ~975 |
-| [js/ui.js](js/ui.js) | UI交互、事件处理 | ~2000+ |
-| [js/inkTrailAnimation.js](js/inkTrailAnimation.js) | 开场动画 | ~383 |
-| [js/tower.js](js/tower.js) | 炮塔逻辑 | ~800+ |
-| [js/enemy.js](js/enemy.js) | 敌人逻辑 | ~600+ |
+| `js/game.js` | 游戏主循环、状态管理 | ~975 |
+| `js/ui.js` | UI交互、事件处理 | ~2000+ |
+| `js/inkTrailAnimation.js` | 开场动画 | ~383 |
+| `js/tower.js` | 炮塔逻辑 | ~800+ |
+| `js/enemy.js` | 敌人逻辑 | ~600+ |
 
 ---
 

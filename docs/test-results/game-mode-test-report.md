@@ -5,6 +5,8 @@
 **测试环境**: Windows, Chrome (Playwright)  
 **服务器**: http://localhost:3000
 
+> **历史测试记录**：本报告结果和数值对应 2026-05-01 的版本，不代表当前实现。原测试计划文件未保存在当前仓库；当前规则和数值请核对代码。
+
 ---
 
 ## 1. 测试执行摘要
@@ -200,9 +202,9 @@ P2: 1个 (数值调整)
 
 ### 6.2 相关文档
 
-- [测试计划](../.trae/documents/game-mode-test-plan.md)
-- [平衡性设计文档](../docs/numerical-design-spec.md)
-- [炮塔设计文档](../docs/tower-design-spec.md)
+- 测试计划：原文件未保存在当前仓库。
+- [平衡性规格历史快照](../full-balance-spec.md)
+- [融合塔设计提案](../fusion-tower-designs.md)
 
 ---
 

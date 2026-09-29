@@ -215,7 +215,8 @@
   }
 
   #back-to-menu-btn,
-  #sound-toggle {
+  #sound-toggle,
+  .sound-toggle {
     min-width: 44px;
     min-height: 44px;
   }

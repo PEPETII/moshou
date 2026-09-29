@@ -10,7 +10,7 @@
 - 在每帧开始与实体清理后刷新存活敌人缓存。
 - 将 `deltaTime` 限制在 50ms 内，避免安卓后台切回时出现粒子和动画跳变。
 
-玩法数值仍以 `js/config.js` 为唯一来源，主循环不写死数值。
+玩法数值以运行时 `CONFIG` 为准；它由 `js/config.js`、`js/config/domain-*.js` 和 `js/config/fusion.js` 按 `index.html` 顺序共同建立。主循环不写死玩法数值。
 
 ## 渲染层
 

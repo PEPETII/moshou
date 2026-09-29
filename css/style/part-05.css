@@ -116,6 +116,7 @@ html[data-input="touch"] .menu-level-item {
   html[data-input="touch"] #fusion-encyclopedia-btn,
   html[data-input="touch"] #back-to-menu-btn,
   html[data-input="touch"] #sound-toggle,
+  html[data-input="touch"] .sound-toggle,
   html[data-input="touch"] .summon-btn,
   html[data-input="touch"] .conquest-wave-btn,
   html[data-input="touch"] .conquest-menu-btn,

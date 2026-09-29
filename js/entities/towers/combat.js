@@ -2,6 +2,7 @@
 Tower.prototype.attack = function(target, now) {
     this.lastAttack = now;
     this.triggerAttackAnimation(now);
+    if (window.InkAudio) window.InkAudio.play('attack');
 
     if (this.type === "fire") {
       this.addProjectile({

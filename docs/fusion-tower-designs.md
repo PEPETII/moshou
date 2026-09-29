@@ -1,5 +1,7 @@
 # 融合塔设计方案
 
+> 本文是设计方案，不是当前融合配方清单。实际可用配方和进化关系以 `js/config/fusion.js` 加载后生成的 `CONFIG.FUSION_TOWERS` 与 `CONFIG.FUSION_EVOLUTION_RECIPES` 为准；本文中的示例可能与现行实现不同。
+
 ## 一、同类型融合
 
 | 融合组合 | 结果 | 描述 |

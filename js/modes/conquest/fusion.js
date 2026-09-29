@@ -39,6 +39,7 @@ ConquestGame.prototype.fuseTowers = function(tower1, tower2) {
 
     fusionSystem.clearCache();
     this.updateUI();
+    if (window.InkAudio) window.InkAudio.play('fusion');
     return true;
   
 };

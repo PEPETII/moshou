@@ -5,6 +5,8 @@
 **项目类型：** H5 Canvas 塔防游戏  
 **技术栈：** 原生 HTML / JavaScript / Canvas
 
+> **历史审计记录（2026-04-29）**：文件行数、职责和审计问题反映当时的单体结构，不代表当前目录或当前缺陷状态。当前结构见 [结构基线](architecture/current-structure.md)，当前行为以代码为准。
+
 ---
 
 ## 📋 走查摘要
@@ -63,9 +65,9 @@
 
 **状态：** ✅ 已修复（v1.1.0）  
 **修复日期：** 2026-04-29  
-**修复日志：** [docs/fix-log-critical-issues.md](fix-log-critical-issues.md#问题 -1-enemy-构造函数中-path-无效时处理不当)
+**修复日志：** [docs/fix-log-critical-issues.md](fix-log-critical-issues.md#问题-1-enemy-构造函数中-path-无效时处理不当)
 
-**位置：** [js/enemy.js:34-43](../js/enemy.js#L34-L43)
+**位置：** [js/enemy.js:34-43](../js/enemy.js)
 
 **问题描述：**
 当传入空 path 或无效 path 时，敌人会生成在 (24, 24) 位置，但后续 `update()` 中访问 `path[pathIndex+1]` 会导致崩溃。
@@ -103,9 +105,9 @@ if (!path || path.length === 0) {
 
 **状态：** ✅ 已修复（v1.1.0）  
 **修复日期：** 2026-04-29  
-**修复日志：** [docs/fix-log-critical-issues.md](fix-log-critical-issues.md#问题 -2-fusiontower-构造函数可能提前返回导致对象不完整)
+**修复日志：** [docs/fix-log-critical-issues.md](fix-log-critical-issues.md#问题-2-fusiontower-构造函数可能提前返回导致对象不完整)
 
-**位置：** [js/tower.js:2349-2352](../js/tower.js#L2349-L2352)
+**位置：** [js/tower.js:2349-2352](../js/tower.js)
 
 **问题描述：**
 当融合配置不存在时，构造函数直接 return，导致创建的 FusionTower 对象状态不完整，后续访问其属性会报错。
@@ -147,9 +149,9 @@ if (!config) {
 
 **状态：** ✅ 已修复（v1.1.0）  
 **修复日期：** 2026-04-29  
-**修复日志：** [docs/fix-log-critical-issues.md](fix-log-critical-issues.md#问题 -3-ui-事件监听器重复绑定风险)
+**修复日志：** [docs/fix-log-critical-issues.md](fix-log-critical-issues.md#问题-3-ui-事件监听器重复绑定风险)
 
-**位置：** [js/ui.js:22-27](../js/ui.js#L22-L27)
+**位置：** [js/ui.js:22-27](../js/ui.js)
 
 **问题描述：**
 `setupMenuEventListeners()` 和 `setupEventListeners()` 在构造函数中调用，如果 UI 对象被多次创建会导致事件重复绑定。
@@ -200,8 +202,8 @@ class UI {
 ### 问题 #4: 距离计算函数未统一使用，存在重复实现
 
 **位置：** 
-- [js/tower.js:298](../js/tower.js#L298)
-- [js/enemy.js:313](../js/enemy.js#L313)
+- [js/tower.js:298](../js/tower.js)
+- [js/enemy.js:313](../js/enemy.js)
 - 多处其他位置
 
 **问题描述：**
@@ -234,7 +236,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
 ### 问题 #5: Tower.updateProjectiles() 中未检查 target.hp 属性
 
-**位置：** [js/tower.js:877-884](../js/tower.js#L877-L884)
+**位置：** [js/tower.js:877-884](../js/tower.js)
 
 **问题描述：**
 当 target 被销毁后，访问 `target.hp` 可能报错，因为敌人对象可能已被从数组中移除。
@@ -267,7 +269,7 @@ if (p.target && !p.target.dead && p.target.hp !== undefined) {
 
 ### 问题 #6: Enemy.takeDamage() 中护盾计算逻辑可能导致负伤害
 
-**位置：** [js/enemy.js:391-399](../js/enemy.js#L391-L399)
+**位置：** [js/enemy.js:391-399](../js/enemy.js)
 
 **问题描述：**
 当护盾值大于伤害时，amount 被设为 0，但后续逻辑中如果 reuse amount 变量可能导致负值。
@@ -305,7 +307,7 @@ amount = Math.max(0, amount); // 添加保护
 
 ### 问题 #7: UI.showFusionConfirm() 中 pendingFusion 未清理
 
-**位置：** [js/ui.js:1316-1330](../js/ui.js#L1316-L1330)
+**位置：** [js/ui.js:1316-1330](../js/ui.js)
 
 **问题描述：**
 当用户取消融合时，`pendingFusion` 未清理，可能导致下次打开其他弹窗时误触发融合。
@@ -331,7 +333,7 @@ btnEl.onclick = () => {
 
 ### 问题 #8: Enemy.applyFrozen() 冷却时间硬编码
 
-**位置：** [js/enemy.js:483](../js/enemy.js#L483)
+**位置：** [js/enemy.js:483](../js/enemy.js)
 
 **问题描述：**
 冻结免疫持续时间 8000ms 硬编码在代码中，难以通过配置调整平衡性。
@@ -370,7 +372,7 @@ applyFrozen(duration) {
 
 ### 问题 #9: FusionSystem 验证器顺序问题
 
-**位置：** [js/fusionSystem.js:158-191](../js/fusionSystem.js#L158-L191)
+**位置：** [js/fusionSystem.js:158-191](../js/fusionSystem.js)
 
 **问题描述：**
 墨水验证在进化验证之后，可能导致不必要的计算。应该优先执行低成本验证。
@@ -391,7 +393,7 @@ applyFrozen(duration) {
 
 ### 问题 #10: Tower.draw() 中未检查 timestamp 参数
 
-**位置：** [js/tower.js:988-1125](../js/tower.js#L988-L1125)
+**位置：** [js/tower.js:988-1125](../js/tower.js)
 
 **问题描述：**
 draw 方法接收 timestamp 参数但从未使用，可能导致混淆。
@@ -418,7 +420,7 @@ draw(ctx, timestamp) {
 
 ### 问题 #11: Enemy.die() 中调用 game.spawnEnemyAt 未检查存在性
 
-**位置：** [js/enemy.js:560-564](../js/enemy.js#L560-L564)
+**位置：** [js/enemy.js:560-564](../js/enemy.js)
 
 **问题描述：**
 当 `game.spawnEnemyAt` 不存在时会报错。
@@ -448,9 +450,9 @@ if (this.summonOnDeath) {
 **修复日期：** 2026-04-29
 
 **位置：** 
-- [js/enemy.js:224](../js/enemy.js#L224) - 燃烧伤害间隔 500ms
-- [js/tower.js:113](../js/tower.js#L113) - 攻击动画 200ms
-- [js/ui.js:1076](../js/ui.js#L1076) - 长按阈值 500ms
+- [js/enemy.js:224](../js/enemy.js) - 燃烧伤害间隔 500ms
+- [js/tower.js:113](../js/tower.js) - 攻击动画 200ms
+- [js/ui.js:1076](../js/ui.js) - 长按阈值 500ms
 
 **修复内容：**
 1. 在 `config.js` 的 `CONFIG.GAMEPLAY` 中添加：
@@ -471,7 +473,7 @@ if (this.summonOnDeath) {
 **状态：** ✅ 已修复（v1.1.1）  
 **修复日期：** 2026-04-29
 
-**位置：** [js/tower.js:1890-1954](../js/tower.js#L1890-L1954)
+**位置：** [js/tower.js:1890-1954](../js/tower.js)
 
 **问题描述：**
 注释写"弹道绘制方法"，但实际包含多种类型投影绘制，应更新注释。
@@ -486,7 +488,7 @@ if (this.summonOnDeath) {
 **状态：** ✅ 已修复（v1.1.1）  
 **修复日期：** 2026-04-29
 
-**位置：** [js/inkRenderer.js:350-352](../js/inkRenderer.js#L350-L352)
+**位置：** [js/inkRenderer.js:350-352](../js/inkRenderer.js)
 
 **问题描述：**
 InkRenderer 使用 CommonJS 导出，但项目是纯前端，未使用模块化。
@@ -508,7 +510,7 @@ InkRenderer 使用 CommonJS 导出，但项目是纯前端，未使用模块化�
 **状态：** ✅ 已修复（v1.1.1）  
 **修复日期：** 2026-04-29
 
-**位置：** [js/tower.js:2305-2333](../js/tower.js#L2305-L2333)
+**位置：** [js/tower.js:2305-2333](../js/tower.js)
 
 **问题描述：**
 `FusionSkillExecutor` 使用对象字面量命名，而其他类使用大驼峰（PascalCase）类定义。
@@ -549,7 +551,7 @@ class FusionSkillExecutor {
 **状态：** ✅ 已修复（v1.1.1）  
 **修复日期：** 2026-04-29
 
-**位置：** [js/tower.js:1147-1150](../js/tower.js#L1147-L1150), [js/tower.js:1190-1193](../js/tower.js#L1190-L1193) 等
+**位置：** [js/tower.js:1147-1150](../js/tower.js), [js/tower.js:1190-1193](../js/tower.js) 等
 
 **修复内容：**
 1. 添加 `drawInkBase(ctx, x, y, color, radius = 18)` 辅助方法，包含完整 JSDoc 注释
@@ -568,7 +570,7 @@ class FusionSkillExecutor {
 **状态：** ✅ 已修复（v1.1.1）  
 **修复日期：** 2026-04-29
 
-**位置：** [js/ui.js:1025-1104](../js/ui.js#L1025-L1104)
+**位置：** [js/ui.js:1025-1104](../js/ui.js)
 
 **修复内容：**
 1. `touchend` 事件监听器改为 `{ passive: true }`，提高滚动性能

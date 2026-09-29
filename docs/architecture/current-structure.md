@@ -4,6 +4,8 @@
 - 分支：`refactor/structure-600-lines-20260916`
 - 运行形态：纯静态 HTML5 Canvas + Classic JavaScript，无构建工具。
 
+> 本文记录 2026-09-16 的结构重构验收基线。目录职责仍可作导航参考；分支名、文件行数和扫描统计只反映当次状态。当前入口与脚本顺序以 `index.html` 为准。
+
 ## 1. 已完成的边界
 
 - `index.html` 仅保留 head 元数据、CSS/脚本装配和 body 注入入口。

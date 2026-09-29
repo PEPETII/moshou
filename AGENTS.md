@@ -7,6 +7,7 @@
 - **纯静态前端**：这是一个基于 HTML5 Canvas + JavaScript 的纯前端项目。**严禁引入任何构建工具（如 Webpack/Vite）或 TypeScript**，除非用户明确要求。
 - **水墨风格塔防**：游戏采用中国水墨风格（浓墨、淡墨、朱砂红），通过代码实现墨晕、拖影等特效。
 - **单文件入口**：游戏唯一入口是 [index.html](index.html) (Canvas 游戏区域固定为 960x432（20 列 × 48、9 行 × 48）)。
+- **现行实现优先**：带日期的工单、测试报告和设计提案描述的是当时状态，不自动代表当前功能或当前缺陷；先核对代码与现行架构文档。
 
 ## 强制规则（必须遵守）
 
@@ -73,7 +74,7 @@ npx serve
 ```bash
 npm run test:balance
 ```
-测试通过后，请同步检查并更新 [BALANCE_CHANGES.md](BALANCE_CHANGES.md) 和 [README-BALANCE.md](README-BALANCE.md)。
+涉及平衡性调整时，数值与行为以实际加载的配置和代码为准。若任务要求同步维护数值文档，使用 [全塔全敌数值平衡规格](docs/full-balance-spec.md) 时须先核对其历史基线数据，不得把其中的旧测试结论当作当前结果。
 
 统一测试命令：`npm test`、`npm run test:balance`、`npm run test:fusion`。
 
@@ -81,7 +82,7 @@ npm run test:balance
 
 在修改代码前，请先查阅真实实现，文档可能滞后。数值与行为始终以**代码为准**。
 
-- **全局配置**：**[js/config.js](js/config.js) 及 js/config/**。这是最重要的文件，包含所有的炮塔 (`CONFIG.TOWERS`)、敌人 (`CONFIG.ENEMIES`)、融合配方 (`CONFIG.FUSION_TOWERS`) 和颜色配置。**游戏数值必须集中在此，禁止在散落的模块中写死常量。**
+- **全局配置**：[js/config.js](js/config.js)、[js/config/domain-01.js](js/config/domain-01.js)、[js/config/domain-02.js](js/config/domain-02.js)、[js/config/domain-03.js](js/config/domain-03.js) 和 [js/config/fusion.js](js/config/fusion.js) 共同建立运行时 `CONFIG`，包含炮塔、敌人、颜色和融合配置。游戏数值应集中在配置中，禁止在散落的模块中写死常量。
 - **主控制器**：[js/game.js](js/game.js) 及 js/core/。管理游戏主循环、状态机以及所有实体列表。
 - **核心实体**：
   - 炮塔：[js/tower.js](js/tower.js) 及 js/entities/towers/。处理基础塔和融合塔的攻击、升级等。
@@ -101,14 +102,15 @@ npm run test:balance
 - 坐标转换约定使用工具函数：`gridToPixel()` 和 `pixelToGrid()`。
 - 敌人移动严格依赖路径点数组（`path`）。
 
-### 特殊实体的注意事项
-- **山字塔（Mountain Tower）特殊性**：与其他塔不同，山字塔是**唯一**必须放置在**路径（Path）**上的塔。它具有阻挡敌人和反伤特性。在修改塔的放置、路径校验和融合系统时，必须特殊处理山字塔逻辑。
+### 路径放置炮塔
+- 炮塔的放置位置由配置中的 `onPath` 和关卡的 `placementGrid` 决定；不能假设只有山字塔需要放在路径上。
+- 融合塔的路径属性由融合配方及其组件决定。修改放置或融合校验时，以 [js/core/towers.js](js/core/towers.js)、[js/config/fusion.js](js/config/fusion.js) 和当前配置为准。
 
 ## 重要文档参考
 
 尽量避免复制文档内容，请需要时点击链接查阅：
-- [初步需求文档](docs/初步需求文档.md) / [游戏设计文档 (GDD)](docs/GDD.md)
-- [数值设计文档](docs/numerical-design-spec.md)
-- [炮塔设计文档](docs/tower-design-spec.md)
+- [当前结构基线](docs/architecture/current-structure.md)
+- [运行时架构](docs/architecture-runtime.md)
 - [UI 设计文档](docs/ui-design-spec.md)
-- AI 旧版指南备忘：[CLAUDE.md](CLAUDE.md)
+- [数值平衡规格历史快照](docs/full-balance-spec.md)
+- [融合塔设计提案](docs/fusion-tower-designs.md)（实际配方以 `js/config/fusion.js` 为准）

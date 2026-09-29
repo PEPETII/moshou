@@ -509,7 +509,8 @@ html, body {
   margin-left: 10px;
 }
 
-#sound-toggle {
+#sound-toggle,
+.sound-toggle {
   background: #f4efe4;
   border: 1px solid #b8ac91;
   color: #3d382f;
@@ -523,12 +524,14 @@ html, body {
   justify-content: center;
 }
 
-#sound-toggle:hover {
+#sound-toggle:hover,
+.sound-toggle:hover {
   background: #d0c6b0;
   border-color: #6a6459;
 }
 
-#sound-toggle:active {
+#sound-toggle:active,
+.sound-toggle:active {
   transform: scale(0.95);
 }
 

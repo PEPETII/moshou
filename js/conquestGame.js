@@ -7,6 +7,7 @@ class ConquestEnemy extends Enemy {
 
   reachCore() {
     this.game.coreHp -= this.damage;
+    if (window.InkAudio) window.InkAudio.play('core');
     if (this.game.coreHp <= 0) {
       this.game.gameOver(false);
     }

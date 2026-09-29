@@ -360,6 +360,9 @@
                         <div class="stat">
                             <button id="back-to-menu-btn" title="主菜单">归卷</button>
                         </div>
+                        <div class="stat sound-control">
+                            <button id="sound-toggle" class="sound-toggle" data-sound-toggle type="button" aria-pressed="true" aria-label="音效开关" title="音效开关">音效 · 开</button>
+                        </div>
                     </div>
 
                     <div id="game-area">
@@ -429,6 +432,7 @@
                     <button id="conquest-fusion-encyclopedia-btn" title="融合图鉴">合字谱</button>
                     <button id="conquest-wave-btn" class="conquest-wave-btn">开始波次</button>
                     <button id="conquest-menu-btn" class="conquest-menu-btn">菜单</button>
+                    <button class="sound-toggle" data-sound-toggle type="button" aria-pressed="true" aria-label="音效开关" title="音效开关">音效 · 开</button>
                     <div class="conquest-rules">
                         <div class="rules-title">规则</div>
                         <div class="rules-text">外圈为敌人循环路径</div>
