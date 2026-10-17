@@ -174,9 +174,18 @@
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(applyScale);
   }
+  // 外链字体可能在首屏之后才到达，字形尺寸变化后需要重新测量
+  if (document.fonts && document.fonts.addEventListener) {
+    document.fonts.addEventListener('loadingdone', function () { setTimeout(applyScale, 50); });
+  }
   window.addEventListener('resize', onViewportChanged);
   window.addEventListener('orientationchange', function () {
     setTimeout(checkOrientation, 200);
+  });
+
+  // iOS Safari 会忽略 user-scalable=no：双指缩放会把战场放大后错位，这里直接拦截
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (name) {
+    document.addEventListener(name, function (e) { e.preventDefault(); }, { passive: false });
   });
 
   // iOS 地址栏收起/展开不会触发可靠 resize，补一个视觉视口监听
