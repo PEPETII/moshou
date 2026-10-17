@@ -1,5 +1,5 @@
 // Tower：光环、召唤与状态效果
-Tower.prototype.updateAura = function() {
+Tower.prototype.updateAura = function(deltaTime = 0) {
     const rangePx = this.auraRange * CONFIG.CELL_SIZE;
     if (this.auraType === 'slow' || this.auraType === 'dot' || this.auraType === 'reveal') {
       for (const enemy of this.getAliveEnemies()) {
@@ -8,7 +8,9 @@ Tower.prototype.updateAura = function() {
           if (this.auraType === 'slow') {
             enemy.applySlow(this.auraValue, 1500);
           } else if (this.auraType === 'dot') {
-            enemy.hp -= this.auraValue / 60;
+            // auraValue 为“每秒伤害”，按 dt 结算；致死必须走 die() 才会发奖励、不再前进
+            enemy.hp -= this.auraValue * deltaTime / 1000;
+            if (enemy.hp <= 0) enemy.die();
             if (this.auraSlow) enemy.applySlow(this.auraSlow, 1500);
           } else if (this.auraType === 'reveal') {
             if (enemy.invisible) {
@@ -74,7 +76,7 @@ Tower.prototype.wheelAttack = function() {
     if (this.currentRotation >= 360) this.currentRotation -= 360;
     const angle = this.currentRotation * Math.PI / 180;
     const halfFan = (this.fanAngle / 2) * Math.PI / 180;
-    const rangePx = this.range * CONFIG.CELL_SIZE;
+    const rangePx = this.getEffectiveRange() * CONFIG.CELL_SIZE;
 
     for (const enemy of this.getAliveEnemies()) {
       if (enemy.hp <= 0) continue;
@@ -152,12 +154,25 @@ Tower.prototype.updateSummons = function(enemies) {
     }
   
 };
-Tower.prototype.takeDamage = function(amount) {
+// 射程 = 自身射程 + 旗光环加成（格）
+Tower.prototype.getEffectiveRange = function() {
+    return this.range + ((this.auraBonuses && this.auraBonuses.range) || 0);
+};
+Tower.prototype.takeDamage = function(amount, attacker) {
     if (this.damageReduction > 0) {
       amount = amount * (1 - this.damageReduction);
     }
     this.hp -= amount;
     this.triggerShake();
+    // 碉：每次受击固定反射 reflectDamage
+    if (this.reflectDamage > 0 && attacker && !attacker.dead && attacker.takeDamage) {
+      attacker.takeDamage(this.reflectDamage);
+    }
+    // 镜光环：按比例把受到的伤害反射给攻击者
+    const reflect = this.auraBonuses && this.auraBonuses.reflect;
+    if (reflect > 0 && attacker && !attacker.dead && attacker.takeDamage) {
+      attacker.takeDamage(amount * reflect);
+    }
     return this.hp <= 0;
   
 };

@@ -72,7 +72,7 @@ Enemy.prototype.draw = function(ctx, inkRenderer) {
     ctx.font = '12px "ZCOOL XiaoWei", serif';
     ctx.fillStyle = "#ff4444";
     ctx.textAlign = "center";
-    ctx.fillText(`${this.hp}/${this.maxHp}`, this.x, this.y - 20);
+    ctx.fillText(`${Math.max(0, Math.ceil(this.hp))}/${this.maxHp}`, this.x, this.y - 20);
 
     // 护盾显示
     if (this.shield > 0) {

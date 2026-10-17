@@ -27,7 +27,12 @@ UI.prototype.createTowerSelects = function() {
       el.innerHTML = '<span class="tower-char">' + charHtml + '</span><span class="tower-cost">' + config.cost + '</span>';
 
       this.addTrackedEventListener(el, 'pointerdown', (e) => {
-        this.beginPlacementDrag(e, el.dataset.type);
+        // 触摸要先判定是横滑底栏还是拖拽放置（见 input-card-gesture.js）
+        if (e.pointerType === 'touch' && typeof this.beginCardGesture === 'function') {
+          this.beginCardGesture(e, el, el.dataset.type);
+        } else {
+          this.beginPlacementDrag(e, el.dataset.type);
+        }
       });
 
       bottomBar.appendChild(el);

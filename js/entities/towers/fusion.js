@@ -124,6 +124,38 @@ class FusionTower extends Tower {
     if (!this.projectiles) this.projectiles = [];
     if (!this.beamEffects) this.beamEffects = [];
     if (!this.shockwaves) this.shockwaves = [];
+
+    this.inheritComponentParams(config);
+  }
+
+  /**
+   * 融合塔的 type 是融合键，基类配置里没有状态/链式/范围字段。
+   * 这里按技能动作顺序，从基础塔配置补全缺失（为空或 0）的状态参数；
+   * 伤害、射程、冷却、HP、花费始终以融合配方为准。
+   */
+  inheritComponentParams(config) {
+    const INHERIT_KEYS = [
+      'slow', 'slowDuration', 'burnDamage', 'burnDuration',
+      'chainCount', 'chainRange', 'chainDecay', 'conductBonus',
+      'freezeDuration', 'poisonDamage', 'poisonDuration', 'ulcerDuration',
+      'knockbackCooldown', 'pierceCount', 'revealDuration', 'revealBonus',
+      'shadowMarkDuration', 'stunDuration', 'stunRange',
+      'parasiteDuration', 'explosionDamage', 'explosionRange',
+      'killHeal', 'healPerWaveMax', 'freezeCooldown', 'poisonStackMax',
+    ];
+    const actions = (config.skillParams && config.skillParams.actions) || [];
+    for (const action of actions) {
+      const base = CONFIG.TOWERS[action];
+      if (!base) continue;
+      // 基类默认 aoeRange=1.5 不是“缺失”，需单独继承范围型塔的 AoE 半径
+      if (base.aoe && base.aoeRange && !this._aoeInherited) {
+        this.aoeRange = base.aoeRange;
+        this._aoeInherited = true;
+      }
+      for (const key of INHERIT_KEYS) {
+        if (!this[key] && base[key]) this[key] = base[key];
+      }
+    }
   }
 
   attack(target, now) {

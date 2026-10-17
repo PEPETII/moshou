@@ -4,11 +4,20 @@ Game.prototype.getUnlockedTowers = function() {
     return Object.keys(CONFIG.TOWERS).filter(type => type !== 'fusion');
   
 };
+// 配置了 maxCount 的塔（财、医）达到数量上限后不可再放置
+Game.prototype.isTowerTypeAtLimit = function(type) {
+    const max = CONFIG.TOWERS[type] && CONFIG.TOWERS[type].maxCount;
+    if (!max) return false;
+    return this.towers.filter((t) => t.type === type).length >= max;
+  
+};
 Game.prototype.canPlaceTower = function(type, gx, gy) {
     if (this.inkTrailAnimation && this.inkTrailAnimation.active) return false;
     const config = CONFIG.TOWERS[type];
     if (!config) return false;
     if (this.ink < config.cost) return false;
+
+    if (this.isTowerTypeAtLimit(type)) return false;
 
     if (config.onPath) {
       return this._pathCellSet.has(gridKey(gx, gy)) && !this.runtimeIndexes.getTowerAt(gx, gy);
@@ -44,6 +53,8 @@ Game.prototype.getPlacementBlockReason = function(type, gx, gy) {
     if (gx < 0 || gy < 0 || gx >= CONFIG.GRID_COLS || gy >= CONFIG.GRID_ROWS) {
       return '超出战场范围';
     }
+
+    if (this.isTowerTypeAtLimit(type)) return `「${config.char}」最多放置 ${config.maxCount} 座`;
 
     if (config.onPath) {
       if (!this._pathCellSet.has(gridKey(gx, gy))) {
@@ -92,6 +103,7 @@ Game.prototype.sellTower = function(tower) {
     this.ink += tower.getSellValue();
     this.removeTower(tower);
     this.updateUI();
+    if (window.InkAudio) window.InkAudio.play('sell');
   
 };
 Game.prototype.getFusionType = function(type1, type2) {

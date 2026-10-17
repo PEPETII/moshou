@@ -18,7 +18,7 @@ Object.assign(LEVELS_DATA, {
     waves: [
       {enemies:[{type:"corpse",count:3,delay:2000},{type:"ghost",count:1,delay:2500},{type:"armor",count:1,delay:3000}]},
       {enemies:[{type:"corpse",count:3,delay:1500},{type:"split",count:2,delay:2000},{type:"giant",count:1,delay:2500}]},
-      {enemies:[{type:"corpse",count:3,delay:1000},{type:"ghost",count:2,delay:1500},{type:"giant",count:1,delay:2000},{type:"superGiant",count:1,delay:3000},{type:"overlord",count:1,delay:4000}]}
+      {enemies:[{type:"corpse",count:3,delay:1000},{type:"ghost",count:2,delay:1500},{type:"giant",count:1,delay:2000}]}
     ],
     unlocks: []
   },
@@ -236,11 +236,11 @@ Object.assign(LEVELS_DATA, {
     ],
     core: {x:19,y:1},
     waves: [
-      {enemies:[{type:"corpse",count:15,delay:250},{type:"ghost",count:10,delay:400}]},
-      {enemies:[{type:"armor",count:8,delay:1000},{type:"split",count:6,delay:600},{type:"shadow",count:5,delay:800}]},
-      {enemies:[{type:"ironArmor",count:6,delay:1200},{type:"swiftGhost",count:6,delay:500},{type:"giant",count:4,delay:2000}]},
-      {enemies:[{type:"shadow",count:8,delay:600},{type:"ironArmor",count:6,delay:1000},{type:"superGiant",count:2,delay:3500}]},
-      {enemies:[{type:"swiftGhost",count:10,delay:400},{type:"ironArmor",count:8,delay:800},{type:"giant",count:5,delay:1800},{type:"overlord",count:2,delay:6000}]}
+      {enemies:[{type:"corpse",count:18,delay:250},{type:"ghost",count:12,delay:400}]},
+      {enemies:[{type:"armor",count:10,delay:1000},{type:"split",count:7,delay:600},{type:"shadow",count:6,delay:800}]},
+      {enemies:[{type:"ironArmor",count:7,delay:1200},{type:"swiftGhost",count:7,delay:500},{type:"giant",count:5,delay:2000}]},
+      {enemies:[{type:"shadow",count:10,delay:600},{type:"ironArmor",count:7,delay:1000},{type:"superGiant",count:2,delay:3500}]},
+      {enemies:[{type:"swiftGhost",count:12,delay:400},{type:"ironArmor",count:10,delay:800},{type:"giant",count:6,delay:1800},{type:"overlord",count:2,delay:6000}]}
     ],
     unlocks: ["xinZhongYan", "ruFengSiZhen"]
   },
@@ -259,9 +259,9 @@ Object.assign(LEVELS_DATA, {
     ],
     core: {x:19,y:4},
     waves: [
-      {enemies:[{type:"ghost",count:5,delay:1200},{type:"swiftGhost",count:2,delay:2000}]},
-      {enemies:[{type:"ghost",count:6,delay:1000},{type:"swiftGhost",count:3,delay:1500}]},
-      {enemies:[{type:"swiftGhost",count:5,delay:800},{type:"ghost",count:4,delay:1000},{type:"shadow",count:2,delay:2000}]}
+      {enemies:[{type:"ghost",count:10,delay:1200},{type:"swiftGhost",count:4,delay:2000}]},
+      {enemies:[{type:"ghost",count:12,delay:1000},{type:"swiftGhost",count:6,delay:1500}]},
+      {enemies:[{type:"swiftGhost",count:10,delay:800},{type:"ghost",count:8,delay:1000},{type:"shadow",count:4,delay:2000}]}
     ],
     unlocks: []
   },
@@ -279,9 +279,9 @@ Object.assign(LEVELS_DATA, {
     ],
     core: {x:19,y:6},
     waves: [
-      {enemies:[{type:"swiftGhost",count:4,delay:1000},{type:"ghost",count:5,delay:1200}]},
-      {enemies:[{type:"swiftGhost",count:6,delay:800},{type:"shadow",count:3,delay:1500}]},
-      {enemies:[{type:"ghost",count:8,delay:600},{type:"swiftGhost",count:4,delay:800},{type:"split",count:3,delay:1200}]}
+      {enemies:[{type:"swiftGhost",count:8,delay:1000},{type:"ghost",count:10,delay:1200}]},
+      {enemies:[{type:"swiftGhost",count:12,delay:800},{type:"shadow",count:6,delay:1500}]},
+      {enemies:[{type:"ghost",count:16,delay:600},{type:"swiftGhost",count:8,delay:800},{type:"split",count:6,delay:1200}]}
     ],
     unlocks: []
   },
@@ -299,9 +299,9 @@ Object.assign(LEVELS_DATA, {
     ],
     core: {x:19,y:8},
     waves: [
-      {enemies:[{type:"swiftGhost",count:5,delay:900},{type:"ghost",count:6,delay:1000}]},
-      {enemies:[{type:"swiftGhost",count:7,delay:700},{type:"shadow",count:4,delay:1200}]},
-      {enemies:[{type:"ghost",count:10,delay:500},{type:"swiftGhost",count:5,delay:700},{type:"split",count:4,delay:1000}]}
+      {enemies:[{type:"swiftGhost",count:10,delay:900},{type:"ghost",count:12,delay:1000}]},
+      {enemies:[{type:"swiftGhost",count:14,delay:700},{type:"shadow",count:8,delay:1200}]},
+      {enemies:[{type:"ghost",count:20,delay:500},{type:"swiftGhost",count:10,delay:700},{type:"split",count:8,delay:1000}]}
     ],
     unlocks: []
   },
@@ -321,9 +321,9 @@ Object.assign(LEVELS_DATA, {
     ],
     core: {x:19,y:8},
     waves: [
-      {enemies:[{type:"shadow",count:5,delay:1000},{type:"swiftGhost",count:4,delay:800}]},
-      {enemies:[{type:"swiftGhost",count:6,delay:700},{type:"shadow",count:5,delay:900},{type:"ghost",count:6,delay:800}]},
-      {enemies:[{type:"shadow",count:7,delay:800},{type:"swiftGhost",count:6,delay:600},{type:"ironArmor",count:2,delay:2000}]}
+      {enemies:[{type:"shadow",count:10,delay:1000},{type:"swiftGhost",count:8,delay:800}]},
+      {enemies:[{type:"swiftGhost",count:12,delay:700},{type:"shadow",count:10,delay:900},{type:"ghost",count:12,delay:800}]},
+      {enemies:[{type:"shadow",count:14,delay:800},{type:"swiftGhost",count:12,delay:600},{type:"ironArmor",count:4,delay:2000}]}
     ],
     unlocks: []
   },
@@ -341,10 +341,10 @@ Object.assign(LEVELS_DATA, {
     ],
     core: {x:19,y:8},
     waves: [
-      {enemies:[{type:"swiftGhost",count:8,delay:600},{type:"shadow",count:5,delay:800}]},
-      {enemies:[{type:"ghost",count:12,delay:400},{type:"swiftGhost",count:6,delay:600}]},
-      {enemies:[{type:"shadow",count:8,delay:700},{type:"swiftGhost",count:7,delay:500},{type:"split",count:5,delay:800}]},
-      {enemies:[{type:"swiftGhost",count:10,delay:500},{type:"ironArmor",count:3,delay:1500},{type:"giant",count:2,delay:2000}]}
+      {enemies:[{type:"swiftGhost",count:16,delay:600},{type:"shadow",count:10,delay:800}]},
+      {enemies:[{type:"ghost",count:24,delay:400},{type:"swiftGhost",count:12,delay:600}]},
+      {enemies:[{type:"shadow",count:16,delay:700},{type:"swiftGhost",count:14,delay:500},{type:"split",count:10,delay:800}]},
+      {enemies:[{type:"swiftGhost",count:20,delay:500},{type:"ironArmor",count:6,delay:1500},{type:"giant",count:4,delay:2000}]}
     ],
     unlocks: []
   },
@@ -364,10 +364,10 @@ Object.assign(LEVELS_DATA, {
     ],
     core: {x:19,y:8},
     waves: [
-      {enemies:[{type:"swiftGhost",count:10,delay:500},{type:"shadow",count:6,delay:700}]},
-      {enemies:[{type:"ghost",count:15,delay:350},{type:"swiftGhost",count:8,delay:500}]},
-      {enemies:[{type:"shadow",count:10,delay:600},{type:"swiftGhost",count:8,delay:450},{type:"ironArmor",count:4,delay:1200}]},
-      {enemies:[{type:"swiftGhost",count:12,delay:400},{type:"split",count:6,delay:600},{type:"giant",count:3,delay:1800}]}
+      {enemies:[{type:"swiftGhost",count:20,delay:500},{type:"shadow",count:12,delay:700}]},
+      {enemies:[{type:"ghost",count:30,delay:350},{type:"swiftGhost",count:16,delay:500}]},
+      {enemies:[{type:"shadow",count:20,delay:600},{type:"swiftGhost",count:16,delay:450},{type:"ironArmor",count:8,delay:1200}]},
+      {enemies:[{type:"swiftGhost",count:24,delay:400},{type:"split",count:12,delay:600},{type:"giant",count:6,delay:1800}]}
     ],
     unlocks: []
   },
@@ -385,10 +385,10 @@ Object.assign(LEVELS_DATA, {
     ],
     core: {x:19,y:6},
     waves: [
-      {enemies:[{type:"swiftGhost",count:12,delay:400},{type:"ghost",count:10,delay:500}]},
-      {enemies:[{type:"shadow",count:10,delay:600},{type:"swiftGhost",count:8,delay:450}]},
-      {enemies:[{type:"swiftGhost",count:15,delay:350},{type:"ironArmor",count:5,delay:1000},{type:"split",count:6,delay:500}]},
-      {enemies:[{type:"ghost",count:20,delay:300},{type:"swiftGhost",count:10,delay:400},{type:"superGiant",count:1,delay:3000}]}
+      {enemies:[{type:"swiftGhost",count:24,delay:400},{type:"ghost",count:20,delay:500}]},
+      {enemies:[{type:"shadow",count:20,delay:600},{type:"swiftGhost",count:16,delay:450}]},
+      {enemies:[{type:"swiftGhost",count:30,delay:350},{type:"ironArmor",count:10,delay:1000},{type:"split",count:12,delay:500}]},
+      {enemies:[{type:"ghost",count:40,delay:300},{type:"swiftGhost",count:20,delay:400},{type:"superGiant",count:2,delay:3000}]}
     ],
     unlocks: []
   },
@@ -408,10 +408,10 @@ Object.assign(LEVELS_DATA, {
     ],
     core: {x:19,y:8},
     waves: [
-      {enemies:[{type:"swiftGhost",count:15,delay:350},{type:"shadow",count:8,delay:500}]},
-      {enemies:[{type:"ghost",count:25,delay:250},{type:"swiftGhost",count:10,delay:400}]},
-      {enemies:[{type:"shadow",count:12,delay:500},{type:"swiftGhost",count:12,delay:350},{type:"ironArmor",count:5,delay:1000}]},
-      {enemies:[{type:"swiftGhost",count:15,delay:300},{type:"split",count:8,delay:450},{type:"giant",count:4,delay:1500}]}
+      {enemies:[{type:"swiftGhost",count:30,delay:350},{type:"shadow",count:16,delay:500}]},
+      {enemies:[{type:"ghost",count:50,delay:250},{type:"swiftGhost",count:20,delay:400}]},
+      {enemies:[{type:"shadow",count:24,delay:500},{type:"swiftGhost",count:24,delay:350},{type:"ironArmor",count:10,delay:1000}]},
+      {enemies:[{type:"swiftGhost",count:30,delay:300},{type:"split",count:16,delay:450},{type:"giant",count:8,delay:1500}]}
     ],
     unlocks: []
   },
@@ -429,10 +429,10 @@ Object.assign(LEVELS_DATA, {
     ],
     core: {x:19,y:8},
     waves: [
-      {enemies:[{type:"swiftGhost",count:18,delay:300},{type:"ghost",count:15,delay:400}]},
-      {enemies:[{type:"shadow",count:15,delay:450},{type:"swiftGhost",count:12,delay:350}]},
-      {enemies:[{type:"swiftGhost",count:20,delay:280},{type:"ironArmor",count:6,delay:800},{type:"split",count:8,delay:400}]},
-      {enemies:[{type:"ghost",count:30,delay:200},{type:"swiftGhost",count:15,delay:300},{type:"superGiant",count:2,delay:2500}]}
+      {enemies:[{type:"swiftGhost",count:36,delay:300},{type:"ghost",count:30,delay:400}]},
+      {enemies:[{type:"shadow",count:30,delay:450},{type:"swiftGhost",count:24,delay:350}]},
+      {enemies:[{type:"swiftGhost",count:40,delay:280},{type:"ironArmor",count:12,delay:800},{type:"split",count:16,delay:400}]},
+      {enemies:[{type:"ghost",count:60,delay:200},{type:"swiftGhost",count:30,delay:300},{type:"superGiant",count:4,delay:2500}]}
     ],
     unlocks: []
   },
@@ -452,11 +452,11 @@ Object.assign(LEVELS_DATA, {
     ],
     core: {x:19,y:6},
     waves: [
-      {enemies:[{type:"swiftGhost",count:20,delay:250},{type:"shadow",count:12,delay:400}]},
-      {enemies:[{type:"ghost",count:35,delay:180},{type:"swiftGhost",count:15,delay:300}]},
-      {enemies:[{type:"swiftGhost",count:25,delay:250},{type:"shadow",count:15,delay:350},{type:"ironArmor",count:8,delay:700}]},
-      {enemies:[{type:"swiftGhost",count:20,delay:220},{type:"split",count:10,delay:350},{type:"giant",count:5,delay:1200}]},
-      {enemies:[{type:"swiftGhost",count:25,delay:200},{type:"superGiant",count:2,delay:2000},{type:"overlord",count:1,delay:4000}]}
+      {enemies:[{type:"swiftGhost",count:40,delay:250},{type:"shadow",count:24,delay:400}]},
+      {enemies:[{type:"ghost",count:70,delay:180},{type:"swiftGhost",count:30,delay:300}]},
+      {enemies:[{type:"swiftGhost",count:50,delay:250},{type:"shadow",count:30,delay:350},{type:"ironArmor",count:16,delay:700}]},
+      {enemies:[{type:"swiftGhost",count:40,delay:220},{type:"split",count:20,delay:350},{type:"giant",count:10,delay:1200}]},
+      {enemies:[{type:"swiftGhost",count:50,delay:200},{type:"superGiant",count:4,delay:2000},{type:"overlord",count:2,delay:4000}]}
     ],
     unlocks: []
   },

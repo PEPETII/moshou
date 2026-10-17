@@ -16,6 +16,7 @@ Game.prototype.startWave = function() {
     if (window.InkAudio) window.InkAudio.play('wave');
 
     for (const tower of this.towers) {
+      tower.healedThisWave = 0;
       if (tower.type === 'treasure') {
         tower.waveCount++;
         let ink = tower.inkPerWave;
@@ -113,11 +114,12 @@ Game.prototype.spawnEnemyAt = function(enemyType, pathIndex, x, y) {
 };
 Game.prototype.triggerExplosion = function(x, y, damage, range) {
     const rangeSq = (range * CONFIG.CELL_SIZE) ** 2;
-    for (const enemy of this.runtimeIndexes.aliveEnemies) {
-      if (enemy.dead) continue;
-
-      if (distanceSq(x, y, enemy.x, enemy.y) <= rangeSq) {
-        enemy.takeDamage(damage);
+    // 敌人的死亡爆炸只伤害有血量的炮塔（路径塔），不伤同伴
+    for (const tower of this.towers.slice()) {
+      if (!(tower.hp > 0)) continue;
+      if (distanceSq(x, y, tower.x, tower.y) <= rangeSq) {
+        tower.takeDamage(damage);
+        if (tower.hp <= 0) this.removeTower(tower);
       }
     }
 
@@ -135,6 +137,8 @@ Game.prototype.spawnEnemy = function(enemyType) {
   
 };
 Game.prototype.updateAuras = function() {
+    // 每轮先清零，光环塔被出售/移走后加成才会消失
+    for (const t of this.towers) t.auraBonuses = {};
     for (const tower of this.towers) {
       if (!tower.aura) continue;
       const auraEntries = [];
@@ -230,6 +234,8 @@ Game.prototype.checkWaveComplete = function() {
 
       if (this.wave >= this.maxWave) {
         this.gameOver(true);
+      } else if (window.InkAudio) {
+        window.InkAudio.play('waveClear');
       }
     }
 

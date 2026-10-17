@@ -79,6 +79,8 @@ Tower.prototype.reset = function(type, gx, gy, game) {
     this.interestBonus = config.interestBonus || 0;
     this.waveCount = 0;
     this.healPerWave = config.healPerWave || 0;
+    this.healPerWaveMax = config.healPerWaveMax || 0;
+    this.healedThisWave = 0;
     this.emergencyThreshold = config.emergencyThreshold || 0;
     this.emergencyBonus = config.emergencyBonus || 0;
     this.summonHp = config.summonHp || 0;
@@ -210,7 +212,7 @@ Tower.prototype.getSellValue = function() {
 Tower.prototype.update = function(now, deltaTime, enemies) {
     // 使用 deltaTime 累积冷却时间，实现帧率独立的攻击冷却
     if (!this._cooldownAccum) this._cooldownAccum = 0;
-    this._cooldownAccum += deltaTime;
+    this._cooldownAccum += deltaTime * (1 + (this.auraBonuses?.attackSpeed || 0));
 
     if (this.onPath) {
       this.updateShake();
@@ -223,17 +225,25 @@ Tower.prototype.update = function(now, deltaTime, enemies) {
           }
         }
       }
+      // 带射程的路径融合塔（如山清水秀、火山）按冷却主动攻击
+      if (this.isFusion && this.range > 0 && this.cooldown < 900000 && this._cooldownAccum >= this.cooldown) {
+        const fusionTarget = this.findTarget(this.getAliveEnemies());
+        if (fusionTarget) {
+          this.attack(fusionTarget, now);
+          this._cooldownAccum = 0;
+        }
+      }
       if (this.type === 'trap' && this.triggerCount > 0) {
         this.checkTrapTrigger();
       }
       if (this.type === 'moat') {
-        this.checkMoatEffect();
+        this.checkMoatEffect(deltaTime);
       }
       return;
     }
 
     if (this.aura) {
-      this.updateAura();
+      this.updateAura(deltaTime);
     }
     if (this.type === 'treasure') {
     }
@@ -302,7 +312,7 @@ Tower.prototype.triggerShake = function() {
 Tower.prototype.findTarget = function(enemies) {
     let closest = null;
     let closestDistSq = Infinity;
-    const rangePx = this.range * CONFIG.CELL_SIZE;
+    const rangePx = this.getEffectiveRange() * CONFIG.CELL_SIZE;
     const rangeSq = rangePx * rangePx;
 
     for (const enemy of enemies) {

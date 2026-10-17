@@ -31,6 +31,16 @@
             <h2>设 · 墨卷</h2>
             <button id="ink-motion-toggle" type="button" aria-pressed="false">墨迹动效 · 开</button>
             <p>减少动效时，书页与印章仍会清晰呈现。</p>
+            <div class="audio-settings">
+                <div class="audio-row">
+                    <button data-sound-toggle type="button" aria-pressed="true">音效 · 开</button>
+                    <input type="range" class="audio-slider" data-volume="sfx" min="0" max="100" step="5" value="80" aria-label="音效音量">
+                </div>
+                <div class="audio-row">
+                    <button data-bgm-toggle type="button" aria-pressed="true">音乐 · 开</button>
+                    <input type="range" class="audio-slider" data-volume="bgm" min="0" max="100" step="5" value="60" aria-label="音乐音量">
+                </div>
+            </div>
             <button id="back-to-menu-from-settings" type="button">返回墨卷</button>
         </div>
         <div id="theme-select-container" class="hidden"></div>
@@ -362,6 +372,7 @@
                         </div>
                         <div class="stat sound-control">
                             <button id="sound-toggle" class="sound-toggle" data-sound-toggle type="button" aria-pressed="true" aria-label="音效开关" title="音效开关">音效 · 开</button>
+                            <button id="bgm-toggle" class="sound-toggle" data-bgm-toggle type="button" aria-pressed="true" aria-label="音乐开关" title="背景音乐开关">音乐 · 开</button>
                         </div>
                     </div>
 
@@ -433,6 +444,7 @@
                     <button id="conquest-wave-btn" class="conquest-wave-btn">开始波次</button>
                     <button id="conquest-menu-btn" class="conquest-menu-btn">菜单</button>
                     <button class="sound-toggle" data-sound-toggle type="button" aria-pressed="true" aria-label="音效开关" title="音效开关">音效 · 开</button>
+                    <button class="sound-toggle" data-bgm-toggle type="button" aria-pressed="true" aria-label="音乐开关" title="背景音乐开关">音乐 · 开</button>
                     <div class="conquest-rules">
                         <div class="rules-title">规则</div>
                         <div class="rules-text">外圈为敌人循环路径</div>

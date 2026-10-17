@@ -6,7 +6,7 @@
 
 项目使用普通同步 `<script src>`，没有 `defer`、`async` 或 `type="module"`。入口与主要加载阶段如下：
 
-1. **启动与页面装配**：`js/bootstrap/resource-loader.js`、`device-profile.js`、`viewport.js`、`page-markup.js`；随后加载独立音效模块 `js/audio.js`。
+1. **启动与页面装配**：`js/bootstrap/resource-loader.js`、`device-profile.js`、`viewport.js`、`page-markup.js`；随后按顺序加载音频模块 `js/audio.js`（核心）、`audio-cues.js`（短音效）、`audio-bgm.js`（背景音乐）、`audio-director.js`（场景导演）。
 2. **配置与普通关卡数据**：`js/config.js`、`js/config/domain-01.js`、`domain-02.js`、`domain-03.js`、`fusion.js`；随后加载 `utils.js`、`runtime.js`、`levelsData.js`、`js/data/levels/part-*.js` 和 `export.js`。
 3. **公共实体与系统**：先加载渲染/粒子、`tower.js` 及 `js/entities/towers/` 扩展、`enemy.js` 及 `js/entities/enemy/` 扩展，再加载对象池、关卡管理、融合系统和水墨动画。
 4. **UI 与普通模式**：先加载 `ui.js` 及 `js/ui/` 扩展，再加载 `game.js` 及 `js/core/` 扩展。
@@ -30,7 +30,7 @@
 | 普通关卡数据 | `js/levelsData.js`、`js/data/levels/` |
 | Game 编排 | `js/game.js`、`js/core/` |
 | Tower 与 Enemy | `js/tower.js`、`js/entities/towers/`、`js/enemy.js`、`js/entities/enemy/` |
-| 程序化音效 | `js/audio.js` |
+| 程序化音效与 BGM | `js/audio.js`、`js/audio-cues.js`、`js/audio-bgm.js`、`js/audio-director.js` |
 | UI | `js/ui.js`、`js/ui/` |
 | 征服模式 | `js/conquest*.js`、`js/modes/conquest/` |
 

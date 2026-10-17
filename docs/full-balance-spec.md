@@ -279,3 +279,10 @@
 - https://raw.githubusercontent.com/quiver-dev/tower-defense-godot4/refs/heads/main/entities/shooter.gd
 - https://raw.githubusercontent.com/zupanibla/tower-defense/master/src/game.js
 - https://raw.githubusercontent.com/zupanibla/tower-defense/master/src/update-game.js
+
+
+## 2026-10-17 更新说明
+
+- `npm run test:balance` 已改写为直接读取 `js/config/*` 的护栏测试（区间检查，失败时以非 0 退出），不再使用手抄 CONFIG，也不再逐项对照本文的历史目标值；本文中的 DPS 效率/TTK/效用分目标仅作历史参考。
+- 伤害结算已去除取整（`Enemy.takeDamage`），本文的线性 DPS 模型在此后才与实际一致。
+- 融合塔公式已调整，见 `docs/完成报告/2026-10-17-数值修复六七-AoE融合平衡.md`。

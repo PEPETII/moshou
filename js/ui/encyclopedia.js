@@ -234,7 +234,7 @@ UI.prototype.showTowerDetail = function(type, config) {
       statsHtml += this.createDetailStatRow("放置位置", "路径上");
     }
     if (config.unlockLevel) {
-      statsHtml += this.createDetailStatRow("解锁关卡", "第" + config.unlockLevel + "关");
+      statsHtml += this.createDetailStatRow("推荐关卡", "第" + config.unlockLevel + "关起");
     }
 
     statsEl.innerHTML = statsHtml;

@@ -37,6 +37,8 @@ class ConquestGame {
     // 使用关卡配置初始化游戏参数
     this.ink = this.levelConfig.startInk || 300;
     this.summonCost = this.levelConfig.summonCost || 80;
+    this.summonCostGrowth = this.levelConfig.summonCostGrowth || 0;
+    this.summonedCount = 0;
     this.maxWave = this.levelConfig.maxWave || 3;
     this.maxAliveEnemies = this.levelConfig.maxAliveEnemies || 50;
 

@@ -52,6 +52,7 @@
     if (!this._toastLog) this._toastLog = {};
     if (this._toastLog[message] && now - this._toastLog[message] < DEDUPE_WINDOW) return;
     this._toastLog[message] = now;
+    if (type === 'warning' && window.InkAudio) window.InkAudio.play('deny');
 
     const container = ensureContainer();
     const palette = STYLES[type] || STYLES.info;

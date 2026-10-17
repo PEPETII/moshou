@@ -56,27 +56,24 @@ Tower.prototype.updateProjectiles = function(deltaTime) {
             p.target.applyBurn(p.burnDuration, p.burnDamage || 0);
           }
           if (p.type === 'ice' && p.target.slowed) {
-            const towerConfig = CONFIG.TOWERS[this.type];
-            if (towerConfig && towerConfig.freezeDuration) {
-              p.target.applyFrozen(towerConfig.freezeDuration);
+            if (this.freezeDuration) {
+              p.target.applyFrozen(this.freezeDuration, this.freezeCooldown);
             }
           }
           if (p.type === 'poison' && p.target.applyPoison) {
-            const towerConfig = CONFIG.TOWERS[this.type];
-            if (towerConfig) {
-              p.target.applyPoison(towerConfig.poisonDamage, towerConfig.poisonDuration);
+            if (this.poisonDamage > 0) {
+              p.target.applyPoison(this.poisonDamage, this.poisonDuration, this.ulcerDuration, this.poisonStackMax);
             }
           }
           if (p.type === 'dark' && p.target.applyShadowMark) {
-            const towerConfig = CONFIG.TOWERS[this.type];
-            if (towerConfig) {
-              p.target.applyShadowMark(towerConfig.shadowMarkDuration);
+            if (this.shadowMarkDuration) {
+              p.target.applyShadowMark(this.shadowMarkDuration, this);
             }
           }
           if (p.type === 'wind') {
             const now = Date.now();
             if (p.target.path && p.target.pathIndex > 0) {
-              if (!p.target._lastKnockback || now - p.target._lastKnockback > 3000) {
+              if (!p.target._lastKnockback || now - p.target._lastKnockback > (this.knockbackCooldown || 3000)) {
                 p.target._lastKnockback = now;
                 p.target.pathIndex = Math.max(0, p.target.pathIndex - 1);
               }
@@ -110,17 +107,16 @@ Tower.prototype.updateProjectiles = function(deltaTime) {
             }
           }
           if (p.type === 'talisman' && p.target.applyMark) {
-            const towerConfig = CONFIG.TOWERS[this.type];
-            if (towerConfig) {
-              p.target.applyMark(towerConfig.markBonus, towerConfig.markDuration);
+            if (this.markBonus > 0) {
+              const markDuration = this.markDuration;
+              p.target.applyMark(this.markBonus, markDuration);
               this.currentMarkCount++;
-              setTimeout(() => { if (this.currentMarkCount > 0) this.currentMarkCount--; }, towerConfig.markDuration);
+              setTimeout(() => { if (this.currentMarkCount > 0) this.currentMarkCount--; }, markDuration);
             }
           }
           if (p.type === 'parasite' && p.target.applyParasite) {
-            const towerConfig = CONFIG.TOWERS[this.type];
-            if (towerConfig) {
-              p.target.applyParasite(towerConfig.parasiteDuration);
+            if (this.parasiteDuration) {
+              p.target.applyParasite(this.parasiteDuration, this.explosionDamage, this.explosionRange);
             }
           }
           this.releaseProjectile(i);

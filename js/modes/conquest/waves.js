@@ -1,12 +1,17 @@
 // ConquestGame：召唤、波次和胜负
+// 当前召唤费用：基础费用随已召唤数量递增，避免无限铺塔
+ConquestGame.prototype.getSummonCost = function() {
+    return Math.round(this.summonCost * (1 + (this.summonCostGrowth || 0) * (this.summonedCount || 0)));
+};
 ConquestGame.prototype.summonTower = function() {
     // 触屏没有 hover，只闪一下红屏无法说明失败原因，必须补一条文字提示
     if (this.gameEnded) return;
 
-    if (this.ink < this.summonCost) {
+    const cost = this.getSummonCost();
+    if (this.ink < cost) {
       this.summonFlashTime = Date.now();
       this.summonFlashType = "fail";
-      this._notify(`墨水不足，召唤需要 ${this.summonCost} 墨`, "warning");
+      this._notify(`墨水不足，召唤需要 ${cost} 墨`, "warning");
       return;
     }
 
@@ -21,7 +26,8 @@ ConquestGame.prototype.summonTower = function() {
     const towerTypes = ["fire", "water", "mountain", "wood", "gold", "earth", "xinZhongYan", "ruFengSiZhen"];
     const type = towerTypes[Math.floor(Math.random() * towerTypes.length)];
 
-    this.ink -= this.summonCost;
+    this.ink -= cost;
+    this.summonedCount = (this.summonedCount || 0) + 1;
 
     const tower = new Tower(type, pos.x, pos.y, this);
     if (tower.onPath) {
@@ -70,7 +76,7 @@ ConquestGame.prototype.startWave = function() {
     const config = waves[this.wave - 1];
     this.spawnQueue = [];
     for (let i = 0; i < config.count; i++) {
-      this.spawnQueue.push({ type: config.type, delay: 800 });
+      this.spawnQueue.push({ type: config.type, delay: config.delay || 800 });
     }
 
     this.spawnNextEnemy();
@@ -129,6 +135,7 @@ ConquestGame.prototype.checkWaveComplete = function() {
       } else {
         // 重置波次进行状态，允许开始下一波
         this.waveInProgress = false;
+        if (window.InkAudio) window.InkAudio.play('waveClear');
         // 自动开始下一波（间隔5秒）
         setTimeout(() => this.startWave(), 5000);
       }
@@ -227,7 +234,7 @@ ConquestGame.prototype.updateUI = function() {
     if (coreHpEl) coreHpEl.textContent = this.coreHp;
 
     const summonBtn = document.getElementById("conquest-summon-btn");
-    if (summonBtn) summonBtn.disabled = this.ink < this.summonCost || this.gameEnded;
+    if (summonBtn) summonBtn.disabled = this.ink < this.getSummonCost() || this.gameEnded;
 
     const waveBtn = document.getElementById("conquest-wave-btn");
     if (waveBtn) {

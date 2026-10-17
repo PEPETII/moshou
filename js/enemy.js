@@ -96,9 +96,11 @@ class Enemy {
     this.markEnd = 0;
 
     this.blocked = false;
+    this._blockAccum = 0;
     this.blockTarget = null;
 
     this.dead = false;
+    this._dying = false;
     this.deathTime = 0;
 
     // 晃动效果相关属性
@@ -240,6 +242,7 @@ class Enemy {
     if (this.burning && now > this.burnEnd) {
       this.burning = false;
       this.burnDamage = 0;
+      this.fireMarked = false;
     }
 
     // 燃烧伤害 - 每配置间隔造成一次伤害（免疫燃烧的敌人不受影响）
@@ -336,7 +339,7 @@ class Enemy {
       }
     }
 
-    if (!this.flying && this.checkBlocking()) {
+    if (!this.flying && this.checkBlocking(deltaTime)) {
       return;
     }
 

@@ -72,6 +72,8 @@ ConquestGame.prototype.startLevel = function(levelId) {
     // 使用新配置初始化
     this.ink = this.levelConfig.startInk || 300;
     this.summonCost = this.levelConfig.summonCost || 80;
+    this.summonCostGrowth = this.levelConfig.summonCostGrowth || 0;
+    this.summonedCount = 0;
     this.maxWave = this.levelConfig.maxWave || 3;
     this.maxAliveEnemies = this.levelConfig.maxAliveEnemies || 50;
     this.coreHp = this.levelConfig.coreHp || 20;
@@ -232,18 +234,11 @@ ConquestGame.prototype.sellTower = function(tower) {
     this.ink += tower.getSellValue();
     this.removeTower(tower);
     this.updateUI();
+    if (window.InkAudio) window.InkAudio.play('sell');
   
 };
 ConquestGame.prototype.triggerExplosion = function(x, y, damage, range) {
-    for (const enemy of this.enemies) {
-      if (enemy.dead) continue;
-      const dx = enemy.x - x;
-      const dy = enemy.y - y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist <= range * CONFIG.CELL_SIZE) {
-        enemy.takeDamage(damage);
-      }
-    }
+    // 征服模式的炮塔没有血量，敌人的死亡爆炸不再误伤同伴，仅保留特效
     this.particleSystem.createExplosion(x, y, damage * 5, "#ff6644");
   
 };

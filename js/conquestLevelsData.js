@@ -56,14 +56,13 @@ function generateWaves(themeId, levelIndex, maxWave) {
     2: ['swiftGhost', 'ghost', 'corpse', 'split'],      // 疾风：迅捷幽灵为主
     3: ['giant', 'superGiant', 'armor', 'ironArmor'],   // 熔岩：高血量敌人
     4: ['corpse', 'ghost', 'armor', 'split', 'giant', 'shadow'], // 寒冰：混合
-    5: ['corpse', 'ghost', 'armor', 'split', 'giant', 'superGiant', 'overlord', 'shadow', 'ironArmor', 'swiftGhost'] // 无尽：全部
+    5: ['corpse', 'ghost', 'armor', 'split', 'superGiant', 'overlord', 'giant', 'shadow', 'ironArmor', 'swiftGhost'] // 无尽：全部，末波为始终霸王
   };
   
   const availableTypes = enemyTypesByTheme[themeId];
   
   for (let waveIndex = 0; waveIndex < maxWave; waveIndex++) {
     const waveDifficulty = difficultyMultiplier + waveIndex * 2;
-    const enemyCount = Math.max(50, 5 + waveIndex * 5 + Math.floor(difficultyMultiplier / 2));
     const delay = Math.max(800 - waveIndex * 100 - difficultyMultiplier * 10, 300);
     
     // 根据波次选择敌人类型
@@ -73,6 +72,11 @@ function generateWaves(themeId, levelIndex, maxWave) {
       typeIndex = Math.min(waveIndex + 1, availableTypes.length - 1);
     }
     const enemyType = availableTypes[typeIndex] || availableTypes[0];
+    // 数量随关卡难度、波次递增；高生命敌人按 sqrt(40/hp) 折算，避免单波总生命失控
+    const enemyHp = (CONFIG.ENEMIES[enemyType] && CONFIG.ENEMIES[enemyType].hp) || 10;
+    const tierFactor = Math.min(1, Math.sqrt(40 / enemyHp));
+    const rawCount = 20 + 1.4 * (difficultyMultiplier - 1) + 5 * waveIndex;
+    const enemyCount = Math.max(3, Math.min(50, Math.round(rawCount * tierFactor)));
     
     waves.push({
       type: enemyType,
@@ -123,6 +127,7 @@ function generateLevel(themeId, levelIndex) {
     difficulty: difficulty,
     startInk: startInk,
     summonCost: summonCost,
+    summonCostGrowth: 0.04, // 每已召唤 1 座，下次召唤费用 +4%
     maxWave: maxWave,
     waves: waves,
     maxAliveEnemies: 50

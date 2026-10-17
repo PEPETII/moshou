@@ -1,29 +1,20 @@
 // Enemy：死亡、召唤与核心交互
 Enemy.prototype.die = function() {
+    if (this.dead) return;
     this.dead = true;
     this.deathTime = Date.now();
     this.game.ink += this.reward;
     this.game.updateUI();
 
     // 击杀时播放墨散音效并生成粒子。
-    if (window.InkAudio) window.InkAudio.play('death');
+    if (window.InkAudio) window.InkAudio.play('death', { variant: window.InkAudio.deathVariantOf(this) });
     this.game.particleSystem.createExplosion(this.x, this.y, 15);
 
     // 死亡爆炸
     if (this.explodeOnDeath) {
-      if (this.globalExplosion) {
-        // 全屏爆炸 - 对所有敌人造成伤害
-        const allEnemies = this.game.runtimeIndexes
-          ? this.game.runtimeIndexes.aliveEnemies
-          : this.game.enemies;
-        for (const enemy of allEnemies) {
-          if (enemy !== this && !enemy.dead) {
-            enemy.takeDamage(this.explodeDamage);
-          }
-        }
-      } else {
-        this.game.triggerExplosion(this.x, this.y, this.explodeDamage, this.explodeRange);
-      }
+      // 死亡爆炸伤害玩家的路径塔；globalExplosion 视为覆盖全图
+      const blastRange = this.globalExplosion ? 100 : this.explodeRange;
+      this.game.triggerExplosion(this.x, this.y, this.explodeDamage, blastRange);
     }
 
     if (this.split) {

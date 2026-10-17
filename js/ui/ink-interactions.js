@@ -37,6 +37,7 @@
     setModalScene(scene, letters = {}) {
       const modal = document.getElementById('modal');
       modal.dataset.scene = scene;
+      if (window.InkAudio && (scene === 'victory' || scene === 'defeat')) window.InkAudio.play(scene);
       document.getElementById('ritual-left').textContent = letters.left || '';
       document.getElementById('ritual-right').textContent = letters.right || '';
       document.getElementById('ritual-result').textContent = letters.result || '';

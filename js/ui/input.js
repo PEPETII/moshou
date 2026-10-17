@@ -350,6 +350,8 @@ UI.prototype.attemptFusion = function(tower1, tower2) {
 
 UI.prototype.showFusionConfirm = function(tower1, tower2, preview) {
     const canFuse = this.game.canFuse(tower1, tower2);
+    // 炮塔信息面板与合字弹窗同时显示会互相遮挡（手机窄屏尤其明显）
+    this.clearTowerSelection();
 
     let message = `将 ${tower1.char} 和 ${tower2.char} 融合成 ${preview.char}\n`;
     message += `效果: ${preview.desc}\n`;

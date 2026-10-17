@@ -5,6 +5,9 @@
  * 3. 追加同类型二阶段进化白名单配方。
  */
 (function buildFusionConfig() {
+  // 融合平衡系数：融合 DPS = 组件 DPS 之和 × dpsFactor（进化再 × evolutionBonus）
+  CONFIG.FUSION_BALANCE = { dpsFactor: 1.1, evolutionBonus: 1.15 };
+
   const PATH_COMPONENTS = new Set([
     'mountain', 'wall', 'bunker', 'moat', 'trap', 'arrow', 'palisade',
   ]);
@@ -113,6 +116,21 @@
     return bonus;
   }
 
+  // 一个周期内的总伤害（融合塔含动作数/重复/阶段倍率）
+  function cycleDamage(snap) {
+    if (!snap) return 0;
+    const sp = snap.skillParams;
+    if (!sp) return snap.damage || 0;
+    const base = CONFIG.TOWERS;
+    const dmgActions = (sp.actions || []).filter((a) => (base[a]?.damage || 0) > 0).length || 1;
+    return (snap.damage || 0) * dmgActions * (sp.repeat || 1) * (sp.damageMultiplier || 1);
+  }
+
+  function snapshotDps(snap) {
+    if (!snap || !snap.cooldown || snap.cooldown >= 900000) return 0;
+    return cycleDamage(snap) / (snap.cooldown / 1000);
+  }
+
   function resolveActions(components, desc) {
     const attackComponents = new Set([
       'fire', 'water', 'wood', 'gold', 'earth', 'thunder',
@@ -168,14 +186,24 @@
       cost = Math.round(cost * 1.20);
     }
 
-    const damage = round1((c1Damage + c2Damage) * 0.88 + skillFlatDamage);
-    const cooldown = clamp(Math.round(Math.min(c1Cooldown, c2Cooldown) * 0.92), 300, 2600);
+    const actions = (options && options.actions) || resolveActions(definition.components, definition.desc);
+    const repeat = (options && options.repeat) || 1;
+    const stageMultiplier = tier >= 2 ? 1.25 : 1;
+    const dmgActionCount = actions.filter((a) => (CONFIG.TOWERS[a]?.damage || 0) > 0).length || 1;
+    // 每周期总伤害 = 组件周期伤害之和 ×0.88 + 技能附加，平均分给有伤害的动作
+    const totalDamage = (cycleDamage(c1) + cycleDamage(c2)) * 0.88 + skillFlatDamage;
+    const damage = round1(totalDamage / (dmgActionCount * repeat));
+    const dpsSum = snapshotDps(c1) + snapshotDps(c2);
+    const bal = CONFIG.FUSION_BALANCE;
+    const targetFactor = bal.dpsFactor * (isEvolution ? bal.evolutionBonus : 1);
+    const cooldown = dpsSum > 0
+      ? clamp(Math.round((totalDamage * stageMultiplier) / (targetFactor * dpsSum) * 1000), 300, 2600)
+      : clamp(Math.round(Math.min(c1Cooldown, c2Cooldown) * 0.92), 300, 2600);
     const range = onPath ? round1(Math.max(c1Range, c2Range)) : round1(Math.max(c1Range, c2Range) + 0.4);
     const hp = onPath ? Math.round(c1Hp + c2Hp + 8) : 0;
 
     const color1 = CONFIG.COLORS[definition.components[0]] || CONFIG.COLORS.tower;
     const color2 = CONFIG.COLORS[definition.components[1]] || CONFIG.COLORS.tower;
-    const actions = resolveActions(definition.components, definition.desc);
     const extraAuras = resolveAuras(definition.components);
     const passive = definition.desc.includes('增益') || definition.desc.includes('双增益');
 
@@ -193,7 +221,7 @@
       skillId: `fusion_${definition.key.replace(/\+/g, '_')}`,
       skillParams: {
         actions,
-        damageMultiplier: tier >= 2 ? 1.25 : 1,
+        damageMultiplier: stageMultiplier,
         extraAuras,
         passive,
       },
@@ -229,6 +257,7 @@
     const baseTower = CONFIG.TOWERS[evo.base];
     if (!source || !baseTower) continue;
 
+    const evoActions = Array.from(new Set([...(source.skillParams?.actions || []), evo.base]));
     const evolved = buildRecipe({
       key,
       name: evo.char,
@@ -238,6 +267,8 @@
       isEvolution: true,
       evolutionFrom: evo.from,
       evolutionBase: evo.base,
+      actions: evoActions,
+      repeat: 2,
     });
 
     if (evolved) {

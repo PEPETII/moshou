@@ -2,7 +2,7 @@
 Tower.prototype.attack = function(target, now) {
     this.lastAttack = now;
     this.triggerAttackAnimation(now);
-    if (window.InkAudio) window.InkAudio.play('attack');
+    if (window.InkAudio) window.InkAudio.play('attack', { family: window.InkAudio.familyOf(this) });
 
     if (this.type === "fire") {
       this.addProjectile({
@@ -114,7 +114,7 @@ Tower.prototype.pierceAttack = function(target) {
   
 };
 Tower.prototype.aoeAttack = function(target) {
-    const rangePx = this.range * CONFIG.CELL_SIZE;
+    const rangePx = this.aoeRange * CONFIG.CELL_SIZE;
 
     // 添加冲击波效果
     this.shockwaves.push({
@@ -270,7 +270,7 @@ Tower.prototype.lightAttack = function(target) {
 
     this.beamEffects.push({
       startX: this.x, startY: this.y, angle: angle,
-      length: this.range * CONFIG.CELL_SIZE,
+      length: this.getEffectiveRange() * CONFIG.CELL_SIZE,
       lifespan: 300, maxLifespan: 300, startTime: Date.now()
     });
 
@@ -392,6 +392,10 @@ Tower.prototype.checkTrapTrigger = function() {
     for (const enemy of this.getAliveEnemies()) {
       if (enemy.hp <= 0 || enemy.flying) continue;
       if (distanceSq(this.x, this.y, enemy.x, enemy.y) < triggerRangeSq) {
+        // 每个敌人只触发同一陷阱一次，触发次数分配给不同敌人
+        if (!enemy._trapHits) enemy._trapHits = new Set();
+        if (enemy._trapHits.has(this)) continue;
+        enemy._trapHits.add(this);
         enemy.takeDamage(this.damage);
         enemy.applyStun(this.stunDuration);
         this.triggerCount--;
@@ -405,13 +409,14 @@ Tower.prototype.checkTrapTrigger = function() {
     }
   
 };
-Tower.prototype.checkMoatEffect = function() {
+Tower.prototype.checkMoatEffect = function(deltaTime = 0) {
     const triggerRangeSq = (CONFIG.CELL_SIZE * 0.8) ** 2;
     for (const enemy of this.getAliveEnemies()) {
       if (enemy.hp <= 0 || enemy.flying) continue;
       if (distanceSq(this.x, this.y, enemy.x, enemy.y) < triggerRangeSq) {
         enemy.applySlow(this.slow, this.slowDuration);
-        enemy.takeDamage(this.damage);
+        // damage 为每秒伤害，按 dt 结算，避免每帧叠加
+        enemy.takeDamage(this.damage * deltaTime / 1000);
       }
     }
   

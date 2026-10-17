@@ -388,5 +388,6 @@ Object.assign(CONFIG, {
     attackAnimDuration: 200,      // 攻击动画持续时间(ms)
     shakeDuration: 150,           // 震动动画持续时间(ms)
     longPressDelay: 500,          // 长按阈值(ms)
+    blockAttackInterval: 800,     // 敌人攻击路径阻挡塔的间隔(ms)
   },
 });
