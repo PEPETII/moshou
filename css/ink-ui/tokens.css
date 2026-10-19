@@ -1,0 +1,109 @@
+/* 水墨设计令牌：全游戏颜色、字号、间距、字体的唯一来源
+ * 工单：docs/工单计划/2026-10-19-P1-水墨设计令牌与组件.md
+ * 规则：组件样式只引用这里的变量，不写裸色值和像素字号（npm run check:tokens 统计违规）。
+ * 战场色调与 js/config/domain-03.js 的 CONFIG.COLORS 保持一致。 */
+
+/* ZCOOL XiaoWei 的「回」(U+56DE) 字形是实心方块（13–24px 实测均如此）。
+ * 只为这一个码位借用本机宋体/黑体；本机都没有时整条被跳过，退回原字体，不比现状更差。 */
+@font-face {
+  font-family: "Ink Glyph Fix";
+  src: local("Noto Serif CJK SC"), local("Noto Serif SC"), local("Source Han Serif SC"),
+       local("Songti SC"), local("STSong"), local("SimSun"),
+       local("Noto Sans CJK SC"), local("PingFang SC"), local("Microsoft YaHei"),
+       local("Droid Sans Fallback");
+  unicode-range: U+56DE;
+}
+
+:root {
+  /* ── 纸：底 / 面板 / 凹陷与选中 ── */
+  --paper-0: #f4efe4;
+  --paper-1: #ece5d6;
+  --paper-2: #e2d9c6;
+  --paper-veil: rgba(244, 239, 228, 0.92);   /* 叠在地图上的半透明纸 */
+  --paper-veil-light: rgba(244, 239, 228, 0.72); /* 战场 HUD：更透，第 0 行敌人透得出来（P6） */
+
+  /* ── 五墨：焦 浓 重 淡 清 ── */
+  --ink-jiao: #1c1a17;
+  --ink-nong: #3a352e;
+  --ink-zhong: #6a6459;
+  --ink-dan: #9b9386;
+  --ink-qing: rgba(28, 26, 23, 0.08);
+  --ink-press: rgba(28, 26, 23, 0.16);      /* 按下时的墨色 */
+  --ink-line: #ded5c0;                        /* 网格与淡分隔 */
+  --veil-ink: rgba(28, 26, 23, 0.34);        /* 弹层遮罩 */
+
+  /* ── 点缀：朱印只用于主行动、选中与火 ── */
+  --seal: #b4473a;
+  --seal-deep: #7d342c;
+  --tint-water: #5f7884;   /* 青灰：水塔卡、水相关数值 */
+  --tint-fire: var(--seal); /* 朱红：火塔卡、选中印章 */
+  --tint-ochre: #a88a62;   /* 淡赭：尸的计数与敌人晕影 */
+
+  /* ── 字体 ── */
+  --font-brush: "Ma Shan Zheng", "Ink Glyph Fix", "ZCOOL XiaoWei", "KaiTi", "STKaiti", serif;
+  --font-text: "Ink Glyph Fix", "ZCOOL XiaoWei", serif;
+
+  /* ── 字号六档（px，未乘 ui-scale） ── */
+  --fs-xs: 12px;
+  --fs-s: 14px;
+  --fs-m: 16px;
+  --fs-l: 22px;
+  --fs-xl: 32px;
+  --fs-hero: 48px;
+
+  /* ── 战场字号（画布逻辑 px）：用在缩放容器内，渲染尺寸 = 值 × --ui-scale ── */
+  --bfs-xs: 13px;
+  --bfs-s: 15px;
+  --bfs-m: 17px;
+  --bfs-l: 22px;
+  --bfs-xl: 26px;
+  --bfs-2xl: 30px;
+
+  /* ── 间距 ── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+
+  /* ── 共享纸纹（P6）：由 js/ui/paper-texture.js 用地图同一算法生成后覆盖；生成前 / 失败时为 none ── */
+  --tex-paper-fiber: none;
+  --tex-scroll-foot: none;
+  --paper-tile: 320px;
+
+  /* ── 尺寸与动效 ── */
+  --touch-min: 44px;
+  --page-bar-h: 44px;
+  --page-gutter: max(var(--sp-6), calc(var(--sal, 0px) + var(--sp-3)));
+  --page-gutter-r: max(var(--sp-6), calc(var(--sar, 0px) + var(--sp-3)));
+  --dur-fast: 160ms;
+  --dur-page: 280ms;
+  --ease-ink: cubic-bezier(.2, .7, .2, 1);
+
+  /* ── 旧名别名（现有样式仍在使用，P7 清理后删除） ── */
+  --ink-paper: var(--paper-0);
+  --ink-shadow-paper: #e8e1d2;
+  --ink-grid: var(--ink-line);
+  --ink-strong: var(--ink-jiao);
+  --ink-soft: var(--ink-zhong);
+  --ink-faint: var(--ink-dan);
+  --ink-seal: var(--seal);
+  --ink-seal-dark: var(--seal-deep);
+  /* 战场水墨色调（工单 2026-10-19）：淡墨底 */
+  --ink-wash: rgba(28, 26, 23, 0.06);
+  --ink-wash-strong: rgba(28, 26, 23, 0.11);
+}
+
+/* 大屏（桌面浏览器）：字号整体上调一档；手机横屏仍用上面的基准档 */
+@media (min-width: 1100px) and (min-height: 640px) {
+  :root {
+    --fs-xs: 13px;
+    --fs-s: 15px;
+    --fs-m: 18px;
+    --fs-l: 26px;
+    --fs-xl: 38px;
+    --fs-hero: 60px;
+    --page-bar-h: 56px;
+  }
+}

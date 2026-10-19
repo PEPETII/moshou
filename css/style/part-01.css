@@ -22,7 +22,7 @@
 html, body {
   background: #e7e1d2;
   color: #1c1a17;
-  font-family: "Ma Shan Zheng", "ZCOOL XiaoWei", "Microsoft YaHei", serif;
+  font-family: var(--font-brush);
   width: 100%;
   height: 100%;
   margin: 0;
@@ -35,41 +35,9 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
-#main-container {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-}
-
 /* 游戏容器 */
-#game-container {
-  width: 960px;
-  background: #e7e1d2;
-  border: 2px solid #ded5c0;
-  box-shadow:
-    0 0 30px rgba(0,0,0,0.6),
-    inset 0 0 60px rgba(0,0,0,0.3);
-}
 
 /* 顶部状态栏 */
-#top-bar {
-  display: flex;
-  justify-content: space-between;
-  padding: 14px 24px;
-  background: #e0d9c9;
-  border-bottom: 1px solid #ded5c0;
-  position: relative;
-}
-
-#top-bar::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 5%;
-  right: 5%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #d0c6b0, transparent);
-}
 
 .stat {
   display: flex;
@@ -80,13 +48,13 @@ html, body {
 .stat .label {
   color: #6a6459;
   font-size: 14px;
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-text);
 }
 
 .stat .value {
   font-size: 20px;
   font-weight: normal;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--font-brush);
 }
 
 #ink {
@@ -103,44 +71,8 @@ html, body {
 }
 
 /* 游戏区域 */
-#game-area {
-  width: 960px;
-  height: 432px;
-  position: relative;
-  background: #e7e1d2;
-}
-
-#game-canvas {
-  width: 100%;
-  height: 100%;
-}
 
 /* 底部炮塔选择栏 */
-#bottom-bar {
-  display: flex;
-  justify-content: flex-start;
-  gap: 12px;
-  padding: 8px 18px;
-  background: #e0d9c9;
-  border-top: 1px solid #ded5c0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: #b8ac91 #f4efe4;
-}
-
-#bottom-bar::-webkit-scrollbar {
-  height: 4px;
-}
-
-#bottom-bar::-webkit-scrollbar-track {
-  background: #f4efe4;
-}
-
-#bottom-bar::-webkit-scrollbar-thumb {
-  background: #b8ac91;
-  border-radius: 2px;
-}
 
 /* 炮塔选择项样式 */
 .tower-select {
@@ -203,7 +135,7 @@ html, body {
 
 .tower-char {
   font-size: 32px;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--font-brush);
   line-height: 1;
   color: #1c1a17;
 }
@@ -212,122 +144,14 @@ html, body {
   font-size: 13px;
   color: #6a6459;
   margin-top: 6px;
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-text);
 }
 
 /* 开始波次按钮区域 */
-#wave-btn {
-  padding: 14px;
-  text-align: center;
-  background: #e0d9c9;
-  position: relative;
-}
-
-#wave-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #d0c6b0, transparent);
-}
 
 /* 模态框样式 */
-#modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.85);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: var(--z-modal);
-}
-
-#modal.hidden {
-  display: none;
-}
-
-#modal-content {
-  background: #e0d9c9;
-  padding: 48px;
-  text-align: center;
-  border: 2px solid #cabfa6;
-  box-shadow:
-    0 0 40px rgba(0,0,0,0.6),
-    0 0 80px rgba(0,0,0,0.3);
-  position: relative;
-  max-width: 400px;
-}
-
-#modal-content::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: 20%;
-  right: 20%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #6a6459, transparent);
-}
-
-#modal-title {
-  font-size: 36px;
-  margin-bottom: 24px;
-  font-family: "Ma Shan Zheng", cursive;
-  color: #1c1a17;
-  letter-spacing: 4px;
-}
-
-#modal-text {
-  font-size: 16px;
-  color: #6a6459;
-  margin-bottom: 32px;
-  line-height: 1.6;
-  font-family: "ZCOOL XiaoWei", serif;
-}
-
-#modal-btn {
-  padding: 12px 36px;
-  min-height: 44px;
-  font-size: 16px;
-  background: #f4efe4;
-  border: 2px solid #b8ac91;
-  color: #3d382f;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-family: "Ma Shan Zheng", cursive;
-  letter-spacing: 2px;
-}
 
 /* 征服模式胜利弹窗动态创建的第二个操作按钮 */
-#modal-return-btn {
-  min-height: 44px;
-  margin-top: 12px;
-  padding: 12px 36px;
-  font-size: 16px;
-  background: #f4efe4;
-  border: 2px solid #b8ac91;
-  color: #6a6459;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-family: "Ma Shan Zheng", cursive;
-  letter-spacing: 2px;
-}
-
-#modal-return-btn:hover {
-  background: #ded5c0;
-  border-color: #6a6459;
-  color: #1c1a17;
-}
-
-#modal-btn:hover {
-  background: #ded5c0;
-  border-color: #6a6459;
-  color: #1c1a17;
-}
 
 /* 炮塔信息面板 */
 #tower-info {
@@ -357,14 +181,14 @@ html, body {
 
 .info-char {
   font-size: 28px;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--font-brush);
   color: #1c1a17;
 }
 
 .info-desc {
   color: #6a6459;
   font-size: 14px;
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-text);
 }
 
 .info-stats {
@@ -372,7 +196,7 @@ html, body {
   line-height: 2;
   margin-bottom: 14px;
   color: #8a8377;
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-text);
 }
 
 .info-actions {
@@ -389,7 +213,7 @@ html, body {
   color: #8a8377;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--font-brush);
 }
 
 .info-actions button:hover {
@@ -407,62 +231,6 @@ html, body {
 }
 
 /* 音效控制按钮 */
-.sound-control {
-  margin-left: 10px;
-}
-
-#sound-toggle,
-.sound-toggle {
-  background: #f4efe4;
-  border: 1px solid #b8ac91;
-  color: #3d382f;
-  padding: 6px 10px;
-  cursor: pointer;
-  border-radius: 4px;
-  font-size: 18px;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#sound-toggle:hover,
-.sound-toggle:hover {
-  background: #d0c6b0;
-  border-color: #6a6459;
-}
-
-#sound-toggle:active,
-.sound-toggle:active {
-  transform: scale(0.95);
-}
 
 /* 关卡选择面板 */
-#level-panel {
-  width: 180px;
-  background: #e0d9c9;
-  border: 2px solid #d0c6b0;
-  padding: 20px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow:
-    0 0 20px rgba(0,0,0,0.5),
-    inset 0 1px 0 rgba(28, 26, 23, 0.05);
-  position: relative;
-}
 
-#level-panel::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 10%;
-  right: 10%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #b8ac91, transparent);
-}
-
-#level-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}

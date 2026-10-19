@@ -24,7 +24,7 @@ async function overflowReport(page) {
     for (const el of document.querySelectorAll('body *')) {
       const cs = getComputedStyle(el);
       if (cs.display === 'none' || cs.visibility === 'hidden') continue;
-      if (!el.matches('button, [id$="-container"], .detail-content, .modal-content, #modal > *, .toast, .ink-toast')) continue;
+      if (!el.matches('button, [id$="-container"], .codex-detail, .modal-content, #modal > *, .toast, .ink-toast')) continue;
       let hidden = false;
       for (let p = el; p; p = p.parentElement) { if (getComputedStyle(p).display === 'none') { hidden = true; break; } }
       if (hidden) continue;
@@ -58,17 +58,17 @@ async function overflowReport(page) {
     await tapSel(page, '#btn-encyclopedia'); await shot('03-dex');
     await tapSel(page, '#btn-tower-encyclopedia', 900); await shot('04-dex-towers');
     await tapSel(page, '#tower-encyclopedia-grid > *', 700); await shot('05-dex-tower-detail');
-    await tapSel(page, '#close-tower-detail'); await tapSel(page, '#back-to-encyclopedia-from-towers');
+    await tapSel(page, '#back-to-encyclopedia-from-towers');
     await tapSel(page, '#btn-enemy-encyclopedia', 900); await shot('06-dex-enemies');
     await tapSel(page, '#enemy-encyclopedia-grid > *', 700); await shot('07-dex-enemy-detail');
-    await tapSel(page, '#close-enemy-detail'); await tapSel(page, '#back-to-encyclopedia-from-enemies');
+    await tapSel(page, '#back-to-encyclopedia-from-enemies');
     await tapSel(page, '#back-to-menu-from-encyclopedia');
   });
   // 「自定」入口自 2026-10-19 起隐藏，不再截图
   await step('征服选主题', async () => { await tapSel(page, '#btn-conquest', 900); await shot('11-conquest-theme'); });
-  await step('征服选关', async () => { await tapSel(page, '.conquest-theme-card', 900); await shot('12-conquest-levels'); });
+  await step('征服选关', async () => { await tapSel(page, '#cq-theme-shelf .scroll-theme', 900); await shot('12-conquest-levels'); });
   await step('征服战斗', async () => {
-    await tapSel(page, '.conquest-level-item', 900);
+    await tapSel(page, '#cq-level-scroll .scroll-node', 300); await tapSel(page, '#conquest-enter-level', 900);
     await tapSel(page, '#density-picker-ok', 600);   // 开局前的敌潮选择，默认「潮」
     await page.waitForTimeout(800);
     await page.evaluate(() => { const g = window.conquestGame; g.ink = 900; g.updateUI(); });

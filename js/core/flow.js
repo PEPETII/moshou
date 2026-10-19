@@ -17,42 +17,34 @@ Game.prototype.gameOver = function(victory) {
       if (hpPercent >= 0.8) stars = 3;
       else if (hpPercent >= 0.5) stars = 2;
 
-      // 判断是否有下一关
-      const hasNextLevel = levelManager.hasNext(this.currentLevel);
-
-      // 如果是从征服模式进入，显示返回关卡选择按钮
-      const isConquestMode = this.ui.currentConquestThemeId !== null;
-
-      let buttonText, onClick;
-      if (isConquestMode) {
-        buttonText = "关卡选择";
-        onClick = () => this.returnToLevelSelect();
-      } else if (hasNextLevel) {
-        buttonText = "下一关";
-        onClick = () => this.nextLevel();
+      // 按钮组（P5）：最右为朱红主按钮
+      const actions = [{ label: "重来", onClick: () => this.restartLevel() }];
+      if (levelManager.hasNext(this.currentLevel)) {
+        actions.push({ label: "选关", onClick: () => this.returnToLevelSelect() });
+        actions.push({ label: "下一关", primary: true, onClick: () => this.nextLevel() });
       } else {
-        buttonText = "菜单";
-        onClick = () => this.returnToMenu();
+        actions.push({ label: "主菜单", onClick: () => this.returnToMenu() });
+        actions.push({ label: "选关", primary: true, onClick: () => this.returnToLevelSelect() });
       }
 
-      this.ui.showModal(
-        "胜",
-        `守境已成 · 第 ${this.currentLevel} 境\n星级: ${"★".repeat(stars)}${"☆".repeat(3 - stars)}\n赏墨: ${reward}`,
-        buttonText,
-        onClick
-      );
+      InkModal.show({
+        scene: "victory",
+        title: "胜",
+        lines: [`守境已成 · 第 ${this.currentLevel} 境`, `赏墨 ${reward}`],
+        stars,
+        actions,
+      });
     } else {
-      // 失败时，如果是征服模式则返回关卡选择
-      const isConquestMode = this.ui.currentConquestThemeId !== null;
-      const buttonText = isConquestMode ? "关卡选择" : "菜单";
-      const onClick = isConquestMode ? () => this.returnToLevelSelect() : () => this.returnToMenu();
-      
-      this.ui.showModal(
-        "破",
-        `守印已裂 · 第 ${this.currentLevel} 境`,
-        buttonText,
-        onClick
-      );
+      InkModal.show({
+        scene: "defeat",
+        title: "破",
+        lines: [`守印已裂 · 第 ${this.currentLevel} 境`],
+        actions: [
+          { label: "主菜单", onClick: () => this.returnToMenu() },
+          { label: "选关", onClick: () => this.returnToLevelSelect() },
+          { label: "重来", primary: true, onClick: () => this.restartLevel() },
+        ],
+      });
     }
   
 };
@@ -178,13 +170,19 @@ Game.prototype.returnToMenu = function() {
     this.stop();
     this.gameStarted = false;
 
-    // 清理 UI 事件监听器
+    // 清理本局的 UI 事件监听器。destroy 会连菜单按钮的监听一并移除，
+    // 必须立即重新绑定，否则回到菜单后所有按钮失灵（P3 修复）。
     if (this.ui && this.ui.destroy) {
       this.ui.destroy();
+      this.ui.setupMenuEventListeners();
+      this.ui.setupEventListeners();
+      UI._eventsBound = true;
     }
 
     document.getElementById("main-container").classList.add("hidden");
     document.getElementById("main-menu").classList.remove("hidden");
+    // 「返回主菜单」回到首页，而不是停留在开局前的选关页
+    if (this.ui && this.ui.returnToMainMenu) this.ui.returnToMainMenu();
 
     if (this.menuInkBg) this.menuInkBg.start();
 

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>水墨组件样张</title>
+  <!-- P1 组件样张：只加载令牌、纹理、骨架与组件，验证它们独立可用；后续批次以此为参考 -->
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/ink-ui/tokens.css">
+  <link rel="stylesheet" href="../../css/ink-ui/ink-texture.css">
+  <link rel="stylesheet" href="../../css/ink-ui/layout.css">
+  <link rel="stylesheet" href="../../css/ink-ui/components.css">
+  <style>
+    :root {
+      --sat: env(safe-area-inset-top, 0px);
+      --sar: env(safe-area-inset-right, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+    }
+    body { margin: 0; background: var(--paper-0); }
+    .row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-4); }
+    .list { display: flex; flex-direction: column; }
+    .item-text { display: flex; flex-direction: column; gap: 2px; }
+    .item-name { font-size: var(--fs-m); }
+    .item-note { color: var(--ink-zhong); font-size: var(--fs-xs); }
+    .item-tag { margin-left: auto; color: var(--ink-zhong); font-size: var(--fs-xs); }
+  </style>
+</head>
+<body>
+  <section class="ink-page">
+    <header class="ink-page__bar">
+      <button class="ink-back" type="button">图鉴</button>
+      <h2 class="ink-page__title">炮塔志</h2>
+      <div class="ink-page__aside">已录 2 / 2</div>
+    </header>
+    <div class="ink-page__body ink-page__body--fill">
+      <div class="ink-split">
+        <div class="list" role="listbox" aria-label="炮塔">
+          <button class="ink-item is-selected" type="button" role="option" aria-selected="true">
+            <span class="ink-chip ink-chip--fire">火</span>
+            <span class="item-text"><span class="item-name">火 · 炎矢</span><span class="item-note">点射成燎，大招焚原</span></span>
+            <span class="item-tag">120 墨</span>
+          </button>
+          <button class="ink-item" type="button" role="option" aria-selected="false">
+            <span class="ink-chip ink-chip--water">水</span>
+            <span class="item-text"><span class="item-name">水 · 潮汐</span><span class="item-note">贯穿减速，大招倒卷</span></span>
+            <span class="item-tag">100 墨</span>
+          </button>
+          <hr class="ink-divider">
+          <div class="row">
+            <button class="ink-btn" type="button">返回</button>
+            <button class="ink-btn ink-btn--ghost" type="button">重来</button>
+            <button class="ink-btn ink-btn--primary" type="button">入境</button>
+          </div>
+          <div class="row">
+            <button class="ink-switch" type="button" role="switch" aria-checked="true">墨迹动效<span class="ink-switch__seal">开</span></button>
+            <button class="ink-switch" type="button" role="switch" aria-checked="false">震动<span class="ink-switch__seal">关</span></button>
+          </div>
+        </div>
+        <div class="ink-panel">
+          <h3 class="ink-panel__title">火 · 五行</h3>
+          <div class="ink-stat"><span class="ink-stat__label">射程</span><span class="ink-stat__value">2.5<span class="ink-stat__unit">格</span></span></div>
+          <div class="ink-stat"><span class="ink-stat__label">造价</span><span class="ink-stat__value ink-stat__value--seal">120<span class="ink-stat__unit">墨</span></span></div>
+          <div class="ink-stat"><span class="ink-stat__label">回响</span><span class="ink-stat__value">「回」字检查</span></div>
+          <div class="ink-empty"><span class="ink-empty__mark">笔</span>轻点左侧一字，观其笔意</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <script>
+    // 样张交互：列表选中与开关切换（仅演示组件状态）
+    document.querySelectorAll('.ink-item').forEach((item) => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.ink-item').forEach((other) => {
+          const on = other === item;
+          other.classList.toggle('is-selected', on);
+          other.setAttribute('aria-selected', String(on));
+        });
+      });
+    });
+    document.querySelectorAll('.ink-switch').forEach((sw) => {
+      sw.addEventListener('click', () => {
+        const on = sw.getAttribute('aria-checked') !== 'true';
+        sw.setAttribute('aria-checked', String(on));
+        sw.querySelector('.ink-switch__seal').textContent = on ? '开' : '关';
+      });
+    });
+  </script>
+</body>
+</html>

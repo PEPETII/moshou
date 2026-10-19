@@ -33,7 +33,7 @@
 
 .custom-title {
   font-size: 48px;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--font-brush);
   color: #1c1a17;
   margin-bottom: 50px;
   letter-spacing: 8px;
@@ -87,7 +87,7 @@
 .custom-card .custom-card-name {
   font-size: 28px;
   color: #1c1a17;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--font-brush);
   margin-bottom: 12px;
   letter-spacing: 4px;
 }
@@ -95,7 +95,7 @@
 .custom-card .custom-card-desc {
   font-size: 14px;
   color: #6a6459;
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-text);
   line-height: 1.6;
 }
 
@@ -107,7 +107,7 @@
   border: 1px solid #b8ac91;
   color: #6a6459;
   cursor: pointer;
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-text);
   transition: all 0.3s;
 }
 
@@ -149,7 +149,7 @@
 .custom-sub-title {
   font-size: 36px;
   color: #1c1a17;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--font-brush);
   letter-spacing: 6px;
 }
 
@@ -176,7 +176,7 @@
 .custom-placeholder .placeholder-text {
   font-size: 24px;
   color: #1c1a17;
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--font-brush);
   margin-bottom: 12px;
   letter-spacing: 4px;
 }
@@ -184,7 +184,7 @@
 .custom-placeholder .placeholder-desc {
   font-size: 14px;
   color: #6a6459;
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-text);
   text-align: center;
 }
 
@@ -198,7 +198,7 @@
   border: 1px solid #b8ac91;
   color: #6a6459;
   cursor: pointer;
-  font-family: "ZCOOL XiaoWei", serif;
+  font-family: var(--font-text);
   transition: all 0.3s;
 }
 

@@ -68,7 +68,7 @@ ConquestGame.prototype.startLevel = function(levelId) {
     );
 
     // 开局镜头对准左侧
-    if (this.camera) this.camera.jumpTo(0);
+    if (this.camera) this.camera.jumpTo(this.camera.minX);
 
     // 重新设置UI事件监听（如果之前被destroy清理过）
     if (!this._uiEventsActive) {

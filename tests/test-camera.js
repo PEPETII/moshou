@@ -209,6 +209,32 @@ function testPanAndInput() {
   assert.strictEqual(cam.targetX, x0, 'unbindInput 解除全部监听');
 }
 
+// P4：卡槽 / 竖条叠在画布边缘时，镜头在该侧多留同宽余量，边缘自动滚动以可见区为准
+function testCameraInsets() {
+  const h = build();
+  h.context.__canvas = h.canvas;
+  const td = vm.runInContext('new Camera({ canvas: __canvas, worldW: 1872, insetRight: 84 })', h.context);
+  assert.strictEqual(td.minX, 0);
+  assert.strictEqual(td.maxX, 912 + 84, '右侧卡槽：最右可多滚 84，核心列露出在卡槽左侧');
+  const cq = vm.runInContext('new Camera({ canvas: __canvas, worldW: 1584, insetLeft: 84 })', h.context);
+  assert.strictEqual(cq.minX, -84, '左侧竖条：最左可滚到 -84');
+  cq.jumpTo(cq.minX);
+  assert.strictEqual(cq.screenToWorld(84), 0, '开局时世界第 0 列紧贴竖条右缘');
+
+  let drag = null;
+  h.context.__drag = () => drag;
+  const edge = vm.runInContext(
+    'new Camera({ canvas: __canvas, worldW: 1872, insetRight: 84, getDragPoint: __drag })', h.context);
+  edge.jumpTo(400);
+  edge.update(h.tick(1000));
+  drag = { clientX: 100 + 960 - 10, clientY: 200 }; // 指针在卡槽上（刚拿起卡）
+  for (let i = 1; i <= 10; i++) edge.update(h.tick(1000 + i * 16));
+  assert.strictEqual(edge.targetX, 400, '指针在卡槽上不触发边缘滚动');
+  drag = { clientX: 100 + 960 - 84 - 10, clientY: 200 }; // 卡槽左侧 10px
+  for (let i = 1; i <= 10; i++) edge.update(h.tick(2000 + i * 16));
+  assert.ok(edge.targetX > 400, '拖到卡槽左缘 → 向右滚动');
+}
+
 function testLevels() {
   const context = vm.createContext({ console, Math, Number, Map, Set, Array, Object, window: {}, document: {} });
   for (const f of ['js/config.js', 'js/config/domain-01.js', 'js/levelsData.js', 'js/data/levels/part-01.js']) {
@@ -259,6 +285,7 @@ testConfig();
 testCameraBasics();
 testGridFromEvent();
 testPanAndInput();
+testCameraInsets();
 testLevels();
 testConquestRing();
 console.log('镜头与网格测试通过：配置、镜头夹取/平滑、左中右命中、滚轮/键盘/拖拽/边缘滚动、关卡路径结构、征服环形回路尺寸');

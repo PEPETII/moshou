@@ -11,6 +11,11 @@ Object.assign(CONFIG, {
   CONQUEST_COLS: 22,    // 征服世界宽 22 × 72 = 1584px
   VIEW_W: 960,          // 视口（画布）宽
   VIEW_H: 432,          // 视口（画布）高 = GRID_ROWS × CELL_SIZE
+  // 战斗横屏布局（P4）：塔防卡槽叠在画布右缘、征服竖条叠在左缘的宽度（画布逻辑 px）。
+  // 镜头据此在对应一侧多留同宽的滚动余量，保证被遮住的格子能滚出来。
+  BATTLE_DOCK_W: 84,
+  // 征服格位交点十字的单臂长（逻辑 px，P6）
+  CONQUEST_GRID_MARK: 7,
   // 镜头参数
   CAMERA: {
     SMOOTH: 14,         // 平滑系数（越大越跟手）
@@ -26,9 +31,14 @@ Object.assign(CONFIG, {
   // 字体族名含空格时必须加引号，否则整条 font 字符串会被浏览器判为非法而静默沿用上一次的值。
   FONTS: {
     // 标题/艺术字：书法字体，用于炮塔字符、UI 大标题
-    BRUSH: "'Ma Shan Zheng', 'ZCOOL XiaoWei', 'KaiTi', 'STKaiti', serif",
+    BRUSH: "'Ma Shan Zheng', 'Ink Glyph Fix', 'ZCOOL XiaoWei', 'KaiTi', 'STKaiti', serif",
     // 正文/标签/数值：可读性优先，用于 HP、Lv、说明文字
     // 原代码用 cursive 兜底是无效的——cursive 是拉丁通用族名，不含 CJK 字形。
-    TEXT: "'ZCOOL XiaoWei', 'Microsoft YaHei', serif",
+    TEXT: "'Ink Glyph Fix', 'ZCOOL XiaoWei', 'Microsoft YaHei', serif",
   },
 });
+
+// 卡槽宽度同步给 CSS（battle-layout.css 读 --battle-dock-w），布局与镜头余量只此一处定义
+if (typeof document !== 'undefined' && document.documentElement) {
+  document.documentElement.style.setProperty('--battle-dock-w', CONFIG.BATTLE_DOCK_W + 'px');
+}

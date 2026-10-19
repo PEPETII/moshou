@@ -5,8 +5,9 @@
 // 浏览器就会发 pointercancel，放置拖拽直接中断（实测向右上拖卡会失败）。
 //
 // 现在塔卡 touch-action: none，由这里自行判定起手方向：
-//   - 偏横（|dx| > 1.5·|dy|）→ 手动滚动底栏，松手带惯性；
-//   - 其余（向上、斜向）→ 开始放置拖拽，后续交给 setupPlacementDragEvents。
+//   - 沿塔栏排布方向（|主轴| > 1.5·|副轴|）→ 手动滚动塔栏，松手带惯性；
+//   - 其余 → 开始放置拖拽，后续交给 setupPlacementDragEvents。
+// 塔栏排布方向随布局而定（P4 起为画布右缘的竖排卡槽：竖滑滚动、向左拖出放置）。
 // 鼠标/触控笔不经过这里，仍然按下即开始拖拽。
 (function initCardGesture() {
   'use strict';
@@ -15,6 +16,11 @@
   var HORIZONTAL_BIAS = 1.5;
   var FRICTION = 0.94;
   var MIN_VELOCITY = 0.02; // px/ms
+
+  // 塔栏是竖排（flex-direction: column）时沿 y 滚动，否则沿 x
+  function barAxis(bar) {
+    return bar && getComputedStyle(bar).flexDirection.indexOf('column') === 0 ? 'y' : 'x';
+  }
 
   function uiScale() {
     var v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui-scale'));
@@ -45,7 +51,8 @@
     function tick(now) {
       var dt = Math.min(now - last, 40);
       last = now;
-      bar.scrollLeft += v * dt;
+      if (barAxis(bar) === 'y') bar.scrollTop += v * dt;
+      else bar.scrollLeft += v * dt;
       v *= Math.pow(FRICTION, dt / 16);
       if (Math.abs(v) > MIN_VELOCITY) {
         self._cardMomentumId = requestAnimationFrame(tick);
@@ -63,13 +70,15 @@
 
     var self = this;
     var bar = document.getElementById('bottom-bar');
+    var axis = barAxis(bar);
+    var pos = function (ev) { return axis === 'y' ? ev.clientY : ev.clientX; };
     var g = {
       id: e.pointerId,
       x0: e.clientX,
       y0: e.clientY,
-      scroll0: bar ? bar.scrollLeft : 0,
+      scroll0: bar ? (axis === 'y' ? bar.scrollTop : bar.scrollLeft) : 0,
       mode: null,
-      samples: [{ t: performance.now(), x: e.clientX }],
+      samples: [{ t: performance.now(), x: pos(e) }],
     };
 
     g.onMove = function (ev) {
@@ -79,7 +88,9 @@
 
       if (!g.mode) {
         if (Math.hypot(dx, dy) < DECIDE_PX) return;
-        g.mode = Math.abs(dx) > HORIZONTAL_BIAS * Math.abs(dy) ? 'scroll' : 'place';
+        var along = axis === 'y' ? dy : dx;
+        var across = axis === 'y' ? dx : dy;
+        g.mode = Math.abs(along) > HORIZONTAL_BIAS * Math.abs(across) ? 'scroll' : 'place';
         if (g.mode === 'place') {
           self.cancelCardGesture();
           self.beginPlacementDrag({
@@ -98,9 +109,11 @@
       }
 
       if (g.mode === 'scroll' && bar) {
-        bar.scrollLeft = g.scroll0 - dx / uiScale();
+        var delta = (axis === 'y' ? dy : dx) / uiScale();
+        if (axis === 'y') bar.scrollTop = g.scroll0 - delta;
+        else bar.scrollLeft = g.scroll0 - delta;
         var now = performance.now();
-        g.samples.push({ t: now, x: ev.clientX });
+        g.samples.push({ t: now, x: pos(ev) });
         while (g.samples.length > 2 && now - g.samples[0].t > 100) g.samples.shift();
       }
     };

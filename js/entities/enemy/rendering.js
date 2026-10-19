@@ -120,21 +120,21 @@ Enemy.prototype.draw = function(ctx, inkRenderer) {
     // 狂暴标记
     if (this.isRaged) {
       ctx.fillStyle = '#ff1744';
-      ctx.font = 'bold 12px "ZCOOL XiaoWei", serif';
+      ctx.font = 'bold 12px "Ink Glyph Fix", "ZCOOL XiaoWei", serif';
       ctx.fillText('狂', this.x + 16, this.y - 16);
     }
 
     // 冲锋标记
     if (this.isCharging) {
       ctx.fillStyle = '#ff9100';
-      ctx.font = 'bold 12px "ZCOOL XiaoWei", serif';
+      ctx.font = 'bold 12px "Ink Glyph Fix", "ZCOOL XiaoWei", serif';
       ctx.fillText('冲', this.x - 16, this.y - 16);
     }
 
     // 远程标记
     if (this.ranged) {
       ctx.fillStyle = '#4caf50';
-      ctx.font = '10px "ZCOOL XiaoWei", serif';
+      ctx.font = '10px "Ink Glyph Fix", "ZCOOL XiaoWei", serif';
       ctx.fillText('远', this.x + 14, this.y + 14);
     }
 

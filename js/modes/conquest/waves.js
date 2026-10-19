@@ -112,73 +112,41 @@ ConquestGame.prototype.gameOver = function(victory) {
       }
 
       const nextLevelId = this.getNextLevelId();
+      const actions = [{ label: "重来", onClick: () => this.startLevel(this.currentLevelId) }];
       if (nextLevelId) {
-        // 有下一关，显示下一关按钮和返回关卡列表按钮
-        this.showVictoryModalWithNextLevel(nextLevelId);
+        actions.push({ label: "选关", onClick: () => this.returnToLevelSelect() });
+        actions.push({ label: "下一关", primary: true, onClick: () => this.startLevel(nextLevelId) });
       } else {
-        // 没有下一关，显示通关所有关卡
-        this.showModal("胜", "山河尽入卷 · 征服诸境已成", "关卡列表", () => this.returnToLevelSelect());
+        actions.push({ label: "选关", primary: true, onClick: () => this.returnToLevelSelect() });
       }
+      InkModal.show({
+        scene: "victory",
+        title: "胜",
+        lines: nextLevelId
+          ? [`第 ${this.currentLevelId} 境 · 坚守已成`]
+          : [`第 ${this.currentLevelId} 境 · 坚守已成`, "山河尽入卷 · 征服诸境已成"],
+        actions,
+      });
     } else {
-      this.showModal("破", "群邪越境 · 防线失守", "关卡列表", () => this.returnToLevelSelect());
+      InkModal.show({
+        scene: "defeat",
+        title: "破",
+        lines: ["群邪越境 · 防线失守"],
+        actions: [
+          { label: "选关", onClick: () => this.returnToLevelSelect() },
+          { label: "重来", primary: true, onClick: () => this.startLevel(this.currentLevelId) },
+        ],
+      });
     }
-  
-};
-ConquestGame.prototype.showVictoryModalWithNextLevel = function(nextLevelId) {
-    const modal = document.getElementById("modal");
-    const titleEl = document.getElementById("modal-title");
-    const textEl = document.getElementById("modal-text");
-    const btnEl = document.getElementById("modal-btn");
-
-    InkUI.setModalScene('victory');
-    titleEl.textContent = "胜";
-    textEl.textContent = `关卡 ${this.currentLevelId} 完成! 坚守已成!`;
-    btnEl.textContent = "下一关";
-    btnEl.disabled = false;
-    modal.classList.remove("hidden");
-
-    // 创建返回关卡列表按钮
-    let returnBtn = document.getElementById("modal-return-btn");
-    if (!returnBtn) {
-      returnBtn = document.createElement("button");
-      returnBtn.id = "modal-return-btn";
-      returnBtn.className = "ink-button secondary";
-      btnEl.parentNode.insertBefore(returnBtn, btnEl.nextSibling);
-    }
-    returnBtn.textContent = "关卡列表";
-    returnBtn.style.display = "inline-block";
-
-    btnEl.onclick = () => {
-      modal.classList.add("hidden");
-      returnBtn.style.display = "none";
-      this.startLevel(nextLevelId);
-    };
-
-    returnBtn.onclick = () => {
-      modal.classList.add("hidden");
-      returnBtn.style.display = "none";
-      this.returnToLevelSelect();
-    };
   
 };
 ConquestGame.prototype.showModal = function(title, text, buttonText, onClick) {
-    const modal = document.getElementById("modal");
-    InkUI.setModalScene(title.includes('胜') ? 'victory' : title.includes('破') || title.includes('失败') ? 'defeat' : 'notice');
-    const returnBtn = document.getElementById("modal-return-btn");
-    document.getElementById("modal-title").textContent = title;
-    document.getElementById("modal-text").textContent = text;
-    document.getElementById("modal-btn").textContent = buttonText;
-    if (returnBtn) {
-      returnBtn.style.display = "none";
-      returnBtn.onclick = null;
-    }
-    modal.classList.remove("hidden");
-
-    document.getElementById("modal-btn").onclick = () => {
-      modal.classList.add("hidden");
-      if (onClick) onClick();
-    };
-  
+    InkModal.show({
+      scene: title.includes('胜') ? 'victory' : title.includes('破') || title.includes('失败') ? 'defeat' : 'notice',
+      title,
+      lines: [text],
+      actions: [{ label: buttonText, primary: true, onClick }],
+    });
 };
 ConquestGame.prototype.updateUI = function() {
     document.getElementById("conquest-ink").textContent = this.ink;
@@ -190,7 +158,10 @@ ConquestGame.prototype.updateUI = function() {
     const coreHpEl = document.getElementById("conquest-core-hp");
     if (coreHpEl) coreHpEl.textContent = this.coreHp;
 
+    const cost = this.getSummonCost();
+    const costEl = document.getElementById("conquest-summon-cost");
+    if (costEl) costEl.textContent = `${cost}墨`;
     const summonBtn = document.getElementById("conquest-summon-btn");
-    if (summonBtn) summonBtn.disabled = this.ink < this.getSummonCost() || this.gameEnded;
+    if (summonBtn) summonBtn.disabled = this.ink < cost || this.gameEnded;
   
 };

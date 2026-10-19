@@ -90,7 +90,7 @@ UI.prototype.showTowerInfo = function(tower, x, y, source) {
     if (!cancelHint) {
       cancelHint = document.createElement("div");
       cancelHint.className = "right-click-hint";
-      cancelHint.style.cssText = "font-size:11px;color:#6a6459;text-align:center;margin-top:8px;font-family:'ZCOOL XiaoWei',serif;";
+      cancelHint.style.cssText = "font-size:11px;color:#6a6459;text-align:center;margin-top:8px;font-family:'Ink Glyph Fix', 'ZCOOL XiaoWei',serif;";
       this.towerInfo.appendChild(cancelHint);
     }
     cancelHint.textContent = isTouchInput ? "点击空白处取消选中" : "右键取消选择";
@@ -183,28 +183,17 @@ UI.prototype.hideTowerInfo = function() {
     }
   
 };
+// 兼容旧签名的单按钮告知；胜负弹窗直接用 InkModal.show（见 js/ui/ink-modal.js）
 UI.prototype.showModal = function(title, text, buttonText = "确定", onBtnClick = null) {
-    InkUI.setModalScene(title.includes('胜') ? 'victory' : title.includes('破') || title.includes('失败') ? 'defeat' : 'notice');
-    InkUI.hideReturnButton();
-    document.getElementById("modal-title").textContent = title;
-    document.getElementById("modal-text").textContent = text;
-    document.getElementById("modal-btn").textContent = buttonText;
-    this.modal.classList.remove("hidden");
-
-    // 设置按钮行为
-    const btn = document.getElementById("modal-btn");
-    btn.onclick = () => {
-      this.hideModal();
-      if (onBtnClick && typeof onBtnClick === 'function') {
-        onBtnClick();
-      }
-    };
-  
+    InkModal.show({
+      scene: title.includes('胜') ? 'victory' : title.includes('破') || title.includes('失败') ? 'defeat' : 'notice',
+      title,
+      lines: [text],
+      actions: [{ label: buttonText, primary: true, onClick: onBtnClick }],
+    });
 };
 UI.prototype.hideModal = function() {
-    this.modal.classList.add("hidden");
-    InkUI.hideReturnButton();
-  
+    InkModal.hide();
 };
 UI.prototype.updateUnlocks = function(unlockedTypes) {
     this.createTowerSelects();

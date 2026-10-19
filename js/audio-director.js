@@ -8,8 +8,8 @@
   const POLL_MS = 250;
   const UNLOCK_EVENTS = ['pointerdown', 'touchend', 'click', 'keydown'];
   // 这些按钮有各自的音效，不再叠加通用点击音。
-  const TAP_SKIP = '.sell-btn, #modal-btn, #modal-return-btn, #conquest-summon-btn';
-  const TAP_TARGETS = 'button, .menu-btn, .theme-card, .conquest-theme-card, .conquest-level-item, .menu-level-item, .tower-select, [data-ui-sound]';
+  const TAP_SKIP = '.sell-btn, #modal-actions button, #conquest-summon-btn';
+  const TAP_TARGETS = 'button, .tower-select, [data-ui-sound]';
 
   const isShown = (id) => {
     const el = doc.getElementById(id);

@@ -71,13 +71,7 @@ ConquestGame.prototype.destroy = function() {
 
     // 返回菜单/关卡列表时不能把征服模式的浮层和动态按钮带到下一页。
     this.hideTowerInfo();
-    const modal = document.getElementById("modal");
-    if (modal) modal.classList.add("hidden");
-    const returnBtn = document.getElementById("modal-return-btn");
-    if (returnBtn) {
-      returnBtn.style.display = "none";
-      returnBtn.onclick = null;
-    }
+    InkModal.hide();
   
 };
 ConquestGame.prototype.getDefaultLevelConfig = function() {
@@ -235,10 +229,7 @@ ConquestGame.prototype.setupKeyboardShortcuts = function() {
       if (e.key === "Escape") {
         if (isModalVisible) {
           // 关闭模态框
-          modal.classList.add("hidden");
-          // 隐藏返回按钮（如果存在）
-          const returnBtn = document.getElementById("modal-return-btn");
-          if (returnBtn) returnBtn.style.display = "none";
+          InkModal.hide();
         } else if (isTowerInfoVisible) {
           // 关闭炮塔信息面板
           this.hideTowerInfo();
@@ -327,7 +318,7 @@ ConquestGame.prototype.showTowerInfo = function(tower, x, y) {
     if (!closeHint) {
       closeHint = document.createElement("div");
       closeHint.className = "right-click-hint";
-      closeHint.style.cssText = "font-size:11px;color:#6a6459;text-align:center;margin-top:8px;font-family:'ZCOOL XiaoWei',serif;";
+      closeHint.style.cssText = "font-size:11px;color:#6a6459;text-align:center;margin-top:8px;font-family:'Ink Glyph Fix', 'ZCOOL XiaoWei',serif;";
       info.appendChild(closeHint);
     }
     const isTouchDevice = !!(window.DeviceProfile && window.DeviceProfile.isTouch);

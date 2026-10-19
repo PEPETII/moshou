@@ -26,6 +26,7 @@ class ConquestGame {
       worldW: this.worldW,
       viewW: CONFIG.VIEW_W,
       viewH: CONFIG.VIEW_H,
+      insetLeft: CONFIG.BATTLE_DOCK_W, // 左缘叠放征服竖条（P4）
       hitTower: (cx, cy, isTouch) => !!this._pickTowerNear(cx, cy, {
         tolerance: isTouch ? (window.DeviceProfile && window.DeviceProfile.tapTolerance) : undefined,
       }),
@@ -403,10 +404,7 @@ class ConquestGame {
       if (e.key === "Escape") {
         if (isModalVisible) {
           // 关闭模态框
-          modal.classList.add("hidden");
-          // 隐藏返回按钮（如果存在）
-          const returnBtn = document.getElementById("modal-return-btn");
-          if (returnBtn) returnBtn.style.display = "none";
+          InkModal.hide();
         } else if (isTowerInfoVisible) {
           // 关闭炮塔信息面板
           this.hideTowerInfo();

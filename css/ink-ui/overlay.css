@@ -1,0 +1,145 @@
+/* 弹层与转场（工单 P5）
+ * 纸面、墨杆与遮罩来自 components.css 的 .ink-scroll / .ink-veil；这里只写胜负弹窗、择潮的内部排布与页面转场。 */
+
+/* ── 胜负 / 告知弹窗 ─────────────────────────────── */
+#modal { z-index: var(--z-modal, 300); }
+#modal.hidden { display: none; }
+#modal-content {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-2);
+  width: min(460px, 90vw);
+  max-height: 92dvh;
+  overflow-y: auto;
+}
+#modal-title {
+  margin: 0;
+  color: var(--ink-jiao);
+  font: var(--fs-xl) / 1.1 var(--font-brush);
+  letter-spacing: .14em;
+  padding-left: .14em;
+}
+#modal[data-scene="victory"] #modal-title,
+#modal[data-scene="defeat"] #modal-title {
+  font-size: calc(var(--fs-hero) * 1.6);
+  animation: modal-title-in .5s var(--ease-ink) both;
+}
+#modal[data-scene="defeat"] #modal-title { color: var(--seal-deep); }
+#modal-text {
+  margin: 0;
+  color: var(--ink-zhong);
+  font: var(--fs-m) / 1.7 var(--font-text);
+  white-space: pre-line;
+}
+/* 右上角的大印：胜「成」、破「破」，落印动画 */
+#modal-seal {
+  position: absolute;
+  top: var(--sp-4);
+  right: var(--sp-6);
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  color: var(--paper-0);
+  font: var(--fs-l) / 1 var(--font-brush);
+  background: var(--seal) var(--tex-seal) center / 100% 100% no-repeat;
+  transform: rotate(-10deg);
+  animation: seal-fall .35s .35s both;
+}
+#modal[data-scene="defeat"] #modal-seal { background-color: var(--seal-deep); background-image: var(--tex-seal-cracked); }
+#modal[data-scene="notice"] #modal-seal { display: none; }
+
+/* 星级：三枚印，亮为朱印、暗为淡墨框 */
+.modal-stars { display: flex; gap: var(--sp-3); margin: var(--sp-1) 0; }
+.modal-stars[hidden] { display: none; }
+.modal-star {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: var(--ink-dan);
+  font: var(--fs-l) / 1 var(--font-brush);
+  background: var(--tex-brush-frame) center / 100% 100% no-repeat;
+  transform: rotate(-6deg);
+}
+.modal-star.is-lit {
+  color: var(--paper-0);
+  background: var(--seal) var(--tex-seal) center / 100% 100% no-repeat;
+  animation: seal-fall .3s both;
+}
+.modal-star.is-lit:nth-child(2) { animation-delay: .12s; }
+.modal-star.is-lit:nth-child(3) { animation-delay: .24s; }
+
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+.modal-actions .ink-btn { min-width: 96px; }
+
+@keyframes modal-title-in {
+  from { opacity: 0; transform: scale(1.25); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ── 择潮 ─────────────────────────────────────── */
+#density-picker { z-index: calc(var(--z-modal, 300) + 1); }
+#density-picker.hidden { display: none; }
+#density-picker-box {
+  width: min(580px, 92vw);
+  max-height: 92dvh;
+  overflow-y: auto;
+  padding: var(--sp-4) var(--sp-6);
+}
+#density-picker-actions { display: flex; gap: var(--sp-3); justify-content: center; margin-top: var(--sp-4); }
+#density-picker-actions .ink-btn { min-width: 112px; }
+
+/* ── 矮横屏 ─────────────────────────────────────── */
+@media (max-height: 430px) and (orientation: landscape) {
+  .ink-scroll { padding: var(--sp-4) var(--sp-6); }
+  #modal[data-scene="victory"] #modal-title,
+  #modal[data-scene="defeat"] #modal-title { font-size: var(--fs-hero); }
+  #modal-text { font-size: var(--fs-s); line-height: 1.5; }
+  #modal-seal { width: 40px; height: 40px; top: var(--sp-3); right: var(--sp-4); font-size: var(--fs-m); }
+  .modal-star { width: 32px; height: 32px; font-size: var(--fs-m); }
+  .modal-actions { margin-top: var(--sp-1); }
+  #density-picker-box { padding: var(--sp-3) var(--sp-4); }
+  #density-picker-actions { margin-top: var(--sp-2); }
+}
+
+/* ── 墨晕转场：页面出现时从最近一次点击处晕开 ──────── */
+/* --tap-x / --tap-y 由 js/ui/page-transition.js 写到根元素；默认从屏幕中心 */
+.ink-page:not(.hidden),
+#main-menu:not(.hidden) .menu-stage,
+.ink-veil:not(.hidden) > .ink-scroll {
+  animation: ink-bloom var(--dur-page) var(--ease-ink) both;
+}
+.ink-veil:not(.hidden) { animation: veil-in var(--dur-page) ease-out both; }
+@keyframes ink-bloom {
+  from { opacity: .3; clip-path: circle(0 at var(--tap-x, 50%) var(--tap-y, 50%)); }
+  to { opacity: 1; clip-path: circle(150% at var(--tap-x, 50%) var(--tap-y, 50%)); }
+}
+@keyframes veil-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+/* 弹层内面板以自身中心晕开（点击点通常在面板外） */
+.ink-veil:not(.hidden) > .ink-scroll { animation-name: scroll-unroll; }
+@keyframes scroll-unroll {
+  from { opacity: 0; clip-path: inset(48% 0 48% 0); }
+  to { opacity: 1; clip-path: inset(-12px -16px -12px -16px); }
+}
+
+html[data-ink-motion="reduced"] .ink-page,
+html[data-ink-motion="reduced"] #main-menu .menu-stage,
+html[data-ink-motion="reduced"] .ink-veil,
+html[data-ink-motion="reduced"] .ink-veil > .ink-scroll,
+html[data-ink-motion="reduced"] #modal-title,
+html[data-ink-motion="reduced"] #modal-seal,
+html[data-ink-motion="reduced"] .modal-star { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .ink-page, #main-menu .menu-stage, .ink-veil, .ink-veil > .ink-scroll,
+  #modal-title, #modal-seal, .modal-star { animation: none !important; }
+}

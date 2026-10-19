@@ -18,6 +18,10 @@ class Camera {
    * @param {Function} [opts.hitTower] (clientX, clientY, isTouch) => 该点是否落在炮塔上（炮塔上按下不平移）
    * @param {Function} [opts.getDragPoint] () => {clientX, clientY} | null  卡片/炮塔拖拽中的指针位置
    * @param {Function} [opts.onScroll] 镜头被用户滚动时回调（用于收起悬浮的炮塔信息面板，它不随镜头移动）
+   * @param {number} [opts.insetLeft]  视口左缘被叠放 UI 遮住的宽度（屏幕 px，征服竖条）
+   * @param {number} [opts.insetRight] 视口右缘被叠放 UI 遮住的宽度（屏幕 px，塔防卡槽）
+   *   有遮挡时镜头在该侧多留同宽的滚动余量（x 可为负），保证被遮住的格子能滚出来；
+   *   边缘自动滚动区与边缘墨晕也改以可见区边缘为准。
    */
   constructor(opts) {
     const cfg = (typeof CONFIG !== 'undefined' && CONFIG.CAMERA) || {};
@@ -31,6 +35,8 @@ class Camera {
     this.hitTower = opts.hitTower || null;
     this.getDragPoint = opts.getDragPoint || null;
     this.onScroll = opts.onScroll || null;
+    this.insetLeft = opts.insetLeft || 0;
+    this.insetRight = opts.insetRight || 0;
 
     this.x = 0;
     this.targetX = 0;
@@ -43,9 +49,9 @@ class Camera {
     if (this.canvas) this.canvas.camera = this;
   }
 
-  get minX() { return 0; }
-  get maxX() { return Math.max(0, this.worldW - this.viewW); }
-  get scrollable() { return this.maxX > 0; }
+  get minX() { return this.insetLeft ? -this.insetLeft : 0; } // 避免无遮挡时得到 -0
+  get maxX() { return Math.max(this.minX, this.worldW - this.viewW + this.insetRight); }
+  get scrollable() { return this.maxX > this.minX; }
 
   _clamp(x) { return Math.min(this.maxX, Math.max(this.minX, x)); }
 
@@ -118,8 +124,12 @@ class Camera {
     if (p.clientY < rect.top || p.clientY > rect.bottom) return 0;
     const cx = (p.clientX - rect.left) * (this.viewW / rect.width);
     const zone = this.cfg.EDGE_ZONE;
-    if (cx < zone) return -Math.min(1.5, (zone - cx) / zone + 0.15);
-    if (cx > this.viewW - zone) return Math.min(1.5, (cx - (this.viewW - zone)) / zone + 0.15);
+    // 以可见区（扣除叠放 UI）为准；指针在叠放 UI 上时不滚，避免从卡槽拿卡一起手就滚动
+    const left = this.insetLeft;
+    const right = this.viewW - this.insetRight;
+    if (cx < left || cx > right) return 0;
+    if (cx < left + zone) return -Math.min(1.5, (left + zone - cx) / zone + 0.15);
+    if (cx > right - zone) return Math.min(1.5, (cx - (right - zone)) / zone + 0.15);
     return 0;
   }
 
@@ -254,15 +264,18 @@ class Camera {
     const w = this.viewW;
     const h = this.viewH;
     ctx.save();
-    // 左右边缘：三团不规则的淡墨晕，代替纯黑渐变（透明度 ≤ 0.14）
-    if (this.x > 1) this._drawEdgeWash(ctx, 0, 1, h);
-    if (this.x < this.maxX - 1) this._drawEdgeWash(ctx, w, -1, h);
-    // 位置条：底边居中，一笔淡墨横线，滑块是一枚朱砂小印，宽 = 视口 / 世界
+    const left = this.insetLeft;
+    const right = w - this.insetRight;
+    // 左右边缘（可见区边缘）：三团不规则的淡墨晕，代替纯黑渐变（透明度 ≤ 0.14）
+    if (this.x > this.minX + 1) this._drawEdgeWash(ctx, left, 1, h);
+    if (this.x < this.maxX - 1) this._drawEdgeWash(ctx, right, -1, h);
+    // 位置条：可见区底边居中，一笔淡墨横线，滑块是一枚朱砂小印，宽 = 可见宽 / 世界
     const trackW = 132;
-    const trackX = (w - trackW) / 2;
+    const trackX = (left + right - trackW) / 2;
     const trackY = h - 9;
-    const thumbW = Math.max(14, trackW * (this.viewW / this.worldW));
-    const thumbX = trackX + (trackW - thumbW) * (this.maxX ? this.x / this.maxX : 0);
+    const thumbW = Math.max(14, trackW * Math.min(1, (right - left) / this.worldW));
+    const range = this.maxX - this.minX;
+    const thumbX = trackX + (trackW - thumbW) * (range ? (this.x - this.minX) / range : 0);
     ctx.fillStyle = 'rgba(28,26,23,0.16)';
     ctx.fillRect(trackX, trackY, trackW, 2);
     ctx.save();

@@ -123,6 +123,10 @@ UI.prototype.setupPlacementDragEvents = function() {
       this.cancelPlacementDrag(e.pointerId);
     });
     this.addTrackedEventListener(document, "lostpointercapture", (e) => {
+      // 只认我们主动捕获的那张塔卡。触摸按下时浏览器会把指针隐式捕获在被按的子元素（.tower-char）上，
+      // 改由塔卡 setPointerCapture 时，子元素会收到一次 lostpointercapture —— 那不是拖拽被打断（P4 修复）。
+      const drag = this.placementDrag;
+      if (drag && drag.captureEl && e.target !== drag.captureEl) return;
       this.cancelPlacementDrag(e.pointerId);
     });
 };
@@ -153,6 +157,7 @@ UI.prototype.beginPlacementDrag = function(e, type) {
     if (e.currentTarget && e.currentTarget.setPointerCapture && e.pointerId !== undefined) {
       try {
         e.currentTarget.setPointerCapture(e.pointerId);
+        this.placementDrag.captureEl = e.currentTarget;
       } catch (error) {
         // Pointer 捕获不可用时，document 级监听仍可处理普通拖动。
       }

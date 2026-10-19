@@ -1,348 +1,231 @@
-// UI：炮塔和敌人图鉴
-// === 图鉴系统事件监听 ===
+// UI：图鉴（工单 P2：图鉴横屏改版）
+// 图鉴主界面 → 炮塔志 / 妖异录。两本谱都是常驻双栏：左列表、右详情；进入即选中第一项。
+// 文案来自 CONFIG.CODEX，数值读 CONFIG.TOWERS / CONFIG.ENEMIES。
+
+// === 事件 ===
 UI.prototype.setupEncyclopediaEventListeners = function() {
-    // 炮塔图鉴按钮
-    const btnTowerEncyclopedia = document.getElementById("btn-tower-encyclopedia");
-    if (btnTowerEncyclopedia) {
-      this.addTrackedEventListener(btnTowerEncyclopedia, "click", () => {
-        this.showTowerEncyclopedia();
-      });
-    }
+    const on = (id, handler) => {
+      const el = document.getElementById(id);
+      if (el) this.addTrackedEventListener(el, "click", handler);
+    };
+    const toMenu = () => {
+      CodexGlyph.stop();
+      this.hideTowerEncyclopedia();
+      this.hideEnemyEncyclopedia();
+      this.hideEncyclopedia();
+    };
 
-    // 怪物图鉴按钮
-    const btnEnemyEncyclopedia = document.getElementById("btn-enemy-encyclopedia");
-    if (btnEnemyEncyclopedia) {
-      this.addTrackedEventListener(btnEnemyEncyclopedia, "click", () => {
-        this.showEnemyEncyclopedia();
-      });
-    }
+    on("btn-tower-encyclopedia", () => this.showTowerEncyclopedia());
+    on("btn-enemy-encyclopedia", () => this.showEnemyEncyclopedia());
+    on("back-to-menu-from-encyclopedia", () => this.hideEncyclopedia());
+    on("back-to-encyclopedia-from-towers", () => { this.hideTowerEncyclopedia(); this.showEncyclopedia(); });
+    on("back-to-encyclopedia-from-enemies", () => { this.hideEnemyEncyclopedia(); this.showEncyclopedia(); });
+    on("tower-codex-home", toMenu);
+    on("enemy-codex-home", toMenu);
 
-    // 从图鉴返回主菜单
-    const backToMenuFromEncyclopedia = document.getElementById("back-to-menu-from-encyclopedia");
-    if (backToMenuFromEncyclopedia) {
-      this.addTrackedEventListener(backToMenuFromEncyclopedia, "click", () => {
-        this.hideEncyclopedia();
+    // 列表键盘操作：上下方向键切换选中项
+    ["tower-encyclopedia-grid", "enemy-encyclopedia-grid"].forEach((id) => {
+      const list = document.getElementById(id);
+      if (!list) return;
+      this.addTrackedEventListener(list, "keydown", (e) => {
+        if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+        const items = [...list.querySelectorAll(".ink-item")];
+        const index = items.indexOf(document.activeElement);
+        const next = items[index + (e.key === "ArrowDown" ? 1 : -1)];
+        if (next) { e.preventDefault(); next.focus(); next.click(); }
       });
-    }
-
-    // 从炮塔图鉴返回图鉴主界面
-    const backToEncyclopediaFromTowers = document.getElementById("back-to-encyclopedia-from-towers");
-    if (backToEncyclopediaFromTowers) {
-      this.addTrackedEventListener(backToEncyclopediaFromTowers, "click", () => {
-        this.hideTowerEncyclopedia();
-        this.showEncyclopedia();
-      });
-    }
-
-    // 从怪物图鉴返回图鉴主界面
-    const backToEncyclopediaFromEnemies = document.getElementById("back-to-encyclopedia-from-enemies");
-    if (backToEncyclopediaFromEnemies) {
-      this.addTrackedEventListener(backToEncyclopediaFromEnemies, "click", () => {
-        this.hideEnemyEncyclopedia();
-        this.showEncyclopedia();
-      });
-    }
-
-    // 关闭炮塔详情面板
-    const closeTowerDetail = document.getElementById("close-tower-detail");
-    if (closeTowerDetail) {
-      this.addTrackedEventListener(closeTowerDetail, "click", () => {
-        this.hideTowerDetail();
-      });
-    }
-
-    // 关闭怪物详情面板
-    const closeEnemyDetail = document.getElementById("close-enemy-detail");
-    if (closeEnemyDetail) {
-      this.addTrackedEventListener(closeEnemyDetail, "click", () => {
-        this.hideEnemyDetail();
-      });
-    }
-
-    // 筛选标签点击事件
-    const filterTabs = document.querySelectorAll(".filter-tab");
-    filterTabs.forEach(tab => {
-      const clickHandler = () => {
-        filterTabs.forEach(t => t.classList.remove("active"));
-        tab.classList.add("active");
-        this.filterTowerEncyclopedia(tab.dataset.filter);
-      };
-      this.addTrackedEventListener(tab, "click", clickHandler);
     });
-
 };
-// === 图鉴系统方法 ===
-UI.prototype.showEncyclopedia = function() {
-    const encyclopediaContainer = document.getElementById("encyclopedia-container");
 
+// === 页面切换 ===
+UI.prototype.setCodexPageVisible = function(id, visible) {
+    const page = document.getElementById(id);
+    if (page) page.classList.toggle("hidden", !visible);
+};
+UI.prototype.showEncyclopedia = function() {
     this.setMainMenuButtonsVisible(false);
-    if (encyclopediaContainer) encyclopediaContainer.classList.remove("hidden");
-  
+    this.updateCodexTally();
+    this.setCodexPageVisible("encyclopedia-container", true);
 };
 UI.prototype.hideEncyclopedia = function() {
-    const encyclopediaContainer = document.getElementById("encyclopedia-container");
-
     this.setMainMenuButtonsVisible(true);
-    if (encyclopediaContainer) encyclopediaContainer.classList.add("hidden");
-  
+    this.setCodexPageVisible("encyclopedia-container", false);
 };
 UI.prototype.showTowerEncyclopedia = function() {
-    const encyclopediaContainer = document.getElementById("encyclopedia-container");
-    const towerEncyclopediaContainer = document.getElementById("tower-encyclopedia-container");
-
-    if (encyclopediaContainer) encyclopediaContainer.classList.add("hidden");
-    if (towerEncyclopediaContainer) {
-      towerEncyclopediaContainer.classList.remove("hidden");
-      this.populateTowerEncyclopedia();
-    }
-  
+    this.setCodexPageVisible("encyclopedia-container", false);
+    this.setCodexPageVisible("tower-encyclopedia-container", true);
+    this.populateTowerEncyclopedia();
 };
 UI.prototype.hideTowerEncyclopedia = function() {
-    const towerEncyclopediaContainer = document.getElementById("tower-encyclopedia-container");
-    if (towerEncyclopediaContainer) towerEncyclopediaContainer.classList.add("hidden");
-  
+    CodexGlyph.stop();
+    this.setCodexPageVisible("tower-encyclopedia-container", false);
 };
 UI.prototype.showEnemyEncyclopedia = function() {
-    const encyclopediaContainer = document.getElementById("encyclopedia-container");
-    const enemyEncyclopediaContainer = document.getElementById("enemy-encyclopedia-container");
-
-    if (encyclopediaContainer) encyclopediaContainer.classList.add("hidden");
-    if (enemyEncyclopediaContainer) {
-      enemyEncyclopediaContainer.classList.remove("hidden");
-      this.populateEnemyEncyclopedia();
-    }
-  
+    this.setCodexPageVisible("encyclopedia-container", false);
+    this.setCodexPageVisible("enemy-encyclopedia-container", true);
+    this.populateEnemyEncyclopedia();
 };
 UI.prototype.hideEnemyEncyclopedia = function() {
-    const enemyEncyclopediaContainer = document.getElementById("enemy-encyclopedia-container");
-    if (enemyEncyclopediaContainer) enemyEncyclopediaContainer.classList.add("hidden");
-  
+    this.setCodexPageVisible("enemy-encyclopedia-container", false);
 };
-// 炮塔分类定义
-UI.prototype.getTowerCategory = function(type, config) {
-    if (type === 'fire' || type === 'water' || type === 'mountain' || type === 'wood' || type === 'gold' || type === 'earth') {
-      return 'basic';
-    }
-    if (config.onPath) {
-      return 'path';
-    }
-    if (config.aura || config.globalSlow || config.copyEfficiency) {
-      return 'support';
-    }
-    if (type === 'thunder' || type === 'ice' || type === 'poison' || type === 'wind' || type === 'light' || type === 'dark' || type === 'star' || type === 'frost') {
-      return 'element';
-    }
-    return 'special';
-  
+
+// 入口卡上的收录数
+UI.prototype.updateCodexTally = function() {
+    const towers = CONFIG.ACTIVE_TOWERS.filter((t) => CONFIG.TOWERS[t]).length;
+    const enemies = CONFIG.ACTIVE_ENEMIES.filter((t) => CONFIG.ENEMIES[t]).length;
+    const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+    set("codex-count-towers", `已录 ${towers} 字`);
+    set("codex-count-enemies", `已录 ${enemies} 种`);
+    set("codex-tally", `共 ${towers + enemies} 条`);
 };
-// 填充炮塔图鉴
-UI.prototype.populateTowerEncyclopedia = function(filter = 'all') {
-    const grid = document.getElementById("tower-encyclopedia-grid");
-    if (!grid) return;
 
-    grid.innerHTML = "";
+// === 列表 ===
+// entries: [{ key, char, name, role, tag, tint }]；onSelect(key)
+UI.prototype.renderCodexList = function(listId, detailId, entries, onSelect) {
+    const list = document.getElementById(listId);
+    const detail = document.getElementById(detailId);
+    if (!list || !detail) return;
+    list.innerHTML = "";
 
-    for (const type of CONFIG.ACTIVE_TOWERS) {
-      const config = CONFIG.TOWERS[type];
-      if (!config) continue;
-      const category = this.getTowerCategory(type, config);
-      if (filter !== 'all' && category !== filter) continue;
-
-      const item = document.createElement("div");
-      item.className = "encyclopedia-item";
-      item.dataset.type = type;
-
-      let charHtml = config.char;
-      if (config.char && config.char.length >= 3) {
-        charHtml = `<span class="item-char small">${config.char}</span>`;
-      } else {
-        charHtml = `<span class="item-char">${config.char}</span>`;
-      }
-
-      item.innerHTML = `
-        ${charHtml}
-        <span class="item-cost">${config.cost}墨</span>
-      `;
-
-      const clickHandler = () => {
-        this.showTowerDetail(type, config);
-      };
-      this.addTrackedEventListener(item, "click", clickHandler);
-
-      grid.appendChild(item);
-    }
-  
-};
-// 筛选炮塔图鉴
-UI.prototype.filterTowerEncyclopedia = function(filter) {
-    this.populateTowerEncyclopedia(filter);
-  
-};
-// 显示炮塔详情
-UI.prototype.showTowerDetail = function(type, config) {
-    const panel = document.getElementById("tower-detail-panel");
-    const charEl = document.getElementById("tower-detail-char");
-    const nameEl = document.getElementById("tower-detail-name");
-    const statsEl = document.getElementById("tower-detail-stats");
-    const descEl = document.getElementById("tower-detail-desc");
-
-    if (!panel) return;
-
-    charEl.textContent = config.char;
-    nameEl.textContent = `五行 · ${config.char}`;
-
-    // 构建属性列表
-    let statsHtml = "";
-    
-    if (config.glyph) {
-      // 字形塔：伤害、攻速由招式决定，只列射程与造价
-      statsHtml += this.createDetailStatRow("射程", config.range.toFixed(1) + "格");
-      statsHtml += this.createDetailStatRow("造价", config.cost + "墨", true);
-      statsEl.innerHTML = statsHtml;
-      descEl.textContent = config.desc || "暂无描述";
-      panel.classList.remove("hidden");
+    if (entries.length === 0) {
+      detail.innerHTML = `<div class="ink-empty"><span class="ink-empty__mark">空</span>此卷尚无收录</div>`;
       return;
     }
-    if (config.damage !== undefined && config.damage > 0) {
-      statsHtml += this.createDetailStatRow("攻击力", config.damage);
-    }
-    if (config.range !== undefined && config.range > 0) {
-      statsHtml += this.createDetailStatRow("射程", config.range + "格");
-    }
-    if (config.cooldown !== undefined && config.cooldown > 0) {
-      statsHtml += this.createDetailStatRow("攻速", (config.cooldown / 1000).toFixed(1) + "秒");
-    }
-    if (config.cost !== undefined) {
-      statsHtml += this.createDetailStatRow("造价", config.cost + "墨", true);
-    }
-    if (config.hp !== undefined) {
-      statsHtml += this.createDetailStatRow("生命值", config.hp);
-    }
-    if (config.slow !== undefined) {
-      statsHtml += this.createDetailStatRow("减速", Math.round(config.slow * 100) + "%");
-    }
-    if (config.burn) {
-      statsHtml += this.createDetailStatRow("灼烧", "是");
-    }
-    if (config.pierce) {
-      statsHtml += this.createDetailStatRow("穿透", "是");
-    }
-    if (config.chain) {
-      statsHtml += this.createDetailStatRow("弹射", config.chainCount + "次");
-    }
-    if (config.aoe) {
-      statsHtml += this.createDetailStatRow("范围伤害", config.aoeRange + "格");
-    }
-    if (config.aura) {
-      statsHtml += this.createDetailStatRow("光环范围", config.auraRange + "格");
-    }
-    if (config.onPath) {
-      statsHtml += this.createDetailStatRow("放置位置", "路径上");
-    }
-    if (config.unlockLevel) {
-      statsHtml += this.createDetailStatRow("推荐关卡", "第" + config.unlockLevel + "关起");
-    }
 
-    statsEl.innerHTML = statsHtml;
-    descEl.textContent = config.desc || "暂无描述";
+    const select = (item, key) => {
+      list.querySelectorAll(".ink-item").forEach((other) => {
+        const on = other === item;
+        other.classList.toggle("is-selected", on);
+        other.setAttribute("aria-selected", String(on));
+        other.tabIndex = on ? 0 : -1;
+      });
+      onSelect(key);
+    };
 
-    panel.classList.remove("hidden");
-  
-};
-UI.prototype.hideTowerDetail = function() {
-    const panel = document.getElementById("tower-detail-panel");
-    if (panel) panel.classList.add("hidden");
-  
-};
-// 填充怪物图鉴
-UI.prototype.populateEnemyEncyclopedia = function() {
-    const grid = document.getElementById("enemy-encyclopedia-grid");
-    if (!grid) return;
-
-    grid.innerHTML = "";
-
-    for (const type of CONFIG.ACTIVE_ENEMIES) {
-      const config = CONFIG.ENEMIES[type];
-      if (!config) continue;
-      const item = document.createElement("div");
-      item.className = "encyclopedia-item";
-      item.dataset.type = type;
-
+    entries.forEach((entry, i) => {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "ink-item codex-item";
+      item.setAttribute("role", "option");
+      item.setAttribute("aria-selected", "false");
+      item.tabIndex = -1;
+      item.dataset.type = entry.key;
       item.innerHTML = `
-        <span class="item-char">${config.char}</span>
-        <span class="item-cost">${config.hp}HP</span>
-      `;
-
-      const clickHandler = () => {
-        this.showEnemyDetail(type, config);
-      };
-      this.addTrackedEventListener(item, "click", clickHandler);
-
-      grid.appendChild(item);
-    }
-  
+        <span class="ink-chip${entry.tint ? " ink-chip--" + entry.tint : ""}">${entry.char}</span>
+        <span class="codex-item__text">
+          <span class="codex-item__name">${entry.name}</span>
+          <span class="codex-item__role">${entry.role}</span>
+        </span>
+        <span class="codex-item__tag">${entry.tag}</span>`;
+      this.addTrackedEventListener(item, "click", () => select(item, entry.key));
+      list.appendChild(item);
+      if (i === 0) select(item, entry.key);
+    });
 };
-// 显示怪物详情
+
+UI.prototype.codexStat = function(label, value, unit = "", seal = false) {
+    return `<div class="ink-stat"><span class="ink-stat__label">${label}</span>` +
+      `<span class="ink-stat__value${seal ? " ink-stat__value--seal" : ""}">${value}` +
+      `${unit ? `<span class="ink-stat__unit">${unit}</span>` : ""}</span></div>`;
+};
+
+// === 炮塔志 ===
+UI.prototype.populateTowerEncyclopedia = function() {
+    const entries = CONFIG.ACTIVE_TOWERS
+      .filter((type) => CONFIG.TOWERS[type])
+      .map((type) => {
+        const config = CONFIG.TOWERS[type];
+        const codex = (CONFIG.CODEX.towers[type] || {});
+        return {
+          key: type, char: config.char, name: config.char, tint: type,
+          role: codex.role || "", tag: `${config.cost} 墨`,
+        };
+      });
+    this.renderCodexList("tower-encyclopedia-grid", "tower-detail-panel", entries,
+      (type) => this.showTowerDetail(type, CONFIG.TOWERS[type]));
+};
+
+UI.prototype.showTowerDetail = function(type, config) {
+    const panel = document.getElementById("tower-detail-panel");
+    if (!panel || !config) return;
+    const codex = CONFIG.CODEX.towers[type] || { moves: [] };
+    const glyph = CONFIG.GLYPHS && CONFIG.GLYPHS[type];
+    const tint = type === "water" ? "water" : "fire";
+
+    const strokes = glyph
+      ? glyph.strokes.map((s, i) => `<li data-stroke="${i}">${s.name}</li>`).join("")
+      : "";
+    const moves = codex.moves.map((m) => `
+        <div class="codex-move">
+          <span class="codex-move__kind">${m.kind}</span>
+          <span class="codex-move__name codex-move__name--${tint}">${m.name}</span>
+          <p class="codex-move__text">${m.text}</p>
+        </div>`).join("");
+
+    panel.innerHTML = `
+      <div class="codex-detail__head">
+        <figure class="codex-glyph">
+          ${glyph ? `<canvas class="codex-glyph__canvas" aria-label="${config.char}字笔顺书写" title="轻点重写"></canvas>
+          <ol class="codex-glyph__order">${strokes}</ol>` :
+          `<span class="codex-glyph__char">${config.char}</span>`}
+        </figure>
+        <div class="codex-detail__summary">
+          <h3 class="ink-panel__title">${config.char}<span class="codex-detail__role">${codex.role || ""}</span></h3>
+          ${this.codexStat("射程", config.range.toFixed(1), "格")}
+          ${this.codexStat("造价", config.cost, "墨", true)}
+          ${glyph ? this.codexStat("笔画", glyph.strokes.length, "笔") : ""}
+        </div>
+      </div>
+      <div class="codex-moves">${moves || `<p class="codex-move__text">${config.desc || ""}</p>`}</div>`;
+
+    if (!glyph) return;
+    const canvas = panel.querySelector(".codex-glyph__canvas");
+    const order = [...panel.querySelectorAll(".codex-glyph__order li")];
+    const write = () => CodexGlyph.play(canvas, glyph, {
+      color: CONFIG.GLYPH_COLORS[tint],
+      onStroke: (i) => order.forEach((li, k) => {
+        li.classList.toggle("is-writing", k === i);
+        li.classList.toggle("is-done", i === -1 || k < i);
+      }),
+    });
+    this.addTrackedEventListener(canvas, "click", write);
+    write();
+};
+
+// === 妖异录 ===
+UI.prototype.codexSpeedTier = function(speed) {
+    const tier = CONFIG.CODEX.speedTiers.find((t) => speed >= t.min);
+    return tier ? tier.label : "";
+};
+
+UI.prototype.populateEnemyEncyclopedia = function() {
+    const entries = CONFIG.ACTIVE_ENEMIES
+      .filter((type) => CONFIG.ENEMIES[type])
+      .map((type) => {
+        const config = CONFIG.ENEMIES[type];
+        const codex = CONFIG.CODEX.enemies[type] || {};
+        return { key: type, char: config.char, name: config.char, role: codex.role || "", tag: `${config.hp} 血` };
+      });
+    this.renderCodexList("enemy-encyclopedia-grid", "enemy-detail-panel", entries,
+      (type) => this.showEnemyDetail(type, CONFIG.ENEMIES[type]));
+};
+
 UI.prototype.showEnemyDetail = function(type, config) {
     const panel = document.getElementById("enemy-detail-panel");
-    const charEl = document.getElementById("enemy-detail-char");
-    const nameEl = document.getElementById("enemy-detail-name");
-    const statsEl = document.getElementById("enemy-detail-stats");
-    const descEl = document.getElementById("enemy-detail-desc");
+    if (!panel || !config) return;
+    const codex = CONFIG.CODEX.enemies[type] || {};
+    const speed = Math.round(config.speed * 100) / 100;
 
-    if (!panel) return;
-
-    charEl.textContent = config.char;
-    nameEl.textContent = `妖异 · ${config.char}`;
-
-    // 构建属性列表
-    let statsHtml = "";
-    
-    statsHtml += this.createDetailStatRow("生命值", config.hp);
-    statsHtml += this.createDetailStatRow("攻击力", config.damage);
-    statsHtml += this.createDetailStatRow("移动速度", Math.round(config.speed * 100) / 100);
-    statsHtml += this.createDetailStatRow("击败奖励", config.reward + "墨", true);
-
-    // 特殊能力
-    const specials = [];
-    if (config.flying) specials.push("飞行");
-    if (config.armor) specials.push("护甲(" + Math.round(config.armorReduction * 100) + "%)");
-    if (config.split) specials.push("分裂");
-    if (config.invisible) specials.push("隐身");
-    if (config.explodeOnDeath) specials.push("死亡爆炸");
-
-    if (specials.length > 0) {
-      statsHtml += this.createDetailStatRow("特殊能力", specials.join("、"));
-    }
-
-    statsEl.innerHTML = statsHtml;
-
-    // 生成描述
-    let desc = "";
-    if (config.flying) desc += "飞行单位，不受地面阻挡影响。";
-    if (config.armor) desc += "拥有护甲，减少受到的伤害。";
-    if (config.split) desc += `死亡时分裂为${config.splitCount}个小型单位。`;
-    if (config.invisible) desc += "具有隐身能力，需要特殊手段才能发现。";
-    if (config.explodeOnDeath) desc += `死亡时对周围造成${config.explodeDamage}点范围伤害。`;
-    if (!desc) desc = "普通敌人，没有特殊能力。";
-
-    descEl.textContent = desc;
-
-    panel.classList.remove("hidden");
-  
-};
-UI.prototype.hideEnemyDetail = function() {
-    const panel = document.getElementById("enemy-detail-panel");
-    if (panel) panel.classList.add("hidden");
-  
-};
-// 辅助方法：创建详情属性行
-UI.prototype.createDetailStatRow = function(label, value, highlight = false) {
-    return `
-      <div class="detail-stat-row">
-        <span class="detail-stat-label">${label}</span>
-        <span class="detail-stat-value ${highlight ? 'highlight' : ''}">${value}</span>
+    panel.innerHTML = `
+      <div class="codex-detail__head">
+        <figure class="codex-glyph codex-glyph--enemy"><span class="codex-glyph__char">${config.char}</span></figure>
+        <div class="codex-detail__summary">
+          <h3 class="ink-panel__title">${config.char}<span class="codex-detail__role">${codex.role || ""}</span></h3>
+          ${this.codexStat("生命", config.hp, "血")}
+          ${this.codexStat("移速", speed, `格/秒 · ${this.codexSpeedTier(config.speed)}`)}
+          ${this.codexStat("撞核", config.damage, "点")}
+          ${this.codexStat("击败奖励", config.reward, "墨", true)}
+        </div>
       </div>
-    `;
-  
+      <p class="codex-detail__desc">${codex.desc || ""}</p>`;
 };

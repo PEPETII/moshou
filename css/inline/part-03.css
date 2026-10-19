@@ -1,190 +1,43 @@
 
 
-        .materials-title {
-            font-size: 14px;
-            color: #6a6459;
-            margin-bottom: 10px;
-            font-family: "ZCOOL XiaoWei", serif;
-        }
+        
 
-        .materials-list {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
+        
 
-        .material-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
+        
 
-        .material-char {
-            font-size: 32px;
-            font-family: "Ma Shan Zheng", cursive;
-            color: #1c1a17;
-        }
+        
 
-        .material-name {
-            font-size: 12px;
-            color: #6a6459;
-            font-family: "ZCOOL XiaoWei", serif;
-        }
+        
 
-        .comparison-title {
-            font-size: 14px;
-            color: #6a6459;
-            margin-bottom: 10px;
-            font-family: "ZCOOL XiaoWei", serif;
-            text-align: center;
-        }
+        
 
-        .comparison-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #cabfa6;
-        }
+        
 
-        .comparison-row:last-child {
-            border-bottom: none;
-        }
+        
 
-        .comparison-label {
-            color: #6a6459;
-            font-family: "ZCOOL XiaoWei", serif;
-            font-size: 13px;
-        }
+        
 
-        .comparison-values {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        
 
-        .comparison-material {
-            color: #6a6459;
-            font-size: 12px;
-        }
+        
 
-        .comparison-arrow {
-            color: #c45c48;
-            font-size: 14px;
-        }
+        
 
-        .comparison-result {
-            color: #a67c00;
-            font-size: 14px;
-            font-weight: bold;
-        }
+        
 
         /* 征服模式主题选择样式 */
-        #conquest-theme-select-container {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 20px;
-            max-width: 900px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
+        
 
-        #conquest-theme-select-container.hidden {
-            display: none;
-        }
+        
 
         /* 横屏适配 - 征服模式主题选择 */
-        @media (max-height: 500px) and (orientation: landscape) {
-            #conquest-theme-select-container {
-                padding: 20px 15px;
-            }
+        
 
-            .conquest-theme-header {
-                padding-bottom: 15px;
-                margin-bottom: 15px;
-            }
+        
 
-            .conquest-theme-title {
-                font-size: 26px;
-                letter-spacing: 4px;
-            }
+        
 
-            .conquest-theme-grid {
-                gap: 15px;
-                max-height: 60vh;
-                overflow-y: auto;
-            }
+        
 
-            .conquest-theme-card {
-                padding: 18px 12px;
-                min-height: 110px;
-            }
-
-            .conquest-theme-card .theme-icon {
-                font-size: 28px;
-                margin-bottom: 8px;
-            }
-
-            .conquest-theme-card .theme-name {
-                font-size: 16px;
-                margin-bottom: 6px;
-            }
-
-            .conquest-theme-card .theme-desc {
-                font-size: 11px;
-                margin-bottom: 6px;
-            }
-
-            #back-to-menu-from-conquest-theme {
-                margin-top: 20px;
-                padding: 10px 30px;
-            }
-        }
-
-        .conquest-theme-header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            padding-bottom: 30px;
-            border-bottom: 1px solid #cabfa6;
-            margin-bottom: 30px;
-        }
-
-        .conquest-theme-title {
-            font-size: 36px;
-            color: #1c1a17;
-            font-family: "Ma Shan Zheng", cursive;
-            letter-spacing: 6px;
-        }
-
-        .conquest-theme-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 20px;
-            width: 100%;
-            padding: 0 20px;
-            max-width: 800px;
-        }
-
-        .conquest-theme-card {
-            padding: 24px 16px;
-            background: linear-gradient(135deg, #f4efe4 0%, #dfd8c8 100%);
-            border: 2px solid #cabfa6;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            min-height: 140px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
+        

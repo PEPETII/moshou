@@ -14,13 +14,14 @@ const DensityPicker = {
     if (this._el) return this._el;
     const root = document.createElement('div');
     root.id = 'density-picker';
-    root.className = 'hidden';
+    root.className = 'ink-veil hidden';
     root.setAttribute('role', 'dialog');
     root.setAttribute('aria-modal', 'true');
     root.setAttribute('aria-labelledby', 'density-picker-title');
 
     const box = document.createElement('div');
     box.id = 'density-picker-box';
+    box.className = 'ink-scroll';
 
     const title = document.createElement('h2');
     title.id = 'density-picker-title';
@@ -55,13 +56,13 @@ const DensityPicker = {
     const back = document.createElement('button');
     back.type = 'button';
     back.id = 'density-picker-back';
-    back.className = 'ink-button secondary';
+    back.className = 'ink-btn';
     back.textContent = '返回';
     back.addEventListener('click', () => this._cancel());
     const ok = document.createElement('button');
     ok.type = 'button';
     ok.id = 'density-picker-ok';
-    ok.className = 'ink-button';
+    ok.className = 'ink-btn ink-btn--primary';
     ok.textContent = '开战';
     ok.addEventListener('click', () => this._confirm());
     actions.appendChild(back);
@@ -108,7 +109,8 @@ const DensityPicker = {
       document.addEventListener('keydown', this._keyHandler);
     }
     const ok = this._el.querySelector('#density-picker-ok');
-    if (ok && ok.focus) ok.focus();
+    // 触屏不自动聚焦，避免「开战」外多一圈焦点框（P5）
+    if (ok && ok.focus && !(window.DeviceProfile && window.DeviceProfile.isTouch)) ok.focus();
   },
 
   close() {

@@ -93,6 +93,34 @@
 
   /* ---------- 纸 ---------- */
 
+  /**
+   * 纸纤维：随机方向的短淡墨丝。wrap 为真时，跨边的纤维在对边补画，得到可无缝平铺的纹理。
+   * 每根纤维取随机数的顺序固定（位置、长度、角度、浓淡、粗细），地图纸纹与旧版逐像素一致。
+   */
+  function paintFibers(ctx, w, h, R, count, wrap) {
+    var i, px, py, len, ang, ex, ey, dx, dy;
+    ctx.lineWidth = 1;
+    for (i = 0; i < count; i++) {
+      px = R() * w; py = R() * h;
+      len = 2 + R() * 11; ang = R() * Math.PI;
+      ctx.strokeStyle = 'rgba(122,106,84,' + (0.012 + R() * 0.034).toFixed(3) + ')';
+      ctx.lineWidth = 0.6 + R() * 0.9;
+      ex = Math.cos(ang) * len; ey = Math.sin(ang) * len;
+      for (dx = -1; dx <= 1; dx++) {
+        for (dy = -1; dy <= 1; dy++) {
+          if ((dx || dy) && !wrap) continue;
+          // 只在纤维确实跨出该方向的边时补画
+          if (dx && !(dx < 0 ? px + Math.max(0, ex) > w : px + Math.min(0, ex) < 0)) continue;
+          if (dy && !(dy < 0 ? py + ey > h : false)) continue;
+          ctx.beginPath();
+          ctx.moveTo(px + dx * w, py + dy * h);
+          ctx.lineTo(px + dx * w + ex, py + dy * h + ey);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
   function paintPaper(ctx, w, h) {
     ctx.fillStyle = PAPER;
     ctx.fillRect(0, 0, w, h);
@@ -102,18 +130,7 @@
     var i, px, py, len, ang, rad, gr;
 
     // 纤维
-    var fibers = Math.min(12000, Math.round(2400 * k));
-    ctx.lineWidth = 1;
-    for (i = 0; i < fibers; i++) {
-      px = R() * w; py = R() * h;
-      len = 2 + R() * 11; ang = R() * Math.PI;
-      ctx.strokeStyle = 'rgba(122,106,84,' + (0.012 + R() * 0.034).toFixed(3) + ')';
-      ctx.lineWidth = 0.6 + R() * 0.9;
-      ctx.beginPath();
-      ctx.moveTo(px, py);
-      ctx.lineTo(px + Math.cos(ang) * len, py + Math.sin(ang) * len);
-      ctx.stroke();
-    }
+    paintFibers(ctx, w, h, R, Math.min(12000, Math.round(2400 * k)), false);
 
     // 茶渍
     var stains = Math.min(60, Math.round(24 * k));
@@ -415,6 +432,39 @@
     ctx.fillRect(0, 0, w, h);
   }
 
+  /* ---------- 供 DOM 共用的纹理（P6） ---------- */
+
+  var shared = {};
+
+  /**
+   * 可平铺的纸纤维纹理：透明底，只有纤维（不画底色与茶渍），可叠在任何纸色上。
+   * 密度与地图纸纹相同；size 为逻辑边长，位图按设备像素比放大。只生成一次。
+   */
+  function paperTile(size) {
+    size = size || 320;
+    if (shared.tile && shared.tile.size === size) return shared.tile.cv;
+    var scale = Math.min(2, g.devicePixelRatio || 1);
+    var made = hiDpiCanvas(size, size, scale);
+    var count = Math.round(2400 * (size * size) / REF_AREA);
+    paintFibers(made.ctx, size, size, rng(20261019), count, true);
+    shared.tile = { size: size, cv: made.cv };
+    return made.cv;
+  }
+
+  /**
+   * 卷底远山带：透明底，与地图底边的远山同一算法（同种子、同透明度），供 DOM 页面铺在底部。
+   * 山高按地图视口高（432）计算，使页面底部的山与战场底边的山比例一致。
+   */
+  function scrollFoot(w, h) {
+    w = w || 960; h = h || 120;
+    var key = w + 'x' + h;
+    if (shared.foot && shared.foot.key === key) return shared.foot.cv;
+    var made = hiDpiCanvas(w, h, Math.min(2, g.devicePixelRatio || 1));
+    paintMountains(made.ctx, w, 432, h);
+    shared.foot = { key: key, cv: made.cv };
+    return made.cv;
+  }
+
   function clearCache() {
     cache.terrain = {};
     cache.corridor = {};
@@ -425,6 +475,8 @@
     drawTerrain: drawTerrain,
     drawPathCorridor: drawPathCorridor,
     drawScreen: drawScreen,
+    paperTile: paperTile,
+    scrollFoot: scrollFoot,
     clearCache: clearCache,
     PAPER: PAPER
   };

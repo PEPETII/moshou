@@ -18,117 +18,107 @@
     <div id="main-menu">
         <canvas id="menu-map-canvas"></canvas>
         <canvas id="menu-ink-canvas"></canvas>
-        <h1 id="main-menu-title" aria-label="墨守成规"><span class="title-ink">墨</span><span class="title-script">守 成 规</span></h1>
-        <span class="menu-seal" aria-hidden="true">守</span>
-        <div id="game-version" class="game-version"></div>
-        <div class="menu-buttons">
-            <button class="menu-btn" id="btn-levels"><span class="menu-glyph">守</span><span>塔 防</span></button>
-            <button class="menu-btn" id="btn-conquest"><span class="menu-glyph">征</span><span>征 服</span></button>
-            <button class="menu-btn" id="btn-encyclopedia"><span class="menu-glyph">谱</span><span>图 鉴</span></button>
-            <button class="menu-btn" id="btn-custom" hidden style="display:none" aria-hidden="true" tabindex="-1"><span class="menu-glyph">作</span><span>自 定</span></button>
-            <button class="menu-btn" id="btn-settings"><span class="menu-glyph">设</span><span>设 置</span></button>
-        </div>
-        <div id="settings-container" class="hidden">
-            <h2>设 · 墨卷</h2>
-            <button id="ink-motion-toggle" type="button" aria-pressed="false">墨迹动效 · 开</button>
-            <p>减少动效时，书页与印章仍会清晰呈现。</p>
-            <button id="hit-feedback-toggle" type="button" aria-pressed="true">打击反馈 · 开</button>
-            <p>伤害数字、顿帧、震屏、碎字、墨渍与连斩。墨迹动效关闭时不震屏。</p>
-            <div class="audio-settings">
-                <div class="audio-row">
-                    <button data-sound-toggle type="button" aria-pressed="true">音效 · 开</button>
-                    <input type="range" class="audio-slider" data-volume="sfx" min="0" max="100" step="5" value="80" aria-label="音效音量">
-                </div>
-                <div class="audio-row">
-                    <button data-bgm-toggle type="button" aria-pressed="true">音乐 · 开</button>
-                    <input type="range" class="audio-slider" data-volume="bgm" min="0" max="100" step="5" value="60" aria-label="音乐音量">
-                </div>
+        <div class="menu-stage">
+            <div class="menu-hero">
+                <h1 id="main-menu-title" class="menu-title" aria-label="墨守成规">墨守成规</h1>
+                <span class="menu-seal" aria-hidden="true">守</span>
+                <div id="game-version" class="game-version"></div>
             </div>
-            <button id="back-to-menu-from-settings" type="button">返回墨卷</button>
-        </div>
-        <div id="theme-select-container" class="hidden"></div>
-        <div id="level-list-container" class="hidden">
-            <div class="level-list-header">
-                <span class="level-list-title"></span>
+            <div class="menu-buttons">
+                <button class="menu-btn" id="btn-levels" type="button"><span class="menu-glyph">守</span><span class="menu-btn__text"><span class="menu-btn__name">塔防</span><span class="menu-btn__note">限时坚守，以字御敌</span></span></button>
+                <button class="menu-btn" id="btn-conquest" type="button"><span class="menu-glyph">征</span><span class="menu-btn__text"><span class="menu-btn__name">征服</span><span class="menu-btn__note">召唤成塔，压住危险</span></span></button>
+                <button class="menu-btn" id="btn-encyclopedia" type="button"><span class="menu-glyph">谱</span><span class="menu-btn__text"><span class="menu-btn__name">图鉴</span><span class="menu-btn__note">字形与妖异</span></span></button>
+                <button class="menu-btn" id="btn-custom" hidden style="display:none" aria-hidden="true" tabindex="-1"><span class="menu-glyph">作</span><span class="menu-btn__text"><span class="menu-btn__name">自定</span></span></button>
+                <button class="menu-btn" id="btn-settings" type="button"><span class="menu-glyph">设</span><span class="menu-btn__text"><span class="menu-btn__name">设置</span><span class="menu-btn__note">画面与声音</span></span></button>
             </div>
-            <div class="level-grid"></div>
-            <div id="level-inscription" class="hidden" aria-live="polite">
-                <span id="level-inscription-number"></span>
-                <strong id="level-inscription-name"></strong>
-                <button id="enter-level" type="button">入 境</button>
-            </div>
-            <button id="back-to-themes">主题</button>
         </div>
+
+        <!-- 设置（P3：与战斗暂停设置共用 js/ui/settings-panel.js） -->
+        <section id="settings-container" class="ink-page hidden" aria-labelledby="settings-title">
+            <header class="ink-page__bar">
+                <button id="back-to-menu-from-settings" class="ink-back" type="button">主菜单</button>
+                <h2 id="settings-title" class="ink-page__title">设置</h2>
+                <div class="ink-page__aside"></div>
+            </header>
+            <div class="ink-page__body"><div data-settings-host="menu"></div></div>
+        </section>
+
+        <!-- 塔防 · 择卷 / 长卷（P3：与征服共用 js/ui/level-scroll.js） -->
+        <section id="theme-select-container" class="ink-page hidden" aria-labelledby="td-theme-title">
+            <header class="ink-page__bar">
+                <button id="back-to-menu" class="ink-back" type="button">主菜单</button>
+                <h2 id="td-theme-title" class="ink-page__title">塔防</h2>
+                <div class="ink-page__aside">择一卷入境</div>
+            </header>
+            <div class="ink-page__body ink-page__body--fill"><div class="scroll-shelf" id="td-theme-shelf"></div></div>
+        </section>
+        <section id="level-list-container" class="ink-page hidden" aria-labelledby="td-level-title">
+            <header class="ink-page__bar">
+                <button id="back-to-themes" class="ink-back" type="button">塔防</button>
+                <h2 id="td-level-title" class="ink-page__title level-list-title"></h2>
+                <div class="ink-page__aside" id="td-level-progress"></div>
+            </header>
+            <div class="ink-page__body ink-page__body--fill"><div class="level-scroll-host" id="td-level-scroll"></div></div>
+        </section>
         
-        <!-- 图鉴主界面 -->
-        <div id="encyclopedia-container" class="hidden">
-            <div class="encyclopedia-title">图鉴</div>
-            <div class="encyclopedia-buttons">
-                <div class="encyclopedia-card" id="btn-tower-encyclopedia">
-                    <span class="encyclopedia-icon">塔</span>
-                    <div class="encyclopedia-card-name">炮塔志</div>
-                    <div class="encyclopedia-card-desc">查看所有防御塔详细信息</div>
-                </div>
-                <div class="encyclopedia-card" id="btn-enemy-encyclopedia">
-                    <span class="encyclopedia-icon">鬼</span>
-                    <div class="encyclopedia-card-name">妖异录</div>
-                    <div class="encyclopedia-card-desc">查看所有敌人详细信息</div>
-                </div>
-            </div>
-            <button id="back-to-menu-from-encyclopedia">主菜单</button>
-        </div>
-        
-        <!-- 炮塔图鉴界面 -->
-        <div id="tower-encyclopedia-container" class="hidden">
-            <div class="encyclopedia-header">
-                <span class="encyclopedia-title">炮塔图鉴</span>
-                <div class="filter-tabs">
-                    <button class="filter-tab active" data-filter="all">全部</button>
-                    <button class="filter-tab" data-filter="basic">基础</button>
-                    <button class="filter-tab" data-filter="element">元素</button>
-                    <button class="filter-tab" data-filter="support">辅助</button>
-                    <button class="filter-tab" data-filter="path">路径</button>
-                    <button class="filter-tab" data-filter="special">特殊</button>
+        <!-- 图鉴主界面（P2：三段骨架，入口卡占满内容区） -->
+        <section id="encyclopedia-container" class="ink-page codex-page hidden" aria-labelledby="codex-title">
+            <header class="ink-page__bar">
+                <button id="back-to-menu-from-encyclopedia" class="ink-back" type="button">主菜单</button>
+                <h2 id="codex-title" class="ink-page__title">图鉴</h2>
+                <div class="ink-page__aside" id="codex-tally"></div>
+            </header>
+            <div class="ink-page__body ink-page__body--fill">
+                <div class="codex-entries">
+                    <button class="codex-entry" id="btn-tower-encyclopedia" type="button">
+                        <span class="codex-entry__glyph">塔</span>
+                        <span class="codex-entry__name">炮塔志</span>
+                        <span class="codex-entry__desc">字形如何写成弹道</span>
+                        <span class="codex-entry__count" id="codex-count-towers"></span>
+                    </button>
+                    <button class="codex-entry" id="btn-enemy-encyclopedia" type="button">
+                        <span class="codex-entry__glyph">鬼</span>
+                        <span class="codex-entry__name">妖异录</span>
+                        <span class="codex-entry__desc">来犯者的血量与脚程</span>
+                        <span class="codex-entry__count" id="codex-count-enemies"></span>
+                    </button>
                 </div>
             </div>
-            <div class="encyclopedia-grid" id="tower-encyclopedia-grid"></div>
-            <button id="back-to-encyclopedia-from-towers">图鉴</button>
-        </div>
-        
-        <!-- 怪物图鉴界面 -->
-        <div id="enemy-encyclopedia-container" class="hidden">
-            <div class="encyclopedia-header">
-                <span class="encyclopedia-title">怪物图鉴</span>
-            </div>
-            <div class="encyclopedia-grid" id="enemy-encyclopedia-grid"></div>
-            <button id="back-to-encyclopedia-from-enemies">图鉴</button>
-        </div>
-        
-        <!-- 炮塔详情面板 -->
-        <div id="tower-detail-panel" class="hidden">
-            <div class="detail-content">
-                <div class="detail-header">
-                    <span class="detail-char" id="tower-detail-char"></span>
-                    <span class="detail-name" id="tower-detail-name"></span>
+        </section>
+
+        <!-- 炮塔志：左列表、右详情常驻双栏 -->
+        <section id="tower-encyclopedia-container" class="ink-page codex-page hidden" aria-labelledby="tower-codex-title">
+            <header class="ink-page__bar">
+                <button id="back-to-encyclopedia-from-towers" class="ink-back" type="button">图鉴</button>
+                <h2 id="tower-codex-title" class="ink-page__title">炮塔志</h2>
+                <div class="ink-page__aside">
+                    <button id="tower-codex-home" class="ink-btn ink-btn--ghost codex-home" type="button">主菜单</button>
                 </div>
-                <div class="detail-stats" id="tower-detail-stats"></div>
-                <div class="detail-desc" id="tower-detail-desc"></div>
-                <button class="detail-close-btn" id="close-tower-detail">关闭</button>
-            </div>
-        </div>
-        
-        <!-- 怪物详情面板 -->
-        <div id="enemy-detail-panel" class="hidden">
-            <div class="detail-content">
-                <div class="detail-header">
-                    <span class="detail-char" id="enemy-detail-char"></span>
-                    <span class="detail-name" id="enemy-detail-name"></span>
+            </header>
+            <div class="ink-page__body ink-page__body--fill">
+                <div class="ink-split codex-split">
+                    <div id="tower-encyclopedia-grid" class="codex-list" role="listbox" aria-label="炮塔"></div>
+                    <article id="tower-detail-panel" class="ink-panel codex-detail" aria-live="polite"></article>
                 </div>
-                <div class="detail-stats" id="enemy-detail-stats"></div>
-                <div class="detail-desc" id="enemy-detail-desc"></div>
-                <button class="detail-close-btn" id="close-enemy-detail">关闭</button>
             </div>
-        </div>
+        </section>
+
+        <!-- 妖异录：同上 -->
+        <section id="enemy-encyclopedia-container" class="ink-page codex-page hidden" aria-labelledby="enemy-codex-title">
+            <header class="ink-page__bar">
+                <button id="back-to-encyclopedia-from-enemies" class="ink-back" type="button">图鉴</button>
+                <h2 id="enemy-codex-title" class="ink-page__title">妖异录</h2>
+                <div class="ink-page__aside">
+                    <button id="enemy-codex-home" class="ink-btn ink-btn--ghost codex-home" type="button">主菜单</button>
+                </div>
+            </header>
+            <div class="ink-page__body ink-page__body--fill">
+                <div class="ink-split codex-split">
+                    <div id="enemy-encyclopedia-grid" class="codex-list" role="listbox" aria-label="妖异"></div>
+                    <article id="enemy-detail-panel" class="ink-panel codex-detail" aria-live="polite"></article>
+                </div>
+            </div>
+        </section>
         
         <button id="back-to-menu" class="hidden">主菜单</button>
 
@@ -195,69 +185,22 @@
         </div>
 
         <!-- 征服模式主题选择 -->
-        <div id="conquest-theme-select-container" class="hidden">
-            <div class="conquest-theme-header">
-                <span class="conquest-theme-title">征服模式 - 选择主题</span>
-            </div>
-            <div class="conquest-theme-grid">
-                <div class="conquest-theme-card" data-theme="1">
-                    <span class="theme-icon">火</span>
-                    <div class="theme-name">烈焰试炼</div>
-                    <div class="theme-progress">进度: 0/5</div>
-                </div>
-                <div class="conquest-theme-card" data-theme="2">
-                    <span class="theme-icon">水</span>
-                    <div class="theme-name">寒霜之路</div>
-                    <div class="theme-progress">进度: 0/5</div>
-                </div>
-                <div class="conquest-theme-card" data-theme="3">
-                    <span class="theme-icon">山</span>
-                    <div class="theme-name">山岳考验</div>
-                    <div class="theme-progress">进度: 0/5</div>
-                </div>
-                <div class="conquest-theme-card" data-theme="4">
-                    <span class="theme-icon">风</span>
-                    <div class="theme-name">风暴中心</div>
-                    <div class="theme-progress">进度: 0/5</div>
-                </div>
-                <div class="conquest-theme-card" data-theme="5">
-                    <span class="theme-icon">合</span>
-                    <div class="theme-name">终极挑战</div>
-                    <div class="theme-progress">进度: 0/5</div>
-                </div>
-            </div>
-            <button id="back-to-menu-from-conquest-theme">主菜单</button>
-        </div>
-        
-        <!-- 征服模式关卡选择 -->
-        <div id="conquest-level-select-container" class="hidden">
-            <div class="conquest-level-header">
-                <span class="conquest-level-title" id="conquest-current-theme-name">主题名称</span>
-            </div>
-            <div class="conquest-level-grid">
-                <div class="conquest-level-item" data-level="1">
-                    <span class="level-num">关卡 1</span>
-                    <span class="level-status"></span>
-                </div>
-                <div class="conquest-level-item" data-level="2">
-                    <span class="level-num">关卡 2</span>
-                    <span class="level-status"></span>
-                </div>
-                <div class="conquest-level-item" data-level="3">
-                    <span class="level-num">关卡 3</span>
-                    <span class="level-status"></span>
-                </div>
-                <div class="conquest-level-item locked" data-level="4">
-                    <span class="level-num">关卡 4</span>
-                    <span class="level-status">未悟</span>
-                </div>
-                <div class="conquest-level-item locked" data-level="5">
-                    <span class="level-num">关卡 5</span>
-                    <span class="level-status">未悟</span>
-                </div>
-            </div>
-            <button id="back-to-conquest-themes">主题列表</button>
-        </div>
+        <section id="conquest-theme-select-container" class="ink-page hidden" aria-labelledby="cq-theme-title">
+            <header class="ink-page__bar">
+                <button id="back-to-menu-from-conquest-theme" class="ink-back" type="button">主菜单</button>
+                <h2 id="cq-theme-title" class="ink-page__title">征服</h2>
+                <div class="ink-page__aside">择一卷入境</div>
+            </header>
+            <div class="ink-page__body ink-page__body--fill"><div class="scroll-shelf" id="cq-theme-shelf"></div></div>
+        </section>
+        <section id="conquest-level-select-container" class="ink-page hidden" aria-labelledby="conquest-current-theme-name">
+            <header class="ink-page__bar">
+                <button id="back-to-conquest-themes" class="ink-back" type="button">征服</button>
+                <h2 id="conquest-current-theme-name" class="ink-page__title"></h2>
+                <div class="ink-page__aside" id="cq-level-progress"></div>
+            </header>
+            <div class="ink-page__body ink-page__body--fill"><div class="level-scroll-host" id="cq-level-scroll"></div></div>
+        </section>
     </div>
 
     <!-- 游戏缩放容器 -->
@@ -265,140 +208,67 @@
         <div id="scale-container">
             <div id="main-container" class="hidden">
                 <div id="game-container">
-                    <div id="top-bar">
-                        <div class="stat">
-                            <span class="label">墨</span>
-                            <span id="ink" class="value">300</span>
-                        </div>
-                        <div class="stat">
-                            <span class="label">守时</span>
-                            <span id="hold-time" class="value">--:--</span>
-                        </div>
-                        <div class="stat">
-                            <span class="label">尸</span>
-                            <span id="enemies" class="value">0</span>
-                        </div>
-                        <div class="stat core-stat">
-                            <span class="label">守</span>
-                            <span id="core-hp" class="value">20/20</span>
-                        </div>
-                        <div class="stat">
-                            <button id="pause-btn" type="button" title="暂停">暂停</button>
-                        </div>
-                        <div class="stat sound-control">
-                            <button id="sound-toggle" class="sound-toggle" data-sound-toggle type="button" aria-pressed="true" aria-label="音效开关" title="音效开关">音效 · 开</button>
-                            <button id="bgm-toggle" class="sound-toggle" data-bgm-toggle type="button" aria-pressed="true" aria-label="音乐开关" title="背景音乐开关">音乐 · 开</button>
-                        </div>
-                    </div>
-
+                    <!-- P4：画布占满；P7：数值并入右侧卡槽，画布上方不再有任何叠层 -->
                     <div id="game-area">
                         <canvas id="game-canvas"></canvas>
                     </div>
-
-                    <div id="bottom-bar">
-                        <div class="tower-select" data-type="fire">
-                            <span class="tower-char">火</span>
-                            <span class="tower-cost">120</span>
+                    <aside class="battle-dock" aria-label="塔卡与战况">
+                        <button id="pause-btn" class="dock-pause" type="button" title="暂停" aria-label="暂停">停</button>
+                        <div id="bottom-bar"></div>
+                        <div id="top-bar" class="dock-stats">
+                            <div class="stat core-stat"><span class="label">守</span><span id="core-hp" class="value">20/20</span></div>
+                            <div class="stat dock-stat"><span class="label">墨</span><span id="ink" class="value">300</span></div>
+                            <div class="stat dock-stat"><span class="label">守时</span><span id="hold-time" class="value">--:--</span></div>
+                            <div class="stat dock-stat"><span class="label">尸</span><span id="enemies" class="value">0</span></div>
                         </div>
-                        <div class="tower-select" data-type="water">
-                            <span class="tower-char">水</span>
-                            <span class="tower-cost">90</span>
-                        </div>
-                        <div class="tower-select" data-type="mountain">
-                            <span class="tower-char">山</span>
-                            <span class="tower-cost">140</span>
-                        </div>
-                        <div class="tower-select locked" data-type="wood">
-                            <span class="tower-char">木</span>
-                            <span class="tower-cost">100</span>
-                        </div>
-                        <div class="tower-select locked" data-type="gold">
-                            <span class="tower-char">金</span>
-                            <span class="tower-cost">180</span>
-                        </div>
-                        <div class="tower-select locked" data-type="earth">
-                            <span class="tower-char">土</span>
-                            <span class="tower-cost">220</span>
-                        </div>
-                    </div>
-
-                    <!-- 战斗暂停菜单（暂停按钮打开） -->
-                    <div id="battle-pause" class="battle-layer hidden" role="dialog" aria-label="暂停菜单">
-                        <div class="battle-layer-panel">
-                            <h2>暂 停</h2>
-                            <button id="pause-resume" type="button">继续游戏</button>
-                            <button id="pause-settings" type="button">设置</button>
-                            <button id="pause-return" type="button">返回主菜单</button>
-                        </div>
-                    </div>
-
-                    <!-- 战斗设置弹窗（暂停菜单的「设置」打开） -->
-                    <div id="battle-settings" class="battle-layer hidden" role="dialog" aria-label="战斗设置">
-                        <div class="battle-layer-panel">
-                            <h2>设 · 墨卷</h2>
-                            <div class="battle-settings-list">
-                                <button data-sound-toggle type="button" aria-pressed="true">音效 · 开</button>
-                                <button data-bgm-toggle type="button" aria-pressed="true">音乐 · 开</button>
-                                <button id="battle-damage-toggle" type="button" aria-pressed="true">伤害数字 · 开</button>
-                                <button id="battle-shake-toggle" type="button" aria-pressed="true">震动 · 开</button>
-                            </div>
-                            <button id="settings-back" type="button">返回</button>
-                        </div>
-                    </div>
+                    </aside>
                 </div>
             </div>
             <!-- 征服模式容器 -->
             <div id="conquest-container" class="hidden">
-                <div id="conquest-side-panel">
-                    <div class="conquest-title">征服模式</div>
-                    <div class="summon-section">
-                        <button id="conquest-summon-btn" class="summon-btn">召唤</button>
-                        <div class="summon-cost">80墨</div>
-                    </div>
-                    <div class="conquest-divider"></div>
-                    <div class="conquest-stats">
-                        <div class="conquest-stat">
-                            <span class="conquest-label">墨水</span>
-                            <span id="conquest-ink" class="conquest-value">300</span>
-                        </div>
-                        <div class="conquest-stat">
-                            <span class="conquest-label">坚守剩余</span>
-                            <span id="conquest-hold" class="conquest-value">--:--</span>
-                        </div>
-                        <div class="conquest-stat">
-                            <span class="conquest-label">危险</span>
-                            <span id="conquest-danger" class="conquest-value">0 / 200</span>
-                        </div>
-                    </div>
-                    <div class="conquest-divider"></div>
-                    <button id="conquest-menu-btn" class="conquest-menu-btn">菜单</button>
-                    <button class="sound-toggle" data-sound-toggle type="button" aria-pressed="true" aria-label="音效开关" title="音效开关">音效 · 开</button>
-                    <button class="sound-toggle" data-bgm-toggle type="button" aria-pressed="true" aria-label="音乐开关" title="背景音乐开关">音乐 · 开</button>
-                    <div class="conquest-rules">
-                        <div class="rules-title">规则</div>
-                        <div class="rules-text">外圈为敌人循环路径</div>
-                        <div class="rules-text">内圈可放置炮塔</div>
-                        <div class="rules-text">召唤随机生成炮塔</div>
-                        <div class="rules-text">坚守时间到即胜</div>
-                        <div class="rules-text">场上怪物达到危险线即失败</div>
-                    </div>
-                </div>
                 <div id="conquest-game-container">
                     <canvas id="conquest-canvas"></canvas>
                 </div>
+                <aside id="conquest-side-panel" class="battle-dock battle-dock--left" aria-label="征服">
+                    <button id="conquest-summon-btn" class="summon-btn" type="button">召<span id="conquest-summon-cost" class="summon-cost">50墨</span></button>
+                    <div class="dock-stat"><span class="label">墨</span><span id="conquest-ink" class="value">300</span></div>
+                    <div class="dock-stat"><span class="label">守时</span><span id="conquest-hold" class="value">--:--</span></div>
+                    <div class="dock-stat dock-stat--danger"><span class="label">危</span><span id="conquest-danger" class="value">0 / 200</span></div>
+                    <button id="conquest-menu-btn" class="conquest-menu-btn" type="button" title="返回选关" aria-label="返回选关">退</button>
+                </aside>
             </div>
         </div>
     </div>
 
-    <!-- 事件通知容器 -->
-    <div id="event-container"></div>
 
-    <div id="modal" class="hidden">
-        <div id="modal-content">
+    <!-- 战斗暂停菜单（暂停按钮打开） -->
+    <div id="battle-pause" class="battle-layer ink-veil hidden" role="dialog" aria-label="暂停菜单">
+        <div class="battle-layer-panel ink-scroll">
+            <h2>暂 停</h2>
+            <p id="hud-level" class="pause-level"></p>
+            <button id="pause-resume" class="ink-btn ink-btn--primary" type="button">继续</button>
+            <button id="pause-settings" class="ink-btn" type="button">设置</button>
+            <button id="pause-return" class="ink-btn ink-btn--ghost" type="button">返回主菜单</button>
+        </div>
+    </div>
+
+    <!-- 战斗设置弹窗（暂停菜单的「设置」打开） -->
+    <div id="battle-settings" class="battle-layer ink-veil hidden" role="dialog" aria-label="战斗设置">
+        <div class="battle-layer-panel ink-scroll settings-layer-panel">
+            <h2>设置</h2>
+            <div data-settings-host="battle"></div>
+            <button id="settings-back" class="ink-back" type="button">暂停</button>
+        </div>
+    </div>
+
+    <!-- 卷轴弹窗（P5）：内容由 js/ui/ink-modal.js 渲染 -->
+    <div id="modal" class="ink-veil hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div id="modal-content" class="ink-scroll">
+            <span id="modal-seal" aria-hidden="true">印</span>
             <h2 id="modal-title"></h2>
             <p id="modal-text"></p>
-            <span id="modal-seal" aria-hidden="true">印</span>
-            <button id="modal-btn">确定</button>
+            <div id="modal-stars" class="modal-stars" hidden></div>
+            <div id="modal-actions" class="modal-actions"></div>
         </div>
     </div>
 

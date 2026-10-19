@@ -85,22 +85,21 @@
     syncButtons() {
       const doc = global.document;
       if (!doc) return;
-      doc.querySelectorAll('[data-sound-toggle]').forEach((button) => {
+      // 设置组件的印章开关（.ink-switch）只改印章字与 aria-checked；其余按钮整段改写文字
+      const paint = (button, label, on, title) => {
         button.disabled = !this.supported;
-        button.textContent = this.supported
-          ? `音效 · ${this.enabled ? '开' : '关'}`
-          : '音效 · 不支持';
-        button.setAttribute('aria-pressed', this.supported && this.enabled ? 'true' : 'false');
-        button.title = this.supported ? '音效开关' : '当前浏览器不支持 Web Audio';
-      });
-      doc.querySelectorAll('[data-bgm-toggle]').forEach((button) => {
-        button.disabled = !this.supported;
-        button.textContent = this.supported
-          ? `音乐 · ${this.musicEnabled ? '开' : '关'}`
-          : '音乐 · 不支持';
-        button.setAttribute('aria-pressed', this.supported && this.musicEnabled ? 'true' : 'false');
-        button.title = this.supported ? '背景音乐开关' : '当前浏览器不支持 Web Audio';
-      });
+        const seal = button.querySelector('.ink-switch__seal');
+        if (seal) {
+          seal.textContent = this.supported ? (on ? '开' : '关') : '无';
+          button.setAttribute('aria-checked', this.supported && on ? 'true' : 'false');
+        } else {
+          button.textContent = this.supported ? `${label} · ${on ? '开' : '关'}` : `${label} · 不支持`;
+          button.setAttribute('aria-pressed', this.supported && on ? 'true' : 'false');
+        }
+        button.title = this.supported ? title : '当前浏览器不支持 Web Audio';
+      };
+      doc.querySelectorAll('[data-sound-toggle]').forEach((button) => paint(button, '音效', this.enabled, '音效开关'));
+      doc.querySelectorAll('[data-bgm-toggle]').forEach((button) => paint(button, '音乐', this.musicEnabled, '背景音乐开关'));
       doc.querySelectorAll('[data-volume]').forEach((slider) => {
         const value = slider.dataset.volume === 'bgm' ? this.bgmVolume : this.sfxVolume;
         slider.disabled = !this.supported;

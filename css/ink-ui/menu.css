@@ -1,0 +1,390 @@
+/* 主菜单首页、设置、择卷与长卷（工单 P3）
+ * 骨架与通用组件来自 layout.css / components.css；这里只写这几页特有的部分。 */
+
+/* ── 主菜单：左题名、右入口 ─────────────────────────── */
+#main-menu .menu-stage {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  align-items: center;
+  gap: var(--sp-8);
+  width: min(960px, 100%);
+  height: 100%;
+  padding: var(--sat, 0px) var(--page-gutter-r) var(--sab, 0px) var(--page-gutter);
+}
+.menu-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-4);
+  justify-self: center;
+}
+/* 竖排题名：自上而下「墨守成规」 */
+#main-menu .menu-title {
+  margin: 0;
+  color: var(--ink-jiao);
+  font: calc(var(--fs-hero) * 1.5) / 1 var(--font-brush);
+  font-weight: normal;
+  letter-spacing: .12em;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  text-shadow: none;
+  animation: menu-title-in .8s ease-out both;
+}
+#main-menu .menu-title.hidden,
+#main-menu .menu-seal.hidden { display: none; }
+#main-menu .menu-seal {
+  align-self: flex-end;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: var(--seal);
+  font: var(--fs-l) / 1 var(--font-brush);
+  background: var(--tex-seal) center / 100% 100% no-repeat;
+  transform: rotate(-8deg);
+  animation: seal-fall .35s .7s both;
+}
+#main-menu .game-version {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(-1 * var(--sp-8));
+  margin: 0;
+  color: var(--ink-dan);
+  font-size: var(--fs-xs);
+  letter-spacing: .1em;
+  text-align: center;
+}
+
+/* 入口竖列：印块大字 + 名称 + 一句说明 */
+#main-menu .menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: 100%;
+  max-width: 420px;
+}
+#main-menu .menu-btn {
+  position: relative;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: 60px;
+  padding: var(--sp-1) var(--sp-4) var(--sp-1) var(--sp-2);
+  border: 0;
+  background: var(--paper-veil);
+  color: var(--ink-jiao);
+  text-align: left;
+  cursor: pointer;
+  isolation: isolate;
+  transition: background-color var(--dur-fast) ease, transform var(--dur-fast) ease;
+  animation: ink-appear .45s both;
+  -webkit-tap-highlight-color: transparent;
+}
+#main-menu .menu-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--tex-brush-frame) center / 100% 100% no-repeat;
+  opacity: .32;
+}
+#main-menu .menu-btn::before {
+  /* 选中 / 按下时的朱砂竖印 */
+  content: '';
+  position: absolute;
+  left: 0;
+  top: var(--sp-2);
+  bottom: var(--sp-2);
+  width: 4px;
+  background: var(--seal);
+  opacity: 0;
+  transition: opacity var(--dur-fast) ease;
+}
+#main-menu .menu-btn:hover,
+#main-menu .menu-btn:focus-visible { background: var(--paper-2); }
+#main-menu .menu-btn:hover::before,
+#main-menu .menu-btn:focus-visible::before { opacity: 1; }
+#main-menu .menu-btn:active { background: var(--paper-2); transform: translateY(1px); }
+#main-menu .menu-btn:active::before { opacity: 1; }
+#main-menu .menu-btn:nth-child(2) { animation-delay: .08s; }
+#main-menu .menu-btn:nth-child(3) { animation-delay: .16s; }
+#main-menu .menu-btn:nth-child(5) { animation-delay: .24s; }
+#main-menu .menu-glyph {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  justify-self: center;
+  color: var(--ink-jiao);
+  font: var(--fs-xl) / 1 var(--font-brush);
+  background: var(--tex-brush-frame) center / 100% 100% no-repeat;
+}
+.menu-btn__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.menu-btn__name { font: var(--fs-l) / 1.1 var(--font-brush); letter-spacing: .2em; }
+.menu-btn__note { overflow: hidden; color: var(--ink-zhong); font: var(--fs-xs) / 1.3 var(--font-text); letter-spacing: .1em; white-space: nowrap; text-overflow: ellipsis; }
+
+@keyframes menu-title-in {
+  from { opacity: 0; clip-path: inset(0 0 100% 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+/* ── 设置：画面 / 声音两组并排 ─────────────────────── */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-4);
+  align-items: start;
+  max-width: 820px;
+  margin: 0 auto;
+}
+.settings-group { padding: var(--sp-3) var(--sp-4); }
+.settings-group .ink-panel__title { margin-bottom: var(--sp-1); font-size: var(--fs-l); }
+.settings-item { padding: var(--sp-1) 0; }
+.settings-item + .settings-item { box-shadow: inset 0 1px 0 var(--ink-qing); }
+.settings-switch { width: 100%; padding: 0; }
+.settings-switch__label { display: flex; flex: 1; flex-direction: column; gap: 1px; text-align: left; }
+.settings-switch__note {
+  color: var(--ink-zhong);
+  font: var(--fs-xs) / 1.3 var(--font-text);
+  letter-spacing: .04em;
+}
+/* 声音：开关与音量同一行 */
+.settings-item--audio {
+  display: grid;
+  grid-template-columns: 7.5em minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+/* 音量滑块：淡墨轨道、朱印滑块 */
+.settings-range {
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  background: transparent;
+  accent-color: var(--seal);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.settings-range::-webkit-slider-runnable-track { height: 3px; background: var(--ink-line); }
+.settings-range::-moz-range-track { height: 3px; background: var(--ink-line); }
+.settings-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -10px;
+  border: 0;
+  background: var(--seal);
+  transform: rotate(-6deg);
+}
+.settings-range::-moz-range-thumb { width: 22px; height: 22px; border: 0; border-radius: 0; background: var(--seal); }
+.settings-range:disabled { opacity: .4; }
+
+/* ── 择卷：主题卡居中，少于 3 卷时放大 ─────────────── */
+.scroll-shelf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-4);
+  height: 100%;
+}
+.scroll-theme {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  width: 220px;
+  min-height: 180px;
+  padding: var(--sp-4);
+  border: 0;
+  background-color: var(--paper-1);
+  background-image: var(--tex-paper-fiber), var(--tex-paper);
+  background-size: var(--paper-tile) var(--paper-tile), auto;
+  color: var(--ink-jiao);
+  font-family: var(--font-text);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease, transform var(--dur-fast) ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.scroll-shelf--few .scroll-theme { width: min(420px, 70%); height: 88%; max-height: 300px; }
+.scroll-theme::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--tex-brush-frame) center / 100% 100% no-repeat;
+  opacity: .38;
+}
+.scroll-theme:hover,
+.scroll-theme:focus-visible { background-color: var(--paper-2); }
+.scroll-theme:active { transform: translateY(1px); }
+.scroll-theme__icon { font: calc(var(--fs-hero) * 1.4) / 1 var(--font-brush); }
+.scroll-theme__name { font: var(--fs-l) / 1.2 var(--font-brush); letter-spacing: .3em; padding-left: .3em; }
+.scroll-theme__desc { color: var(--ink-zhong); font-size: var(--fs-s); letter-spacing: .06em; }
+.scroll-theme__progress { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); width: 60%; margin-top: var(--sp-1); }
+.scroll-theme__bar {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  background: var(--ink-line);
+}
+.scroll-theme__bar::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--done, 0) * 100%);
+  background: var(--seal);
+}
+.scroll-theme__count { color: var(--ink-zhong); font-size: var(--fs-xs); letter-spacing: .12em; }
+
+/* ── 长卷：节点沿墨线均匀分布，底部信息条 ─────────── */
+.level-scroll-host { height: 100%; }
+.level-scroll {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: var(--sp-3);
+  height: 100%;
+}
+.level-scroll__track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  min-height: 0;
+  overflow-x: auto;
+}
+.level-scroll__track::after {
+  /* 远山：沿用长卷原有的山水剪影，淡淡压在墨线之下 */
+  content: '';
+  position: absolute;
+  inset: 10% 0 0;
+  background: url("landscape.svg") center bottom / auto 80% repeat-x;
+  opacity: .45;
+  pointer-events: none;
+}
+.level-scroll__track::before {
+  /* 墨线 */
+  content: '';
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 50%;
+  height: 8px;
+  margin-top: -4px;
+  background: var(--tex-wash-edge) center / 100% 100% no-repeat;
+  opacity: .35;
+  pointer-events: none;
+}
+.scroll-node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 88px;
+  padding: var(--sp-2);
+  border: 0;
+  background: transparent;
+  color: var(--ink-jiao);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.scroll-node__seal {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  background: var(--paper-1) var(--tex-brush-frame) center / 100% 100% no-repeat;
+  font: var(--fs-xl) / 1 var(--font-brush);
+  transition: transform var(--dur-fast) var(--ease-ink), background-color var(--dur-fast) ease;
+}
+.scroll-node__name {
+  padding: 2px var(--sp-2);
+  background: var(--paper-veil);
+  font: var(--fs-m) / 1.2 var(--font-brush);
+  letter-spacing: .2em;
+}
+.scroll-node:hover .scroll-node__seal,
+.scroll-node:focus-visible .scroll-node__seal { background-color: var(--paper-2); }
+.scroll-node.is-selected .scroll-node__seal { transform: scale(1.12); color: var(--seal); background-color: var(--paper-0); }
+.scroll-node.is-selected .scroll-node__name { color: var(--seal); }
+/* 已守成：右上角盖一枚小朱印 */
+.scroll-node.is-done .scroll-node__seal::after {
+  content: '成';
+  position: absolute;
+  top: 2px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  color: var(--paper-0);
+  font: var(--fs-xs) / 1 var(--font-brush);
+  background: var(--seal);
+  transform: rotate(-10deg);
+}
+
+.level-scroll__info {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: 60px;
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4);
+  background-color: var(--paper-1);
+  background-image: var(--tex-paper-fiber), var(--tex-paper);
+  background-size: var(--paper-tile) var(--paper-tile), auto;
+  box-shadow: inset 0 1px 0 var(--ink-line), inset 0 -1px 0 var(--ink-line);
+}
+.scroll-info__num { color: var(--seal); font-size: var(--fs-s); letter-spacing: .12em; white-space: nowrap; }
+.scroll-info__name { font: var(--fs-xl) / 1 var(--font-brush); font-weight: normal; letter-spacing: .14em; white-space: nowrap; }
+.scroll-info__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px var(--sp-3);
+  min-width: 0;
+  color: var(--ink-zhong);
+  font-size: var(--fs-xs);
+  letter-spacing: .06em;
+}
+.scroll-info__enter { min-width: 120px; }
+
+/* ── 矮横屏 ─────────────────────────────────────── */
+@media (max-height: 430px) and (orientation: landscape) {
+  #main-menu .menu-stage { gap: var(--sp-6); }
+  #main-menu .menu-title { font-size: var(--fs-hero); }
+  #main-menu .menu-btn { min-height: 52px; }
+  #main-menu .menu-glyph { width: 40px; height: 40px; font-size: var(--fs-l); }
+  .settings-grid { gap: var(--sp-3); }
+  .settings-group { padding: var(--sp-2) var(--sp-3); }
+  .scroll-shelf--few .scroll-theme { height: 96%; }
+  .scroll-theme__icon { font-size: var(--fs-hero); }
+  .scroll-node__seal { width: 48px; height: 48px; font-size: var(--fs-l); }
+  .scroll-info__name { font-size: var(--fs-l); }
+  .level-scroll__info { min-height: 52px; gap: var(--sp-3); }
+}
+
+/* ── 竖屏兜底 ───────────────────────────────────── */
+@media (orientation: portrait) and (max-width: 600px) {
+  #main-menu .menu-stage { grid-template-columns: 1fr; grid-template-rows: auto 1fr; gap: var(--sp-4); }
+  #main-menu .menu-title { writing-mode: horizontal-tb; }
+  .settings-grid { grid-template-columns: 1fr; }
+  .level-scroll__info { grid-template-columns: auto 1fr auto; }
+  .scroll-info__meta { grid-column: 1 / -1; grid-row: 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #main-menu .menu-title, #main-menu .menu-seal, #main-menu .menu-btn { animation: none; }
+}
+html[data-ink-motion="reduced"] #main-menu .menu-title,
+html[data-ink-motion="reduced"] #main-menu .menu-seal,
+html[data-ink-motion="reduced"] #main-menu .menu-btn { animation: none; }

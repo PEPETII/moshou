@@ -309,6 +309,8 @@ Object.assign(CONFIG, {
     // 水墨基调：黑、浅黑（墨晕）、白
     bg: "#f4efe4",           // 宣纸底色
     grid: "#ded5c0",         // 淡墨网格（比纸底略深）
+    gridMark: "rgba(106, 100, 89, 0.42)",      // 征服格位交点的十字墨点（P6）
+    placementVeil: "rgba(244, 239, 228, 0.45)", // 征服可放置区的整块淡纸面（P6）
     gridHover: "#cbc2ad",    // 墨晕悬浮
     path: "#8a8377",         // 石板路底色
     pathLine: "#8a8377",     // 路径线条（润笔）

@@ -1,142 +1,11 @@
 /* 共享弹层的三种场景：胜、破、普通告知。 */
-#modal {
-  background: rgba(28, 26, 23, .26);
-}
-#modal-content {
-  width: min(430px, 88vw);
-  max-width: none;
-  max-height: 84vh;
-  padding: 22px 28px;
-  overflow-y: auto;
-  background: var(--ink-paper);
-  border: 0;
-  border-top: 2px solid var(--ink-strong);
-  border-bottom: 1px solid var(--ink-grid);
-  box-shadow: 8px 8px 0 var(--ink-shadow-paper);
-}
-#modal-content::before { display: none; }
-#modal-title {
-  color: var(--ink-strong);
-  font: 45px "Ma Shan Zheng", cursive;
-  line-height: 1.1;
-  margin: 0 0 8px;
-  letter-spacing: .14em;
-}
-#modal-text {
-  color: var(--ink-soft);
-  margin: 0 0 12px;
-  font: 14px/1.55 "ZCOOL XiaoWei", serif;
-  white-space: pre-line;
-}
-#modal[data-scene="victory"] #modal-title,
-#modal[data-scene="defeat"] #modal-title { font-size: 88px; }
-#modal[data-scene="defeat"] #modal-title { color: var(--ink-seal-dark); }
-#modal-seal {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  margin: 0 auto 14px;
-  color: var(--ink-seal);
-  border: 2px solid var(--ink-seal);
-  font: 20px "Ma Shan Zheng", cursive;
-  transform: rotate(-8deg);
-  animation: seal-fall .3s .25s both;
-}
-#modal[data-scene="defeat"] #modal-seal { color: var(--ink-seal-dark); border-color: var(--ink-seal-dark); text-decoration: line-through; }
-#modal-btn,
-#modal-return-btn {
-  min-height: 44px;
-  margin: 2px 8px;
-  padding: 7px 18px;
-  background: transparent !important;
-  border: 0 !important;
-  border-bottom: 1px solid var(--ink-strong) !important;
-  border-radius: 0;
-  box-shadow: none;
-  color: var(--ink-strong) !important;
-  font: 20px "Ma Shan Zheng", cursive;
-}
-#modal-btn:hover,
-#modal-return-btn:hover { background: var(--ink-shadow-paper) !important; }
-#modal-return-btn { color: var(--ink-soft) !important; }
-
-.event-notification, .merchant-inscription {
-  min-width: min(360px, 88vw);
-  max-width: 88vw;
-  max-height: 75vh;
-  padding: 18px 24px;
-  overflow-y: auto;
-  background: var(--ink-paper);
-  color: var(--ink-strong);
-  border: 0;
-  border-left: 3px solid var(--ink-seal);
-  border-radius: 0;
-  box-shadow: 6px 6px 0 var(--ink-shadow-paper);
-  text-align: center;
-  font-family: "ZCOOL XiaoWei", serif;
-}
-.event-notification h3, .merchant-inscription h2 { margin: 0 0 10px; color: var(--ink-seal); font: 28px "Ma Shan Zheng", cursive; }
-.event-notification p, .merchant-inscription p { margin: 0 0 12px; color: var(--ink-soft); }
-.event-notification button, .merchant-inscription button {
-  min-height: 44px;
-  padding: 6px 18px;
-  margin: 5px;
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid var(--ink-strong);
-  border-radius: 0;
-  color: var(--ink-strong);
-  font: 18px "Ma Shan Zheng", cursive;
-}
-.merchant-inscription #merchant-options { display: grid; gap: 4px; }
-
-@media (max-height: 500px) and (orientation: landscape) {
-  #top-bar { min-height: 44px; padding: 2px 12px; }
-  #top-bar .stat .label { font-size: 14px; }
-  #top-bar .stat .value { font-size: 17px; }
-  #top-bar .core-stat .label { width: 30px; height: 30px; }
-  html[data-input="touch"] #modal-return-btn { min-width: 44px; min-height: 44px; }
-  #bottom-bar { padding: 3px 8px; }
-  #bottom-bar .tower-select { height: 62px; }
-  #modal-content { max-height: 88vh; padding: 10px 20px; }
-  #modal[data-scene="victory"] #modal-title,
-  #modal[data-scene="defeat"] #modal-title { font-size: 54px; }
-  #modal-text { font-size: 12px; }
-  #modal-seal { width: 25px; height: 25px; margin-bottom: 6px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  #modal-seal { animation: none !important; }
-}
-html[data-ink-motion="reduced"] #modal-seal { animation: none !important; }
-
 
 /* 敌潮选择弹窗（工单 04）：开局前选「稀 / 常 / 潮」 */
-#density-picker {
-  position: fixed;
-  inset: 0;
-  z-index: calc(var(--z-modal, 1000) + 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(28, 26, 23, .32);
-}
-#density-picker.hidden { display: none; }
-#density-picker-box {
-  width: min(560px, 92vw);
-  max-height: 90vh;
-  overflow-y: auto;
-  padding: 20px 26px 18px;
-  background: var(--ink-paper);
-  border-top: 2px solid var(--ink-strong);
-  border-bottom: 1px solid var(--ink-grid);
-  box-shadow: 8px 8px 0 var(--ink-shadow-paper);
-  text-align: center;
-}
+
 #density-picker-title {
   margin: 0 0 4px;
   color: var(--ink-strong);
-  font: 40px "Ma Shan Zheng", cursive;
+  font: 40px var(--font-brush);
   letter-spacing: .14em;
 }
 #density-picker-hint { margin: 0 0 14px; color: var(--ink-soft); font-size: 14px; }
@@ -155,7 +24,7 @@ html[data-ink-motion="reduced"] #modal-seal { animation: none !important; }
   font-family: inherit;
   cursor: pointer;
 }
-.density-option .density-label { font: 40px "Ma Shan Zheng", cursive; line-height: 1.1; }
+.density-option .density-label { font: 40px var(--font-brush); line-height: 1.1; }
 .density-option .density-rate,
 .density-option .density-giant { font-size: 13px; color: var(--ink-soft); }
 .density-option .density-desc { font-size: 12px; color: var(--ink-faint); }
@@ -165,24 +34,12 @@ html[data-ink-motion="reduced"] #modal-seal { animation: none !important; }
   box-shadow: inset 0 -3px 0 var(--ink-seal);
 }
 .density-option.selected .density-label { color: var(--ink-seal-dark); }
-#density-picker-actions { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
-#density-picker-actions button {
-  min-width: 96px;
-  min-height: 44px;
-  padding: 8px 18px;
-  font-size: 18px;
-  font-family: inherit;
-  cursor: pointer;
-  color: var(--ink-strong);
-  background: transparent;
-  border: 1px solid var(--ink-strong);
-}
-#density-picker-ok { color: #fff !important; background: var(--ink-seal) !important; border-color: var(--ink-seal) !important; }
+
 @media (max-height: 500px) and (orientation: landscape) {
-  #density-picker-box { padding: 8px 18px 10px; }
+  
   #density-picker-title { font-size: 28px; }
   #density-picker-hint { margin-bottom: 6px; font-size: 12px; }
   .density-option { padding: 6px 4px; }
   .density-option .density-label { font-size: 30px; }
-  #density-picker-actions { margin-top: 8px; }
+  
 }

@@ -1,18 +1,17 @@
 /* 战场水墨界面（工单：战斗界面水墨视觉统一）
-   顶栏、底栏、塔卡、数值组、按钮、信息面板与征服侧栏。
-   原则：只改外观、边距与对齐，不改任何元素的宽高（命中盒保持不变）。
+   塔卡外观、信息面板与战场底纹。HUD、卡槽与征服竖条的布局见 battle-layout.css（P4）。
    纹理变量见 ink-texture.css；旧的 1px 分隔线与 !important 规则已从 battle.css 移出。 */
 
 /* 战场整体：宣纸纤维底纹，全局暗角由这一层统一绘制（取代地图画布内的暗角） */
 #game-container,
-#conquest-game-container {
+#conquest-container {
   position: relative;
   background: var(--tex-paper), var(--ink-paper);
   border: 0;
   box-shadow: none;
 }
 #game-container::after,
-#conquest-game-container::after {
+#conquest-container::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -22,97 +21,8 @@
 }
 html[data-input="touch"] #scale-container { transition: none; }
 
-/* ---- 顶栏 ---- */
-#top-bar {
-  align-items: center;
-  gap: 10px;
-  min-height: 56px;
-  padding: 7px 18px;
-  background: transparent;
-  border-bottom: 0;
-}
-/* 墨晕带贴在栏的下缘，留在栏自己的盒子内，不盖住画布 */
-#top-bar::after {
-  content: '';
-  display: block;
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 12px;
-  background: var(--tex-wash-edge) center / 100% 100% no-repeat;
-  opacity: 0.16;
-  pointer-events: none;
-}
-#top-bar .stat { position: relative; gap: 6px; white-space: nowrap; }
-/* 数值组下方一笔淡墨横皴，代替原来的底线 */
-#top-bar .stat:has(.value)::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 2px;
-  height: 2px;
-  background: linear-gradient(90deg, rgba(28, 26, 23, 0.45), rgba(28, 26, 23, 0.12) 75%, rgba(28, 26, 23, 0));
-  pointer-events: none;
-}
-#top-bar .stat .label {
-  color: var(--ink-soft);
-  font: 17px "Ma Shan Zheng", cursive;
-}
-/* 「尸」计数的标签用淡赭，与敌人脚下的晕影呼应 */
-#top-bar .stat:has(#enemies) .label { color: var(--tint-ochre); }
-#top-bar .stat .value {
-  color: var(--ink-strong);
-  font: 22px "ZCOOL XiaoWei", serif;
-  font-variant-numeric: tabular-nums;
-}
-#top-bar .core-stat {
-  gap: 8px;
-  margin-left: auto;
-}
-/* 核心「守」：朱砂方印，印面是 --tex-seal 的飞白质感 */
-#top-bar .core-stat .label {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  color: var(--ink-seal);
-  background: var(--tex-seal) center / 100% 100% no-repeat;
-  border: 0;
-  transform: rotate(-6deg);
-}
-#top-bar .stat.critical .label {
-  color: var(--ink-seal-dark);
-  background-image: var(--tex-seal-cracked);
-  text-decoration: line-through;
-}
-#top-bar .stat.critical .value { color: var(--ink-seal-dark); }
-#game-area { background: transparent; }
-#game-canvas { display: block; }
+/* ---- 塔卡 ---- */
 
-/* ---- 底栏与塔卡 ---- */
-#bottom-bar {
-  position: relative;
-  gap: 7px;
-  padding: 6px 12px;
-  background: transparent;
-  border-top: 0;
-  scrollbar-color: var(--ink-faint) transparent;
-  touch-action: pan-x;
-}
-/* 墨晕带在底栏上缘，与画布之间的过渡 */
-#bottom-bar::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 12px;
-  background: var(--tex-wash-edge) center / 100% 100% no-repeat;
-  opacity: 0.16;
-  pointer-events: none;
-}
 /* 塔卡：淡墨底方纸 + 飞白边框。火、水各在左下角点一抹点缀色晕 */
 #bottom-bar .tower-select {
   --card-tint: transparent;
@@ -174,7 +84,7 @@ html[data-input="touch"] #bottom-bar .tower-select.selected {
   height: 18px;
   color: var(--ink-paper);
   background: var(--ink-seal);
-  font: 12px "Ma Shan Zheng", cursive;
+  font: 12px var(--font-brush);
   transform: rotate(-9deg);
 }
 /* 墨不够：卡面变淡，角上印「墨乏」 */
@@ -194,15 +104,10 @@ html[data-input="touch"] #bottom-bar .tower-select.locked {
   right: 2px;
   top: 2px;
   color: var(--ink-seal);
-  font: 10px "ZCOOL XiaoWei", serif;
+  font: 10px var(--font-text);
   transform: rotate(-9deg);
 }
-#bottom-bar .tower-char {
-  position: relative;
-  z-index: 0;
-  color: var(--ink-strong);
-  font-size: 31px;
-}
+
 #bottom-bar .tower-select.multi-character .tower-char {
   display: flex;
   flex-direction: column;
@@ -214,17 +119,10 @@ html[data-input="touch"] #bottom-bar .tower-select.locked {
   white-space: nowrap;
 }
 #bottom-bar .tower-select.multi-character .tower-char > span { display: block; }
-#bottom-bar .tower-cost {
-  margin-top: 2px;
-  color: var(--ink-soft);
-  font: 16px/1.1 "ZCOOL XiaoWei", serif;
-  font-variant-numeric: tabular-nums;
-}
+
 #bottom-bar .tower-select.stamp-anim { animation: seal-fall .3s ease-out both; box-shadow: none !important; }
 
 /* ---- 按钮：淡墨底 + 飞白边框，悬停加深 ---- */
-#top-bar button,
-#conquest-side-panel button,
 #tower-info button,
 #conquest-tower-info button {
   min-height: 44px;
@@ -234,28 +132,20 @@ html[data-input="touch"] #bottom-bar .tower-select.locked {
   border-radius: 0;
   box-shadow: none;
   color: var(--ink-strong);
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--font-brush);
   transform: none;
 }
-#top-bar button:hover,
-#conquest-side-panel button:hover,
 #tower-info button:not(:disabled):hover,
 #conquest-tower-info button:not(:disabled):hover {
   background: var(--tex-brush-frame) center / 100% 100% no-repeat, var(--ink-wash-strong);
   color: var(--ink-strong);
   transform: none;
 }
-#top-bar button:disabled,
 #tower-info button:disabled { color: var(--ink-faint); opacity: 1; }
 /* 音效、音乐关闭时：文字转淡，边框改为虚断笔（outline 不占布局） */
-#top-bar button[aria-pressed="false"] {
-  color: var(--ink-faint);
-  outline: 1px dashed var(--ink-faint);
-  outline-offset: -4px;
-}
 
 /* ---- 信息面板：淡墨底 + 飞白框 ---- */
-.summon-btn::before { display: none; }
+
 #tower-info,
 #conquest-tower-info {
   min-width: 205px;
@@ -281,43 +171,3 @@ html[data-input="touch"] #bottom-bar .tower-select.locked {
 #conquest-tower-info .info-actions { gap: 5px; }
 #tower-info .sell-btn,
 #conquest-tower-info .sell-btn { color: var(--ink-seal-dark) !important; }
-
-/* ---- 征服侧栏：与地图同纸，右缘墨晕过渡 ---- */
-#conquest-side-panel {
-  position: relative;
-  background: transparent;
-  /* 透明的 1px 边框保留原有的内宽，避免侧栏按钮宽度变化 */
-  border: 0;
-  border-right: 1px solid transparent;
-  box-shadow: none;
-}
-#conquest-side-panel::before { display: none; }
-#conquest-side-panel::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  width: 12px;
-  background: var(--tex-wash-edge-v) center / 100% 100% no-repeat;
-  opacity: 0.16;
-  pointer-events: none;
-}
-.conquest-title, .rules-title { color: var(--ink-strong); }
-.conquest-divider { background: var(--ink-grid); }
-.conquest-stat, .conquest-rules { background: transparent; border-color: var(--ink-grid); box-shadow: none; }
-#conquest-side-panel .conquest-stat { border: 0; border-bottom: 1px solid var(--ink-grid); padding: 6px 2px; }
-#conquest-side-panel .conquest-rules { border: 0; border-top: 1px solid var(--ink-grid); padding: 8px 2px; }
-.conquest-label, .rules-text, .summon-cost { color: var(--ink-soft); }
-.conquest-value, #conquest-ink, #conquest-hold, #conquest-danger { color: var(--ink-strong); }
-.summon-btn,
-.conquest-menu-btn { width: 100%; margin-bottom: 4px; }
-
-/* 镜头（工单 03）：征服画布与塔防一致，视口固定 960×432，世界 1584px 由镜头横向滚动。
-   容器宽度必须等于画布宽度，否则 flex 居中会把画布两侧裁掉；各档 @media 的 max-width 一并覆盖。 */
-#conquest-game-container,
-html[data-input="touch"] #conquest-game-container {
-  width: 960px;
-  max-width: none;
-  flex: 0 0 960px;
-}

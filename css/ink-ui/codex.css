@@ -1,0 +1,204 @@
+/* 图鉴版式（工单 P2：图鉴横屏改版）
+ * 骨架与通用组件来自 layout.css / components.css，这里只写图鉴特有的部分。 */
+
+/* ── 图鉴主界面：两张入口卡占满内容区 ───────────────── */
+.codex-entries {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-6);
+  height: 100%;
+}
+.codex-entry {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-height: 0;
+  padding: var(--sp-4);
+  border: 0;
+  background-color: var(--paper-1);
+  background-image: var(--tex-paper-fiber), var(--tex-paper);
+  background-size: var(--paper-tile) var(--paper-tile), auto;
+  color: var(--ink-jiao);
+  font-family: var(--font-text);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease, transform var(--dur-fast) ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.codex-entry::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--tex-brush-frame) center / 100% 100% no-repeat;
+  opacity: .38;
+}
+.codex-entry:hover,
+.codex-entry:focus-visible { background-color: var(--paper-2); }
+.codex-entry:active { transform: translateY(1px); }
+.codex-entry__glyph { font: calc(var(--fs-hero) * 1.5) / 1 var(--font-brush); }
+.codex-entry__name { font: var(--fs-l) / 1.2 var(--font-brush); letter-spacing: .2em; padding-left: .2em; }
+.codex-entry__desc { color: var(--ink-zhong); font-size: var(--fs-s); letter-spacing: .08em; }
+.codex-entry__count {
+  margin-top: var(--sp-1);
+  padding: 2px var(--sp-2);
+  color: var(--seal);
+  font-size: var(--fs-xs);
+  letter-spacing: .12em;
+  box-shadow: inset 0 0 0 1px var(--seal);
+}
+.codex-entry__count:empty { display: none; }
+
+/* ── 双栏：左列表、右详情 ─────────────────────────── */
+.codex-list {
+  display: flex;
+  flex-direction: column;
+  align-content: start;
+}
+.codex-list::after {
+  content: '轻点字目 · 观其笔意';
+  margin-top: auto;
+  padding: var(--sp-4) 0 var(--sp-1);
+  color: var(--ink-dan);
+  font-size: var(--fs-xs);
+  letter-spacing: .2em;
+  text-align: center;
+}
+.codex-item__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.codex-item__name { font: var(--fs-l) / 1 var(--font-brush); }
+.codex-item__role {
+  overflow: hidden;
+  color: var(--ink-zhong);
+  font-size: var(--fs-xs);
+  letter-spacing: .06em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.codex-item__tag {
+  flex: none;
+  margin-left: auto;
+  color: var(--ink-zhong);
+  font-size: var(--fs-xs);
+}
+.codex-home { min-height: var(--touch-min); padding: 0 var(--sp-3); font-size: var(--fs-s); }
+
+.codex-detail { padding: var(--sp-4) var(--sp-6); }
+.codex-detail__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--sp-6);
+  align-items: start;
+}
+.codex-detail__summary { min-width: 0; }
+.codex-detail__summary .ink-panel__title { display: flex; align-items: baseline; gap: var(--sp-3); margin-bottom: var(--sp-2); font-size: var(--fs-xl); }
+.codex-detail__role {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink-zhong);
+  font: var(--fs-s) / 1.2 var(--font-text);
+  letter-spacing: .08em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.codex-detail__desc {
+  margin: var(--sp-4) 0 0;
+  color: var(--ink-nong);
+  font-size: var(--fs-s);
+  line-height: 1.7;
+}
+
+/* ── 字形预览：米字格上按笔顺书写 ─────────────────── */
+.codex-glyph {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+}
+.codex-glyph__canvas,
+.codex-glyph__char {
+  width: 112px;
+  height: 112px;
+  /* 米字格：外框淡墨，中线与对角线更淡 */
+  background:
+    linear-gradient(var(--ink-line), var(--ink-line)) center / 100% 1px no-repeat,
+    linear-gradient(var(--ink-line), var(--ink-line)) center / 1px 100% no-repeat,
+    linear-gradient(45deg, transparent calc(50% - .5px), var(--ink-qing) 50%, transparent calc(50% + .5px)),
+    linear-gradient(-45deg, transparent calc(50% - .5px), var(--ink-qing) 50%, transparent calc(50% + .5px)),
+    var(--paper-1);
+  box-shadow: inset 0 0 0 1px var(--ink-line);
+}
+.codex-glyph__canvas { display: block; cursor: pointer; }
+.codex-glyph__char {
+  display: grid;
+  place-items: center;
+  color: var(--ink-jiao);
+  font: calc(var(--fs-hero) * 1.7) / 1 var(--font-brush);
+}
+.codex-glyph--enemy .codex-glyph__char { color: var(--ink-nong); }
+.codex-glyph__order {
+  display: flex;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-dan);
+  font-size: var(--fs-xs);
+}
+.codex-glyph__order li { transition: color var(--dur-fast) ease; }
+.codex-glyph__order li.is-done { color: var(--ink-nong); }
+.codex-glyph__order li.is-writing { color: var(--seal); }
+
+/* ── 招式：普攻 / 大招两张小卡 ───────────────────── */
+.codex-moves {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+}
+.codex-move {
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--ink-qing);
+}
+.codex-move__kind { color: var(--ink-zhong); font-size: var(--fs-xs); letter-spacing: .12em; }
+.codex-move__name { margin-left: var(--sp-2); font: var(--fs-l) / 1 var(--font-brush); }
+.codex-move__name--fire { color: var(--tint-fire); }
+.codex-move__name--water { color: var(--tint-water); }
+.codex-move__text {
+  margin: var(--sp-1) 0 0;
+  color: var(--ink-nong);
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+}
+
+/* ── 矮横屏：收紧字形与间距，保证一屏放下 ─────────── */
+@media (max-height: 430px) and (orientation: landscape) {
+  .codex-entries { gap: var(--sp-4); }
+  .codex-entry__glyph { font-size: var(--fs-hero); }
+  .codex-detail { padding: var(--sp-3) var(--sp-4); }
+  .codex-detail__head { gap: var(--sp-4); }
+  .codex-glyph__canvas,
+  .codex-glyph__char { width: 88px; height: 88px; }
+  .codex-glyph__char { font-size: calc(var(--fs-hero) * 1.4); }
+  .codex-detail__summary .ink-panel__title { font-size: var(--fs-l); }
+  .codex-moves { margin-top: var(--sp-3); gap: var(--sp-2); }
+  .codex-detail .ink-stat { min-height: 28px; padding: 2px 0; }
+  .codex-detail__desc { margin-top: var(--sp-3); }
+}
+
+/* ── 竖屏兜底：入口卡上下排，详情放在列表下方 ─────── */
+@media (orientation: portrait) and (max-width: 600px) {
+  .codex-entries { grid-template-columns: 1fr; }
+  .codex-moves { grid-template-columns: 1fr; }
+  .codex-detail__head { grid-template-columns: 1fr; justify-items: center; }
+}
+
+html[data-ink-motion="reduced"] .codex-entry,
+html[data-ink-motion="reduced"] .codex-glyph__order li { transition: none; }

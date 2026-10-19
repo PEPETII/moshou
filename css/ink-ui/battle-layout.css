@@ -1,0 +1,196 @@
+/* 战斗横屏布局（工单 P4）
+ * 画布 960×432 占满容器；塔防卡槽（右）、征服竖条（左）叠在画布边缘，不再额外占行或占列。
+ * P7：战况数值并入卡槽，画布上方不再有任何叠层（用户反馈：顶部 HUD 会遮住第 0 行）。
+ * 这样缩放只由画布本身决定（740×360 下约 0.75，旧版纵向叠放约 0.60）。
+ * 宽度变量 --battle-dock-w 由 js/config/domain-01.js 的 CONFIG.BATTLE_DOCK_W 写入，镜头余量同源。
+ * 本文件在缩放容器内：尺寸写画布逻辑 px；触控尺寸用 calc(44px / --ui-scale) 反算到真实 44px。 */
+
+#main-container { display: block; }
+#main-container.hidden,
+#game-container.hidden,
+#conquest-container.hidden { display: none; }
+
+#game-container,
+#conquest-container {
+  --dock-w: var(--battle-dock-w, 84px);
+  --touch: clamp(44px, calc(44px / var(--ui-scale, 1)), 84px);
+  position: relative;
+  width: 960px;
+  height: 432px;
+  overflow: hidden;
+}
+#conquest-container { display: block; }
+#game-area,
+#conquest-game-container {
+  position: relative;
+  width: 960px;
+  height: 432px;
+  max-width: none;
+}
+#game-canvas,
+#conquest-canvas { display: block; width: 100%; height: 100%; }
+
+/* ── 战况数值（塔防在卡槽下部、征服在竖条中）：数字与伤害数字同款毛笔字 ── */
+.dock-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  flex: none;
+  width: 100%;
+  margin-top: auto;
+  padding-bottom: var(--sp-1);
+}
+.dock-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  width: 100%;
+  white-space: nowrap;
+}
+.dock-stat .label { color: var(--ink-zhong); font: var(--bfs-xs) / 1 var(--font-text); letter-spacing: .1em; }
+.dock-stat:has(#enemies) .label { color: var(--tint-ochre); }
+/* 固定最小宽度：数字增减时卡槽内容不左右跳动 */
+.dock-stat .value,
+.core-stat .value {
+  min-width: 4.2ch;
+  color: var(--ink-jiao);
+  font: var(--bfs-l) / 1 var(--font-brush);
+  text-align: center;
+}
+/* 核心「守」：朱砂方印 + 血量 */
+.core-stat { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); }
+.core-stat .label {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  color: var(--seal);
+  font: var(--bfs-s) / 1 var(--font-brush);
+  background: var(--tex-seal) center / 100% 100% no-repeat;
+  transform: rotate(-6deg);
+}
+.core-stat .value { color: var(--seal); font-size: var(--bfs-m); }
+.stat.critical .label {
+  color: var(--seal-deep);
+  background-image: var(--tex-seal-cracked);
+  text-decoration: line-through;
+}
+.stat.critical .value { color: var(--seal-deep); }
+
+/* ── 卡槽（塔防右缘）/ 竖条（征服左缘） ── */
+.battle-dock {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  width: var(--dock-w);
+  padding: var(--sp-2) 0;
+  background-color: var(--paper-veil);
+  background-image: var(--tex-paper-fiber);
+  background-size: var(--paper-tile) var(--paper-tile);
+}
+.battle-dock::before {
+  /* 内侧边缘一道竖向墨晕，与地图过渡 */
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -6px;
+  width: 12px;
+  background: var(--tex-wash-edge-v) center / 100% 100% no-repeat;
+  opacity: .22;
+  pointer-events: none;
+}
+.battle-dock--left { left: 0; right: auto; }
+.battle-dock--left::before { left: auto; right: -6px; }
+
+/* 卡槽内的按钮（暂停 / 召唤 / 退出）：印块方钮，真实 44px 以上 */
+.battle-dock button {
+  position: relative;
+  flex: none; /* 卡槽内容放不下时由塔卡区滚动，按钮不被压缩 */
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: var(--tex-brush-frame) center / 100% 100% no-repeat, var(--ink-qing);
+  color: var(--ink-jiao);
+  font: var(--bfs-xl) / 1 var(--font-brush);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.battle-dock button:hover,
+.battle-dock button:focus-visible { background-color: var(--ink-wash-strong); }
+.battle-dock button:active { transform: translateY(1px); }
+.battle-dock button::before { content: none; }
+
+/* 塔卡竖排：塔卡外观仍由 scene.css 的 #bottom-bar .tower-select 负责 */
+#bottom-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  padding: var(--sp-1) 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  touch-action: none;
+}
+#bottom-bar::-webkit-scrollbar { display: none; }
+
+/* ── 征服竖条 ── */
+#conquest-side-panel { justify-content: flex-start; gap: var(--sp-3); }
+#conquest-side-panel .summon-btn {
+  width: 72px;
+  height: auto;
+  min-height: calc(var(--touch) + 18px);
+  grid-template-rows: 1fr auto;
+  padding: var(--sp-1) 0;
+  background: var(--seal) var(--tex-seal) center / 100% 100% no-repeat;
+  color: var(--paper-0);
+  font-size: var(--bfs-2xl);
+}
+#conquest-side-panel .summon-btn:hover,
+#conquest-side-panel .summon-btn:focus-visible { background-color: var(--seal-deep); }
+#conquest-side-panel .summon-btn:disabled { background-color: var(--ink-dan); cursor: default; transform: none; }
+#conquest-side-panel .summon-cost { font: var(--bfs-xs) / 1 var(--font-text); letter-spacing: 0; }
+.dock-stat--danger .label { color: var(--seal); }
+.dock-stat--danger .value { font-size: var(--bfs-m); }
+#conquest-side-panel .conquest-menu-btn { margin-top: auto; }
+
+/* ── 暂停 / 设置弹层：已移出缩放容器，按真实屏幕尺寸显示 ── */
+.battle-layer {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal, 300);
+  padding: var(--sat, 0px) var(--sar, 0px) var(--sab, 0px) var(--sal, 0px);
+}
+.settings-layer-panel {
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-2);
+  width: min(680px, 94vw);
+  max-height: 94dvh;
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+}
+.settings-layer-panel > h2 { grid-column: 2; grid-row: 1; margin: 0; }
+.settings-layer-panel > .ink-back { grid-column: 1; grid-row: 1; }
+.settings-layer-panel > [data-settings-host] { grid-column: 1 / -1; }
+@media (max-height: 430px) and (orientation: landscape) {
+  .battle-layer-panel h2 { font-size: var(--fs-xl); }
+  .settings-layer-panel { padding: var(--sp-2) var(--sp-3) var(--sp-3); gap: var(--sp-2); }
+  .settings-layer-panel .settings-group { padding: var(--sp-1) var(--sp-3); }
+  .settings-layer-panel .ink-switch { min-height: var(--touch-min); }
+}

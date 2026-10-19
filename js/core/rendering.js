@@ -264,7 +264,7 @@ Game.prototype.drawCore = function() {
 
     this.inkRenderer.drawInkText("★", pos.x, pos.y - 2, 28, "#f4efe4", true);
 
-    this.ctx.font = '12px "ZCOOL XiaoWei", serif';
+    this.ctx.font = '12px "Ink Glyph Fix", "ZCOOL XiaoWei", serif';
     this.ctx.textAlign = "center";
     this.ctx.fillStyle = "#c45c48";
     this.ctx.fillText("·核心·", pos.x, pos.y + height + 22);
@@ -356,16 +356,12 @@ Game.prototype.drawPlacementPreview = function() {
     this.ctx.restore();
   
 };
+// 关卡名不画在画布上（14px 缩放后不可读，且会压住第 0 行），改写入暂停面板的副标题 #hud-level（P4 / P7）
 Game.prototype.drawLevelInfo = function() {
+    const el = document.getElementById("hud-level");
+    if (!el) return;
     const level = this.currentLevelData;
-
-    this.ctx.fillStyle = "#1c1a17";
-    this.ctx.font = `14px ${CONFIG.FONTS.BRUSH}`;
-    this.ctx.textAlign = "left";
-    this.ctx.fillText(
-      `第${this.currentLevel}关: ${level ? level.name : ""}`,
-      10,
-      20,
-    );
+    const text = level ? `第 ${this.currentLevel} 境 · ${level.name}` : "";
+    if (el.textContent !== text) el.textContent = text;
   
 };

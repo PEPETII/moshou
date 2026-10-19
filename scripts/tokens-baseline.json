@@ -1,0 +1,46 @@
+{
+  "css/style/part-01.css": {
+    "color": 41,
+    "fontSize": 8
+  },
+  "css/style/part-04.css": {
+    "color": 27,
+    "fontSize": 19
+  },
+  "css/inline/part-01.css": {
+    "color": 10,
+    "fontSize": 4
+  },
+  "css/style/part-02.css": {
+    "color": 4,
+    "fontSize": 8
+  },
+  "css/style/part-03.css": {
+    "color": 5,
+    "fontSize": 4
+  },
+  "css/ink-ui/battle.css": {
+    "color": 0,
+    "fontSize": 8
+  },
+  "css/ink-ui/scene.css": {
+    "color": 2,
+    "fontSize": 5
+  },
+  "css/style/part-05.css": {
+    "color": 6,
+    "fontSize": 1
+  },
+  "css/ink-ui/pages.css": {
+    "color": 1,
+    "fontSize": 3
+  },
+  "css/inline/part-02.css": {
+    "color": 3,
+    "fontSize": 0
+  },
+  "css/ink-ui/foundation.css": {
+    "color": 0,
+    "fontSize": 2
+  }
+}

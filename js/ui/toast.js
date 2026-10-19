@@ -8,6 +8,7 @@
 //   - 挂在 #scale-container 之外，因此使用绝对 px，不参与整体缩放
 //   - 同一条消息 900ms 内去重，避免连点刷屏
 //   - 最多同时 3 条
+//   - 外观见 css/ink-ui/components.css 的 .ui-toast（P7：色值改用令牌，不再写内联样式）
 (function initToast() {
   'use strict';
 
@@ -15,11 +16,7 @@
   const DEFAULT_DURATION = 1600;
   const MAX_VISIBLE = 3;
 
-  const STYLES = {
-    info: { border: '#9b9386', color: '#1c1a17', icon: '·' },
-    success: { border: '#b4473a', color: '#1c1a17', icon: '成' },
-    warning: { border: '#7d342c', color: '#7d342c', icon: '戒' }
-  };
+  const TYPES = ['info', 'success', 'warning'];
 
   function ensureContainer() {
     let container = document.getElementById('toast-container');
@@ -27,19 +24,6 @@
 
     container = document.createElement('div');
     container.id = 'toast-container';
-    container.style.cssText = [
-      'position:fixed',
-      'left:50%',
-      'bottom:13%',
-      'transform:translateX(-50%)',
-      'display:flex',
-      'flex-direction:column',
-      'align-items:center',
-      'gap:6px',
-      'z-index:3000',
-      'pointer-events:none',
-      'max-width:88vw'
-    ].join(';');
 
     document.body.appendChild(container);
     return container;
@@ -55,26 +39,11 @@
     if (type === 'warning' && window.InkAudio) window.InkAudio.play('deny');
 
     const container = ensureContainer();
-    const palette = STYLES[type] || STYLES.info;
 
     const el = document.createElement('div');
     el.className = 'ui-toast';
-    el.style.cssText = [
-      'box-sizing:border-box',
-      'padding:9px 16px',
-      'background:rgba(244,239,228,0.96)',
-      'border-left:3px solid ' + palette.border,
-      'color:' + palette.color,
-      'font-family:"ZCOOL XiaoWei", "Ma Shan Zheng", serif',
-      'font-size:15px',
-      'line-height:1.35',
-      'letter-spacing:1px',
-      'white-space:nowrap',
-      'text-align:center',
-      'box-shadow:5px 5px 0 #e8e1d2',
-      'opacity:0',
-      'transition:opacity 0.15s ease-out'
-    ].join(';');
+    el.dataset.type = TYPES.includes(type) ? type : 'info';
+    el.setAttribute('role', 'status');
     el.textContent = message;
 
     container.appendChild(el);
@@ -86,11 +55,11 @@
       if (oldest && oldest.parentElement) oldest.remove();
     }
 
-    requestAnimationFrame(() => { el.style.opacity = '1'; });
+    requestAnimationFrame(() => el.classList.add('is-shown'));
 
     const life = duration || DEFAULT_DURATION;
     setTimeout(() => {
-      el.style.opacity = '0';
+      el.classList.remove('is-shown');
       setTimeout(() => { if (el.parentElement) el.remove(); }, 200);
     }, life);
   };

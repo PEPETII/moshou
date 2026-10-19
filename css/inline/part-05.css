@@ -9,38 +9,17 @@
    1. 触控目标尺寸（规范 docs/ui-design-spec.md:49 要求最小 44×44px）
    ---------------------------------------- */
 @media (hover: none) and (pointer: coarse) {
-  html[data-input="touch"] .encyclopedia-card,
-  html[data-input="touch"] .custom-card,
-  html[data-input="touch"] .theme-card,
-  html[data-input="touch"] .conquest-theme-card {
+  html[data-input="touch"] .custom-card {
     min-height: 44px;
   }
 
-  html[data-input="touch"] .filter-tab,
-html[data-input="touch"] .detail-close-btn,
-html[data-input="touch"] .encyclopedia-item,
-html[data-input="touch"] .level-item,
-html[data-input="touch"] .menu-level-item,
-html[data-input="touch"] .conquest-level-item {
-    min-height: 44px;
-  }
-
-  html[data-input="touch"] .filter-tab {
-    min-width: 44px;
-  }
+  
 
   /* 顶部栏 / 面板里的返回入口 */
-  html[data-input="touch"] #back-to-menu,
-html[data-input="touch"] #back-to-themes,
-html[data-input="touch"] #back-to-menu-from-encyclopedia,
-html[data-input="touch"] #back-to-encyclopedia-from-towers,
-html[data-input="touch"] #back-to-encyclopedia-from-enemies,
-html[data-input="touch"] #back-to-menu-from-custom,
+  html[data-input="touch"] #back-to-menu-from-custom,
 html[data-input="touch"] #back-to-custom-from-towers,
 html[data-input="touch"] #back-to-custom-from-levels,
-html[data-input="touch"] #back-to-custom-from-export,
-html[data-input="touch"] #back-to-menu-from-conquest-theme,
-html[data-input="touch"] #back-to-conquest-themes {
+html[data-input="touch"] #back-to-custom-from-export {
     min-height: 44px;
     min-width: 44px;
   }
@@ -51,25 +30,13 @@ html[data-input="touch"] #back-to-conquest-themes {
    移动端没有 hover，残留的 translateY/scale 变换只会在
    某些浏览器"点击后保持悬停态"时造成元素抖动。
    ---------------------------------------- */
-html[data-input="touch"] .encyclopedia-card:hover,
-html[data-input="touch"] .custom-card:hover,
-html[data-input="touch"] .theme-card:hover,
-html[data-input="touch"] .conquest-theme-card:hover,
-html[data-input="touch"] .level-item:hover,
-html[data-input="touch"] .encyclopedia-item:hover,
-html[data-input="touch"] .conquest-level-item:hover {
+html[data-input="touch"] .custom-card:hover {
   transform: none;
 }
 
 /* ----------------------------------------
    3. 菜单按钮高度兜底（竖屏/小屏分支已另有规则，这里保证不因字号而低于 44px）
    ---------------------------------------- */
-@media (hover: none) and (pointer: coarse) {
-  html[data-input="touch"] .menu-btn {
-    min-height: 44px;
-    min-width: 120px;
-  }
-}
 
 /* ----------------------------------------
    4. 旋转提示：触摸端也要能被"点击继续"，避免用户误以为卡死

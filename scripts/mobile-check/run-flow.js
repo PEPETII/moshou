@@ -24,7 +24,7 @@ async function audit(page, label, findings, dev) {
     };
     const desc = (el) => (el.id ? '#' + el.id : '') + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).join('.') : '') + ' "' + (el.textContent || '').trim().slice(0, 8) + '"';
     const small = [], offscreen = [], tiny = [];
-    document.querySelectorAll('button, .tower-select, .menu-btn, .level-item, .theme-card, .conquest-theme-card, .conquest-level-item, .filter-tab, .encyclopedia-card, input[type=range], [role=button]').forEach((el) => {
+    document.querySelectorAll('button, .tower-select, input[type=range], [role=button]').forEach((el) => {
       if (!vis(el)) return;
       const r = el.getBoundingClientRect();
       if (r.bottom < 0 || r.top > ih || r.right < 0 || r.left > iw) return;   // 滚动区域之外的不算
@@ -80,7 +80,7 @@ const cardPos = (page, t) => page.evaluate((t) => { const r = document.querySele
       await audit(page, '主菜单', findings, dev);
       await tapSel(page, '#btn-levels'); await page.waitForTimeout(800);
       await shot(page, '2-themes'); await audit(page, '主题选择', findings, dev);
-      await tapSel(page, '.theme-card'); await page.waitForTimeout(900);
+      await tapSel(page, '#td-theme-shelf .scroll-theme'); await page.waitForTimeout(900);
       await shot(page, '3-levels'); await audit(page, '关卡列表', findings, dev);
       await tapSel(page, '#enter-level');
       await tapSel(page, '#density-picker-ok', 600);   // 字形弹道：开局前的敌潮选择，默认「潮」

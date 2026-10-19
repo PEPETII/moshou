@@ -138,9 +138,18 @@ ConquestGame.prototype.draw = function() {
 // 征服模式的棋盘是"格位分区"本身（空场时唯一的分格依据就是网格线），
 // 且该模式没有"从塔卡放置新塔"的流程（炮塔靠召唤随机生成），
 // 因此网格保持常驻，不跟随放置态显隐——否则空场会退化成一块无分格的淡色平板。
+// P6：网格线改为只在格位交点处出现的「十字墨点」——格位仍然分明，但不再是一张方格纸。
+// 做法：每条网格线用「交点两侧各半臂长、其余留空」的虚线描出，笔数与旧版相同（每条线一笔）。
 ConquestGame.prototype.drawGrid = function() {
-    this.ctx.strokeStyle = CONFIG.COLORS.grid;
-    this.ctx.lineWidth = 1;
+    const ctx = this.ctx;
+    const cell = this.CELL_SIZE;
+    const arm = CONFIG.CONQUEST_GRID_MARK; // 十字单臂长（逻辑 px）
+    ctx.strokeStyle = CONFIG.COLORS.gridMark;
+    ctx.lineWidth = 1.2;
+    if (ctx.setLineDash) {
+      ctx.setLineDash([arm * 2, cell - arm * 2]);
+      ctx.lineDashOffset = arm;
+    }
 
     for (let x = 0; x <= this.COLS; x++) {
       this.ctx.beginPath();
@@ -155,7 +164,10 @@ ConquestGame.prototype.drawGrid = function() {
       this.ctx.lineTo(this.COLS * this.CELL_SIZE, y * this.CELL_SIZE);
       this.ctx.stroke();
     }
-  
+    if (ctx.setLineDash) {
+      ctx.setLineDash([]);
+      ctx.lineDashOffset = 0;
+    }
 };
 ConquestGame.prototype.drawPath = function() {
     // 墨廊与塔防一致：按世界尺寸生成并缓存，坐标仍取自 this.path
@@ -190,23 +202,11 @@ ConquestGame.prototype.drawPath = function() {
 
   
 };
+// P6：可放置区（环形路径内圈）改为一整块淡纸面，不再逐格填色；格位由 drawGrid 的十字墨点标出。
 ConquestGame.prototype.drawPlacementArea = function() {
-    for (let x = 1; x < this.COLS - 1; x++) {
-      for (let y = 1; y < this.ROWS - 1; y++) {
-        const occupied = this.towers.some((t) => t.gx === x && t.gy === y);
-        if (!occupied) {
-          // 半透明宣纸色：格位仍然分明，地形底纹与点缀能透出来
-          this.ctx.fillStyle = "rgba(244, 239, 228, 0.6)";
-          this.ctx.fillRect(
-            x * this.CELL_SIZE + 1,
-            y * this.CELL_SIZE + 1,
-            this.CELL_SIZE - 2,
-            this.CELL_SIZE - 2
-          );
-        }
-      }
-    }
-  
+    const cell = this.CELL_SIZE;
+    this.ctx.fillStyle = CONFIG.COLORS.placementVeil;
+    this.ctx.fillRect(cell, cell, (this.COLS - 2) * cell, (this.ROWS - 2) * cell);
 };
 ConquestGame.prototype.drawDragPlacementPreview = function() {
     if (!this.isDragging || !this.draggingTower || !this.hoveredCell) return;
@@ -309,7 +309,7 @@ ConquestGame.prototype.drawInfo = function() {
     if (dangerRatio > 0.6) {
       const alpha = 0.3 + 0.3 * Math.sin(Date.now() / 300);
       this.ctx.fillStyle = `rgba(196, 92, 72, ${alpha})`;
-      this.ctx.font = '12px "ZCOOL XiaoWei", serif';
+      this.ctx.font = '12px "Ink Glyph Fix", "ZCOOL XiaoWei", serif';
       this.ctx.textAlign = "right";
       this.ctx.fillText(`危险: ${aliveCount}/${this.dangerLimit}`, canvasLogicalW(this.canvas) - 10, 20);
     }
@@ -333,7 +333,7 @@ ConquestGame.prototype.drawKeyboardShortcutsHint = function() {
 
       // 绘制按键背景（淡墨风格）
       const keyText = hint.key;
-      this.ctx.font = '11px "ZCOOL XiaoWei", serif';
+      this.ctx.font = '11px "Ink Glyph Fix", "ZCOOL XiaoWei", serif';
       const keyWidth = this.ctx.measureText(keyText).width + 8;
 
       // 按键背景 - 淡墨色

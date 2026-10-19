@@ -1,0 +1,132 @@
+/* 横屏页面骨架：顶栏固定（返回 · 标题 · 辅助），只有内容区可滚动
+ * 工单：docs/工单计划/2026-10-19-P1-水墨设计令牌与组件.md
+ *
+ *   <section class="ink-page">
+ *     <header class="ink-page__bar">
+ *       <button class="ink-back">上一级</button>
+ *       <h2 class="ink-page__title">标题</h2>
+ *       <div class="ink-page__aside">进度 / 辅助操作</div>
+ *     </header>
+ *     <div class="ink-page__body">…</div>
+ *   </section>
+ */
+
+.ink-page {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  padding:
+    var(--sat, 0px)
+    var(--page-gutter-r)
+    var(--sab, 0px)
+    var(--page-gutter);
+  background-color: var(--paper-0);
+  background-image: var(--tex-paper-fiber), var(--tex-paper);
+  background-size: var(--paper-tile) var(--paper-tile), auto;
+  color: var(--ink-jiao);
+  font-family: var(--font-text);
+}
+.ink-page.hidden { display: none; }
+/* 卷底远山：与主菜单底图、战场底边的远山同源（P6），压在内容之下 */
+.ink-page::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 120px;
+  background: var(--tex-scroll-foot) center bottom / auto 100% repeat-x;
+  pointer-events: none;
+}
+.ink-page > * { position: relative; z-index: 1; }
+
+/* 顶栏：三列网格，标题始终居中，左右两列等宽 */
+.ink-page__bar {
+  position: relative;
+  flex: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: var(--page-bar-h);
+  padding: var(--sp-2) 0;
+}
+/* 底边：两端渐隐的淡墨晕线，不用实线 */
+.ink-page__bar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  background: var(--tex-wash-edge) center / 100% 100% no-repeat;
+  opacity: .14;
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+          mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+  pointer-events: none;
+}
+.ink-page__bar > :first-child { justify-self: start; }
+.ink-page__title {
+  grid-column: 2;
+  margin: 0;
+  font: var(--fs-xl) / 1 var(--font-brush);
+  font-weight: normal;
+  letter-spacing: .18em;
+  padding-left: .18em;   /* 抵消末字字距，保持视觉居中 */
+  white-space: nowrap;
+}
+.ink-page__aside {
+  grid-column: 3;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--ink-zhong);
+  font-size: var(--fs-s);
+}
+
+/* 内容区：唯一可滚动区域 */
+.ink-page__body {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--sp-4) 0 var(--sp-4);
+}
+/* 内容区撑满：子元素可用 height:100% 做等高双栏或居中大卡 */
+.ink-page__body--fill {
+  display: flex;
+  flex-direction: column;
+}
+.ink-page__body--fill > * { flex: 1 1 auto; min-height: 0; }
+
+/* 主从双栏：横屏 40 : 60 */
+.ink-split {
+  display: grid;
+  grid-template-columns: minmax(260px, 2fr) 3fr;
+  gap: var(--sp-6);
+  height: 100%;
+  min-height: 0;
+}
+.ink-split > * { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+
+/* 矮横屏（手机）：收紧竖向留白 */
+@media (max-height: 430px) and (orientation: landscape) {
+  .ink-page__bar { padding: var(--sp-1) 0; }
+  .ink-page__title { font-size: var(--fs-l); }
+  .ink-page__body { padding: var(--sp-3) 0; }
+  .ink-split { gap: var(--sp-4); }
+}
+
+/* 竖屏兜底：双栏改为上下 */
+@media (orientation: portrait) and (max-width: 600px) {
+  .ink-split { grid-template-columns: 1fr; height: auto; }
+  .ink-page__title { font-size: var(--fs-l); }
+}

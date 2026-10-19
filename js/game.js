@@ -86,6 +86,7 @@ class Game {
       worldW: this.worldW,
       viewW: CONFIG.VIEW_W,
       viewH: CONFIG.VIEW_H,
+      insetRight: CONFIG.BATTLE_DOCK_W, // 右缘叠放塔卡卡槽（P4）
       hitTower: (cx, cy, isTouch) => !!ui.pickTowerNear(cx, cy, {
         tolerance: isTouch ? (window.DeviceProfile && window.DeviceProfile.tapTolerance) : undefined,
       }),
@@ -262,7 +263,7 @@ class Game {
     this.runtimeIndexes.rebuildEnemies();
     this.staticLayer.invalidate();
     // 开局镜头对准入口（左端）
-    if (this.camera) this.camera.jumpTo(0);
+    if (this.camera) this.camera.jumpTo(this.camera.minX);
 
     this.ui.updateUnlocks(this.getUnlockedTowers());
     this.updateUI();
