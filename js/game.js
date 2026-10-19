@@ -3,8 +3,8 @@ class Game {
     this.canvas = document.getElementById("game-canvas");
     this.ctx = this.canvas.getContext("2d");
     // 画布 = 视口（960×432，6 行 × 72px）；世界比视口宽，由镜头横向滚动查看
-    this.canvas.width = CONFIG.VIEW_W;
-    this.canvas.height = CONFIG.VIEW_H;
+    // 位图按屏幕实际像素生成（高清），坐标系仍是逻辑 960×432
+    RenderScale.setup(this.canvas, CONFIG.VIEW_W, CONFIG.VIEW_H);
     this.worldW = CONFIG.GRID_COLS * CONFIG.CELL_SIZE;
 
     this.inkRenderer = new InkRenderer(this.ctx);
@@ -28,6 +28,7 @@ class Game {
     this.victory = false;
     this.paused = false;
     this.isPaused = false;
+    this.menuPaused = false; // 战斗暂停菜单打开时为 true，见 js/ui/battle-pause.js
     this.inputLocked = false;
 
     // 已完成的关卡列表（用于解锁主题）

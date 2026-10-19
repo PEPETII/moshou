@@ -7,6 +7,12 @@
   --ink-faint: #9b9386;
   --ink-seal: #b4473a;
   --ink-seal-dark: #7d342c;
+  /* 战场水墨色调（工单 2026-10-19）：淡墨底与点缀色。与 js/config/domain-03.js 的 CONFIG.COLORS 保持一致 */
+  --ink-wash: rgba(28, 26, 23, 0.06);
+  --ink-wash-strong: rgba(28, 26, 23, 0.11);
+  --tint-water: #5f7884;   /* 青灰：水塔卡、水相关数值 */
+  --tint-fire: var(--ink-seal); /* 朱红：火塔卡、选中印章 */
+  --tint-ochre: #a88a62;   /* 淡赭：尸的计数与敌人晕影 */
 }
 
 html, body, #main-menu, #game-container, #conquest-side-panel {

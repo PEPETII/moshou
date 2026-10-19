@@ -141,6 +141,7 @@ Enemy.prototype.triggerVaporize = function() {
 };
 Enemy.prototype.triggerShake = function() {
     if (this._glyphHit) return;
+    if (typeof GlyphFX !== 'undefined' && !GlyphFX.shakeEnabled) return; // 战斗设置「震动」关闭
     this.shakeEndTime = Date.now() + this.shakeDuration;
   
 };

@@ -12,6 +12,8 @@ const GlyphFX = {
   MAX_PARTICLES: 700,
 
   feedback: true,
+  numbersEnabled: true, // 战斗设置「伤害数字」开关：关闭时只隐藏数字，其余反馈照常
+  shakeEnabled: true,   // 战斗设置「震动」开关：关闭时不震屏（塔与敌人受击晃动另由各自读取）
   reduceMotion: false,
   shake: 0,
   hitstop: 0,
@@ -23,6 +25,9 @@ const GlyphFX = {
   nextMark: 0,
   stainCanvas: null,
   stainCtx: null,
+  stainW: 0,
+  stainH: 0,
+  stainScale: 0,
   fadeTimer: 0,
   _offset: { x: 0, y: 0 },
 
@@ -43,18 +48,44 @@ const GlyphFX = {
     this.nextMark = 0;
     this.fadeTimer = 0;
     if (bounds && typeof document !== 'undefined') this.initStain(bounds.w, bounds.h);
-    else if (this.stainCtx) this.stainCtx.clearRect(0, 0, this.stainCanvas.width, this.stainCanvas.height);
+    else if (this.stainCtx) this.stainCtx.clearRect(0, 0, this.stainW, this.stainH);
   },
 
+  // 墨渍层位图 = 世界尺寸 × 高清倍率（跟随主画布，见 drawStain），内部按世界坐标绘制
   initStain(w, h) {
-    if (!this.stainCanvas || this.stainCanvas.width !== w || this.stainCanvas.height !== h) {
+    const k = this.stainScale || 1;
+    if (!this.stainCanvas || this.stainW !== w || this.stainH !== h) {
+      this.stainW = w;
+      this.stainH = h;
       this.stainCanvas = document.createElement('canvas');
-      this.stainCanvas.width = w;
-      this.stainCanvas.height = h;
+      this._sizeStain(this.stainCanvas, k);
       this.stainCtx = this.stainCanvas.getContext('2d');
+      this.stainCtx.setTransform(k, 0, 0, k, 0, 0);
+      this.stainScale = k;
     } else {
       this.stainCtx.clearRect(0, 0, w, h);
     }
+  },
+
+  _sizeStain(cv, k) {
+    cv.width = Math.round(this.stainW * k);
+    cv.height = Math.round(this.stainH * k);
+    cv.logicalWidth = this.stainW;
+    cv.logicalHeight = this.stainH;
+    cv.renderScale = k;
+  },
+
+  // 主画布倍率变化（缩放窗口、切换显示器）时，把已有墨渍按比例迁到新位图
+  _rescaleStain(k) {
+    const old = this.stainCanvas;
+    const cv = document.createElement('canvas');
+    this._sizeStain(cv, k);
+    const c = cv.getContext('2d');
+    c.drawImage(old, 0, 0, cv.width, cv.height);
+    c.setTransform(k, 0, 0, k, 0, 0);
+    this.stainCanvas = cv;
+    this.stainCtx = c;
+    this.stainScale = k;
   },
 
   // 退出战斗时释放墨渍画布
@@ -89,7 +120,7 @@ const GlyphFX = {
   // ---- 打击反馈 ----
   // 伤害数字：e 为敌人（取其坐标），opts = { crit, color, size }
   number(e, value, opts) {
-    if (!this.feedback) return;
+    if (!this.feedback || !this.numbersEnabled) return;
     const v = Math.round(value);
     if (v < 1) return;
     const S = CONFIG.GLYPH_SCALE;
@@ -106,7 +137,7 @@ const GlyphFX = {
   },
 
   addShake(v) {
-    if (!this.feedback || this.reduceMotion) return;
+    if (!this.feedback || this.reduceMotion || !this.shakeEnabled) return;
     const fb = CONFIG.GLYPH_FEEDBACK;
     this.shake = Math.min(fb.maxShake * CONFIG.GLYPH_SCALE, this.shake + v * CONFIG.GLYPH_SCALE);
   },
@@ -143,7 +174,8 @@ const GlyphFX = {
   // 世界层震屏偏移；暂停、结算时不抖
   shakeOffset(game) {
     const o = this._offset;
-    if (!this.feedback || this.reduceMotion || this.shake <= 0.05 || (game && (game.gameEnded || game.isPaused || game.paused))) {
+    if (!this.feedback || !this.shakeEnabled || this.reduceMotion || this.shake <= 0.05 ||
+        (game && (game.gameEnded || game.isPaused || game.menuPaused || game.paused))) {
       o.x = 0; o.y = 0;
       return o;
     }
@@ -295,14 +327,17 @@ const GlyphFX = {
       c.save();
       c.globalCompositeOperation = 'destination-out';
       c.fillStyle = `rgba(0,0,0,${fb.stain.fadeRate})`;
-      c.fillRect(0, 0, this.stainCanvas.width, this.stainCanvas.height);
+      c.fillRect(0, 0, this.stainW, this.stainH);
       c.restore();
     }
   },
 
   // 墨渍层：世界层，背景之上、敌人之下
   drawStain(ctx) {
-    if (this.feedback && this.stainCanvas) ctx.drawImage(this.stainCanvas, 0, 0);
+    if (!this.stainCanvas) return;
+    const k = (ctx.canvas && ctx.canvas.renderScale) || 1;
+    if (k !== this.stainScale) this._rescaleStain(k);
+    if (this.feedback) ctx.drawImage(this.stainCanvas, 0, 0, this.stainW, this.stainH);
   },
 
   // 世界层特效：冲击环、粒子、碎字、伤害数字
@@ -378,7 +413,7 @@ const GlyphFX = {
     ctx.globalAlpha = 1;
   },
 
-  // HUD 层（不随镜头与震屏）：连斩与朱印；w 为画布宽，避开右上角「危险 n / 200」
+  // HUD 层（不随镜头与震屏）：连斩计数；w 为画布宽，避开右上角「危险 n / 200」
   drawHud(ctx, w) {
     if (!this.feedback) return;
     const C = CONFIG.GLYPH_COLORS;
@@ -400,28 +435,6 @@ const GlyphFX = {
       ctx.fillStyle = this.combo >= cfg.sealAt ? C.seal : C.ink;
       ctx.font = `44px ${font}`;
       ctx.fillText(String(this.combo), 0, 0);
-      ctx.restore();
-    }
-    if (this.banner) {
-      // 朱印：四字两行竖排
-      const b = this.banner;
-      const k = b.life / b.max;
-      const s = k > 0.85 ? 1 + (k - 0.85) * 4 : 1;
-      ctx.save();
-      ctx.translate(cx, 216 - 10);
-      ctx.rotate(-0.06);
-      ctx.scale(s, s);
-      ctx.globalAlpha = Math.min(1, k * 3) * 0.92;
-      ctx.strokeStyle = C.seal;
-      ctx.lineWidth = 7;
-      ctx.strokeRect(-62, -62, 124, 124);
-      ctx.fillStyle = C.seal;
-      ctx.font = `52px ${font}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      const t = b.text;
-      ctx.fillText(t[0], 26, -27); ctx.fillText(t[1], 26, 28);
-      ctx.fillText(t[2], -26, -27); ctx.fillText(t[3], -26, 28);
       ctx.restore();
     }
   },

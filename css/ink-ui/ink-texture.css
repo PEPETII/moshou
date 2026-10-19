@@ -1,0 +1,23 @@
+/* 水墨纹理（工单：战斗界面水墨视觉统一）
+   只定义变量，不写选择器规则。全部是 SVG 数据 URI，与分辨率无关，不用 PNG（避免高分屏发糊）。
+   SVG 内部颜色无法读取 CSS 变量，此处的色值与 foundation.css 中的 --ink-strong、--ink-seal 保持一致。
+   使用方式：background: var(--tex-xxx) center / 100% 100% no-repeat; */
+:root {
+  /* 宣纸纤维：叠在 --ink-paper 之上，颗粒密度接近 paintPaper 的纤维 */
+  --tex-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.40  0 0 0 0 0.32  0 0 0 0.10 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  /* 墨晕带（横向）：上实下虚，用于栏的上下边缘；须放在栏自己的盒子内 */
+  --tex-wash-edge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 16' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%231c1a17' stop-opacity='0'/%3E%3Cstop offset='0.3' stop-color='%231c1a17' stop-opacity='1'/%3E%3Cstop offset='1' stop-color='%231c1a17' stop-opacity='0'/%3E%3C/linearGradient%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03 0.5' numOctaves='3' seed='9' result='t'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='t' scale='8' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='200' height='16' fill='url(%23g)' filter='url(%23f)'/%3E%3C/svg%3E");
+
+  /* 墨晕带（纵向）：征服侧栏的右边缘 */
+  --tex-wash-edge-v: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 200' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%231c1a17' stop-opacity='0'/%3E%3Cstop offset='0.7' stop-color='%231c1a17' stop-opacity='1'/%3E%3Cstop offset='1' stop-color='%231c1a17' stop-opacity='0'/%3E%3C/linearGradient%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5 0.03' numOctaves='3' seed='9' result='t'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='t' scale='8' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='16' height='200' fill='url(%23g)' filter='url(%23f)'/%3E%3C/svg%3E");
+
+  /* 飞白笔触边框：四边粗细不均、带枯笔断口（非缩放描边，线宽按屏幕像素） */
+  --tex-brush-frame: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='2' seed='2' result='t'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='t' scale='2.5' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3Cg fill='none' stroke='%231c1a17' stroke-width='1.6' filter='url(%23r)'%3E%3Cpath vector-effect='non-scaling-stroke' d='M2 2 L58 2' stroke-opacity='.55'/%3E%3Cpath vector-effect='non-scaling-stroke' d='M64 2 L98 2' stroke-opacity='.8'/%3E%3Cpath vector-effect='non-scaling-stroke' d='M98 6 L98 60' stroke-opacity='.45'/%3E%3Cpath vector-effect='non-scaling-stroke' d='M98 66 L98 98' stroke-opacity='.85'/%3E%3Cpath vector-effect='non-scaling-stroke' d='M94 98 L40 98' stroke-opacity='.5'/%3E%3Cpath vector-effect='non-scaling-stroke' d='M34 98 L2 98' stroke-opacity='.7'/%3E%3Cpath vector-effect='non-scaling-stroke' d='M2 94 L2 40' stroke-opacity='.8'/%3E%3Cpath vector-effect='non-scaling-stroke' d='M2 34 L2 6' stroke-opacity='.4'/%3E%3C/g%3E%3C/svg%3E");
+
+  /* 朱砂印章外框：略有缺口和斑驳（颜色同 --ink-seal） */
+  --tex-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='2' seed='5' result='t'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='t' scale='3' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3Cg fill='none' stroke='%23b4473a' stroke-width='3' stroke-dasharray='120 5 60 4' filter='url(%23s)'%3E%3Cpath vector-effect='non-scaling-stroke' d='M5 6 L95 5 L95 94 L6 95 Z'/%3E%3C/g%3E%3C/svg%3E");
+
+  /* 裂开的印章（核心 HP 危急时）：缺口更大，并有一道斜裂 */
+  --tex-seal-cracked: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='2' seed='5' result='t'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='t' scale='3' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3Cg fill='none' stroke='%23b4473a' stroke-width='3' stroke-dasharray='70 9 40 7 50 6' filter='url(%23s)'%3E%3Cpath vector-effect='non-scaling-stroke' d='M5 6 L95 5 L95 94 L6 95 Z'/%3E%3C/g%3E%3Cpath fill='none' stroke='%23f4efe4' stroke-width='2.2' vector-effect='non-scaling-stroke' d='M50 4 L44 50 L56 96'/%3E%3C/svg%3E");
+}

@@ -26,7 +26,8 @@ Game.prototype.update = function(now) {
 
     if (this.gameEnded) return;
 
-    if (this.isPaused) return;
+    // isPaused：页面切后台；menuPaused：战斗暂停菜单（js/ui/battle-pause.js），两者互不影响
+    if (this.isPaused || this.menuPaused) return;
 
     if (this.paused) {
       this.lastTime = now;
@@ -83,6 +84,8 @@ Game.prototype.update = function(now) {
 Game.prototype.draw = function() {
     const ctx = this.ctx;
     const cam = this.camera;
+    // 高清渲染：位图 = 逻辑尺寸 × 倍率，倍率变化时静态层随之重建
+    RenderScale.begin(this.canvas, ctx);
 
     // 世界层：背景、路径、网格、塔、敌人、弹道、地面效果，随镜头平移
     ctx.save();
@@ -160,7 +163,7 @@ Game.prototype.drawGrid = function() {
       this.ctx.lineTo(CONFIG.GRID_COLS * CONFIG.CELL_SIZE, y * CONFIG.CELL_SIZE);
       this.ctx.stroke();
     }
-  
+
 };
 Game.prototype.drawPath = function() {
     const paths = Array.isArray(this.path[0]) ? this.path : [this.path];
@@ -186,12 +189,16 @@ Game.prototype.drawPath = function() {
     }
 
     this.ctx.fillStyle = "#6a6459";
-    this.ctx.font = "12px Microsoft YaHei";
+    this.ctx.font = `14px ${CONFIG.FONTS.BRUSH}`;
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
     for (const path of paths) {
       const start = gridToPixel(path[0].x, path[0].y);
       this.ctx.fillText("入口", start.x, start.y - 25);
+      // 入口旁一方淡墨小印
+      this.ctx.fillStyle = "rgba(180, 71, 58, 0.18)";
+      this.ctx.fillRect(start.x + 16, start.y - 31, 7, 7);
+      this.ctx.fillStyle = "#6a6459";
     }
   
 };
@@ -324,10 +331,10 @@ Game.prototype.drawPlacementPreview = function() {
     if (!rect.width || !rect.height) return;
     // 本函数在世界层内绘制：画布坐标 + 镜头偏移
     const camX = this.camera ? this.camera.x : 0;
-    const pointerX = (drag.clientX - rect.left) * (this.canvas.width / rect.width) + camX;
-    const pointerY = (drag.clientY - rect.top) * (this.canvas.height / rect.height);
+    const pointerX = (drag.clientX - rect.left) * (canvasLogicalW(this.canvas) / rect.width) + camX;
+    const pointerY = (drag.clientY - rect.top) * (canvasLogicalH(this.canvas) / rect.height);
     const fingerOffset = drag.pointerType === "touch"
-      ? 52 * (this.canvas.height / rect.height)
+      ? 52 * (canvasLogicalH(this.canvas) / rect.height)
       : 0;
     const ghostY = pointerY - fingerOffset;
 
@@ -352,8 +359,8 @@ Game.prototype.drawPlacementPreview = function() {
 Game.prototype.drawLevelInfo = function() {
     const level = this.currentLevelData;
 
-    this.ctx.fillStyle = "#6a6459";
-    this.ctx.font = "14px Microsoft YaHei";
+    this.ctx.fillStyle = "#1c1a17";
+    this.ctx.font = `14px ${CONFIG.FONTS.BRUSH}`;
     this.ctx.textAlign = "left";
     this.ctx.fillText(
       `第${this.currentLevel}关: ${level ? level.name : ""}`,

@@ -315,6 +315,8 @@ Object.assign(CONFIG, {
     pathEdge: "#6a6459",     // 路径边缘墨晕
     core: "#c45c48",         // 朱砂红（唯一彩色，用于核心）
     coreInner: "#8b3a2f",    // 核心深色
+    tintWater: "#5f7884",    // 青灰点缀（水相关，与 css/ink-ui/foundation.css 的 --tint-water 一致）
+    tintOchre: "#a88a62",    // 淡赭点缀（尸，与 --tint-ochre 一致）
     tower: "#e8e8e8",        // 飞白（防御塔）
     towerShadow: "#666666",  // 塔影
     enemy: "#1c1a17",        // 浓墨（敌人）

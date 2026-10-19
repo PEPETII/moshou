@@ -239,6 +239,7 @@ Tower.prototype.updateShake = function() {
 };
 // 触发山塔震动
 Tower.prototype.triggerShake = function() {
+    if (typeof GlyphFX !== 'undefined' && !GlyphFX.shakeEnabled) return; // 战斗设置「震动」关闭
     this.shakeEndTime = Date.now() + this.shakeDuration;
   
 };

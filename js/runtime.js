@@ -137,16 +137,26 @@ class StaticCanvasLayer {
   draw(targetCtx) {
     this.syncGridVisibility();
     this._ensure();
-    targetCtx.drawImage(this.canvas, 0, 0);
+    // 位图是 逻辑尺寸 × 倍率，按逻辑尺寸贴回，避免被二次放大
+    targetCtx.drawImage(this.canvas, 0, 0, this.logicalW, this.logicalH);
   }
 
   _ensure() {
     const game = this.game;
-    // 静态层按世界尺寸生成（比视口宽），随镜头平移后只露出视口那一段
-    const worldW = game.worldW || game.canvas.width;
-    if (this.canvas.width !== worldW || this.canvas.height !== game.canvas.height) {
-      this.canvas.width = worldW;
-      this.canvas.height = game.canvas.height;
+    // 静态层按世界尺寸生成（比视口宽），随镜头平移后只露出视口那一段；
+    // 分辨率跟随主画布的高清倍率，否则背景仍会糊
+    const worldW = game.worldW || canvasLogicalW(game.canvas);
+    const worldH = canvasLogicalH(game.canvas);
+    const k = game.canvas.renderScale || 1;
+    if (this.logicalW !== worldW || this.logicalH !== worldH || this.scale !== k) {
+      this.logicalW = worldW;
+      this.logicalH = worldH;
+      this.scale = k;
+      this.canvas.width = Math.round(worldW * k);
+      this.canvas.height = Math.round(worldH * k);
+      this.canvas.logicalWidth = worldW;
+      this.canvas.logicalHeight = worldH;
+      this.canvas.renderScale = k;
       this.dirty = true;
     }
     if (!this.dirty) return;
@@ -158,18 +168,20 @@ class StaticCanvasLayer {
     game.ctx = ctx;
     game.inkRenderer.ctx = ctx;
 
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    ctx.clearRect(0, 0, worldW, worldH);
     const gridHeight = CONFIG.GRID_ROWS * CONFIG.CELL_SIZE;
     // 底图（宣纸 + 远山 + 苔石）由 mapBackground 统一生成并缓存
     if (window.MapBackground) {
-      MapBackground.drawTerrain(ctx, this.canvas.width, this.canvas.height, {
+      MapBackground.drawTerrain(ctx, worldW, worldH, {
         path: game.path,
         cell: CONFIG.CELL_SIZE,
-        base: gridHeight
+        base: gridHeight,
+        scale: k
       });
     } else {
       ctx.fillStyle = CONFIG.COLORS.bg;
-      ctx.fillRect(0, 0, this.canvas.width, gridHeight);
+      ctx.fillRect(0, 0, worldW, gridHeight);
     }
     // 网格位置固定在原地形之上、路径墨廊之下，只在放置态出现
     if (this._gridVisible) game.drawGrid();

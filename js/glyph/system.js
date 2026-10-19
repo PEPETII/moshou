@@ -2,7 +2,7 @@
 //
 // 弹道列表 game.glyphShots（对应原型 Towers.shots）由这里推进和绘制，与塔实例解耦：
 // 塔被出售后，已发出的弹道继续完成，只是不再写回笔画。
-// 绘制顺序（世界层内）：地面效果 → 敌人 → 塔 → 弹道与大招 → 粒子 → 伤害数字；墨渍层在背景之上、敌人之下；连斩与朱印在 HUD 层。
+// 绘制顺序（世界层内）：地面效果 → 敌人 → 塔 → 弹道与大招 → 粒子 → 伤害数字；墨渍层在背景之上、敌人之下；连斩计数在 HUD 层。
 const GlyphSystem = {
   reset(game) {
     game.glyphShots = [];
@@ -58,8 +58,8 @@ const GlyphSystem = {
 
   drawFX(ctx) { GlyphFX.draw(ctx); },
 
-  // HUD 层：连斩与朱印，不随镜头和震屏
-  drawHud(ctx) { GlyphFX.drawHud(ctx, ctx.canvas ? ctx.canvas.width : 960); },
+  // HUD 层：连斩计数，不随镜头和震屏
+  drawHud(ctx) { GlyphFX.drawHud(ctx, ctx.canvas ? (ctx.canvas.logicalWidth || ctx.canvas.width) : 960); },
 
   // 世界层震屏偏移（暂停、结算不抖）
   shakeOffset(game) { return GlyphFX.shakeOffset(game); },

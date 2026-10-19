@@ -15,7 +15,8 @@ Enemy.prototype.draw = function(ctx, inkRenderer) {
     const ey = this.y + dy;
 
     // 墨晕底座：用实心椭圆代替径向渐变，敌人多时（上限 260）开销小得多
-    ctx.fillStyle = 'rgba(40,34,28,0.12)';
+    // 尸的脚下改用淡赭晕（工单：尸 = 淡赭），其余保持淡墨
+    ctx.fillStyle = this.type === 'corpse' ? 'rgba(168,138,98,0.16)' : 'rgba(40,34,28,0.12)';
     ctx.beginPath();
     ctx.ellipse(this.x, this.y + size * 0.45 + (this.float ? 8 : 0), size * 0.42, size * 0.12, 0, 0, Math.PI * 2);
     ctx.fill();

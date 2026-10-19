@@ -59,6 +59,7 @@ function createLayerCtx() {
   return {
     calls: 0,
     clearRect() { this.calls++; },
+    setTransform() {},
     fillRect() {},
     drawImage() {},
     beginPath() {},

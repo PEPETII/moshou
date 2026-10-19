@@ -385,8 +385,8 @@ UI.prototype._cacheDragMetrics = function() {
     const rect = this.canvas.getBoundingClientRect();
     this._dragRectLeft = rect.left;
     this._dragRectTop = rect.top;
-    this._dragScaleX = 1 / (rect.width / this.canvas.width);
-    this._dragScaleY = 1 / (rect.height / this.canvas.height);
+    this._dragScaleX = 1 / (rect.width / canvasLogicalW(this.canvas));
+    this._dragScaleY = 1 / (rect.height / canvasLogicalH(this.canvas));
 };
 
 // 清理拖拽缓存

@@ -164,7 +164,7 @@ class InkTrailAnimation {
       if (cardEl) {
         const cardRect = cardEl.getBoundingClientRect();
         const relativeX = (cardRect.left + cardRect.width / 2 - containerRect.left) / containerRect.width;
-        positions.push(relativeX * this.game.canvas.width);
+        positions.push(relativeX * canvasLogicalW(this.game.canvas));
       } else {
         positions.push(100 + positions.length * 90);
       }
@@ -173,8 +173,8 @@ class InkTrailAnimation {
   }
 
   _createEntities(levelData) {
-    const canvasW = this.game.canvas.width;
-    const canvasH = this.game.canvas.height;
+    const canvasW = canvasLogicalW(this.game.canvas);
+    const canvasH = canvasLogicalH(this.game.canvas);
 
     const enemyTypes = this._getUniqueEnemyTypes(levelData);
     const towerTypes = this._getVisibleTowerTypes();

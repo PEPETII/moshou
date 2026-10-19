@@ -283,7 +283,7 @@
                             <span id="core-hp" class="value">20/20</span>
                         </div>
                         <div class="stat">
-                            <button id="back-to-menu-btn" title="主菜单">归卷</button>
+                            <button id="pause-btn" type="button" title="暂停">暂停</button>
                         </div>
                         <div class="stat sound-control">
                             <button id="sound-toggle" class="sound-toggle" data-sound-toggle type="button" aria-pressed="true" aria-label="音效开关" title="音效开关">音效 · 开</button>
@@ -319,6 +319,30 @@
                         <div class="tower-select locked" data-type="earth">
                             <span class="tower-char">土</span>
                             <span class="tower-cost">220</span>
+                        </div>
+                    </div>
+
+                    <!-- 战斗暂停菜单（暂停按钮打开） -->
+                    <div id="battle-pause" class="battle-layer hidden" role="dialog" aria-label="暂停菜单">
+                        <div class="battle-layer-panel">
+                            <h2>暂 停</h2>
+                            <button id="pause-resume" type="button">继续游戏</button>
+                            <button id="pause-settings" type="button">设置</button>
+                            <button id="pause-return" type="button">返回主菜单</button>
+                        </div>
+                    </div>
+
+                    <!-- 战斗设置弹窗（暂停菜单的「设置」打开） -->
+                    <div id="battle-settings" class="battle-layer hidden" role="dialog" aria-label="战斗设置">
+                        <div class="battle-layer-panel">
+                            <h2>设 · 墨卷</h2>
+                            <div class="battle-settings-list">
+                                <button data-sound-toggle type="button" aria-pressed="true">音效 · 开</button>
+                                <button data-bgm-toggle type="button" aria-pressed="true">音乐 · 开</button>
+                                <button id="battle-damage-toggle" type="button" aria-pressed="true">伤害数字 · 开</button>
+                                <button id="battle-shake-toggle" type="button" aria-pressed="true">震动 · 开</button>
+                            </div>
+                            <button id="settings-back" type="button">返回</button>
                         </div>
                     </div>
                 </div>

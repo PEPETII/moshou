@@ -109,7 +109,7 @@ function checkDragThreshold(distance, threshold = 5) {
  * @returns {boolean} 是否在边界内
  */
 function isInsideCanvas(x, y, canvas) {
-  return x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height;
+  return x >= 0 && x <= canvasLogicalW(canvas) && y >= 0 && y <= canvasLogicalH(canvas);
 }
 
 /**
@@ -121,8 +121,8 @@ function clientToCanvas(clientX, clientY, canvas) {
   const rect = canvas.getBoundingClientRect();
   if (!rect.width || !rect.height) return null;
   return {
-    x: (clientX - rect.left) * (canvas.width / rect.width),
-    y: (clientY - rect.top) * (canvas.height / rect.height),
+    x: (clientX - rect.left) * (canvasLogicalW(canvas) / rect.width),
+    y: (clientY - rect.top) * (canvasLogicalH(canvas) / rect.height),
   };
 }
 
@@ -141,7 +141,7 @@ function clientToWorld(clientX, clientY, canvas, camera) {
     sy: p.y,
     x: p.x + offset,
     y: p.y,
-    inside: p.x >= 0 && p.x <= canvas.width && p.y >= 0 && p.y <= canvas.height,
+    inside: isInsideCanvas(p.x, p.y, canvas),
   };
 }
 
@@ -165,7 +165,71 @@ function getGridFromEvent(e, canvas, camera) {
   return { gx, gy, x: w.x, y: w.y, sx: w.sx, sy: w.sy };
 }
 
+/**
+ * 画布的逻辑尺寸（游戏坐标系）。高清渲染后位图尺寸 = 逻辑尺寸 × 倍率，
+ * 所有把 canvas 当坐标系用的地方都必须读这里，不能直接读 canvas.width/height。
+ */
+function canvasLogicalW(canvas) { return canvas.logicalWidth || canvas.width; }
+function canvasLogicalH(canvas) { return canvas.logicalHeight || canvas.height; }
+
+/**
+ * 高清渲染倍率：战场画布按「屏幕实际像素」生成位图，避免被 CSS 放大后发糊。
+ *   倍率 k = dpr × 画布 CSS 显示宽度 / 逻辑宽度，限制在 [1, MAX]，按 STEP 取整防止拖窗时反复重建。
+ *   画布上挂 logicalWidth/logicalHeight/renderScale，离屏层（静态层、墨渍层、地图缓存）读 renderScale 跟随。
+ * 不受变换影响的像素量（ctx.filter 的 blur、shadowBlur）需由调用方乘 renderScale。
+ */
+const RenderScale = {
+  MAX: 3,
+  STEP: 0.25,
+  INTERVAL: 250, // ms，倍率最多每隔这么久重新测量一次
+
+  measure(canvas) {
+    if (typeof window === 'undefined' || !canvas.getBoundingClientRect) return 1;
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width) return canvas.renderScale || 1; // 隐藏中：沿用上次倍率
+    const raw = (window.devicePixelRatio || 1) * rect.width / canvasLogicalW(canvas);
+    const k = Math.ceil(raw / this.STEP) * this.STEP;
+    return Math.min(this.MAX, Math.max(1, k));
+  },
+
+  /** 设定逻辑尺寸并按当前倍率生成位图 */
+  setup(canvas, logicalW, logicalH) {
+    canvas.logicalWidth = logicalW;
+    canvas.logicalHeight = logicalH;
+    // 显示尺寸钉死为逻辑尺寸：未设 CSS 尺寸的画布会按位图尺寸显示，
+    // 位图一放大显示也跟着变大，倍率又按显示宽度测量 → 自激放大到上限
+    if (canvas.style) {
+      canvas.style.width = logicalW + 'px';
+      canvas.style.height = logicalH + 'px';
+    }
+    canvas.renderScale = 0;
+    canvas._scaleCheckedAt = -Infinity;
+    this.sync(canvas, true);
+  },
+
+  /** 倍率变化时重建位图；返回本次是否发生了变化 */
+  sync(canvas, force) {
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (!force && now - (canvas._scaleCheckedAt || -Infinity) < this.INTERVAL) return false;
+    canvas._scaleCheckedAt = now;
+    const k = this.measure(canvas);
+    if (k === canvas.renderScale) return false;
+    canvas.renderScale = k;
+    canvas.width = Math.round(canvasLogicalW(canvas) * k);
+    canvas.height = Math.round(canvasLogicalH(canvas) * k);
+    return true;
+  },
+
+  /** 每帧绘制前调用：同步倍率并把坐标系设回逻辑像素 */
+  begin(canvas, ctx) {
+    this.sync(canvas);
+    const k = canvas.renderScale || 1;
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    return k;
+  },
+};
+
 // 导出工具函数（用于模块化环境）
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { distance, distanceSq, gridToPixel, pixelToGrid, clientToCanvas, clientToWorld, getGridFromEvent, lerp, clamp, calculateDragDistance, checkDragThreshold, isInsideCanvas };
+  module.exports = { distance, distanceSq, gridToPixel, pixelToGrid, clientToCanvas, clientToWorld, getGridFromEvent, lerp, clamp, calculateDragDistance, checkDragThreshold, isInsideCanvas, canvasLogicalW, canvasLogicalH, RenderScale };
 }

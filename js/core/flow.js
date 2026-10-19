@@ -196,6 +196,7 @@ Game.prototype.returnToMenu = function() {
     this.victory = false;
     this.battleActive = false;
     this.inputLocked = false;
+    this.menuPaused = false;
 
     // 清理粒子系统和子弹池
     if (this.particleSystem) {

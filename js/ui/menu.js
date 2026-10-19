@@ -132,14 +132,6 @@ UI.prototype.setupMenuEventListeners = function() {
       });
     }
 
-    // 返回主菜单按钮（游戏中顶部栏）
-    const backToMenuBtn = document.getElementById("back-to-menu-btn");
-    if (backToMenuBtn) {
-      this.addTrackedEventListener(backToMenuBtn, "click", () => {
-        this.game.returnToLevelSelect();
-      });
-    }
-
     // === 图鉴系统事件监听 ===
     this.setupEncyclopediaEventListeners();
 

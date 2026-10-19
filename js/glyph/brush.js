@@ -111,7 +111,8 @@ const Brush = (() => {
       ctx.stroke();
       ctx.globalAlpha /= 0.14;
     }
-    if (o.glow) { ctx.shadowColor = o.glow; ctx.shadowBlur = o.glowBlur || 18; }
+    // shadowBlur 不受变换影响，按画布高清倍率换算，保持光晕的逻辑尺寸
+    if (o.glow) { ctx.shadowColor = o.glow; ctx.shadowBlur = (o.glowBlur || 18) * ((ctx.canvas && ctx.canvas.renderScale) || 1); }
     ctx.fillStyle = o.color;
     ctx.fill();
     const head = prepare(stroke).pts[0];

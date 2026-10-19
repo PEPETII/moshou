@@ -1,5 +1,8 @@
 @import url("./ink-ui/foundation.css");
+@import url("./ink-ui/ink-texture.css");
 @import url("./ink-ui/pages.css");
 @import url("./ink-ui/battle.css");
+@import url("./ink-ui/scene.css");
 @import url("./ink-ui/audio.css");
+@import url("./ink-ui/pause.css");
 @import url("./ink-ui/mobile.css");

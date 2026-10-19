@@ -25,8 +25,8 @@ class Camera {
       SMOOTH: 14, KEY_SPEED: 720, WHEEL_SCALE: 1, PAN_THRESHOLD: 8, EDGE_ZONE: 48, EDGE_SPEED: 640,
     }, cfg);
     this.canvas = opts.canvas;
-    this.viewW = (opts.viewW || (opts.canvas && opts.canvas.width) || 960);
-    this.viewH = (opts.viewH || (opts.canvas && opts.canvas.height) || 432);
+    this.viewW = (opts.viewW || (opts.canvas && (opts.canvas.logicalWidth || opts.canvas.width)) || 960);
+    this.viewH = (opts.viewH || (opts.canvas && (opts.canvas.logicalHeight || opts.canvas.height)) || 432);
     this.worldW = opts.worldW || this.viewW;
     this.hitTower = opts.hitTower || null;
     this.getDragPoint = opts.getDragPoint || null;
@@ -253,32 +253,47 @@ class Camera {
     if (!this.scrollable) return;
     const w = this.viewW;
     const h = this.viewH;
-    const fadeW = 40;
     ctx.save();
-    if (this.x > 1) {
-      const g = ctx.createLinearGradient(0, 0, fadeW, 0);
-      g.addColorStop(0, 'rgba(28,26,23,0.20)');
-      g.addColorStop(1, 'rgba(28,26,23,0)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, fadeW, h);
-    }
-    if (this.x < this.maxX - 1) {
-      const g = ctx.createLinearGradient(w - fadeW, 0, w, 0);
-      g.addColorStop(0, 'rgba(28,26,23,0)');
-      g.addColorStop(1, 'rgba(28,26,23,0.20)');
-      ctx.fillStyle = g;
-      ctx.fillRect(w - fadeW, 0, fadeW, h);
-    }
-    // 位置条：底边居中，滑块宽 = 视口 / 世界
+    // 左右边缘：三团不规则的淡墨晕，代替纯黑渐变（透明度 ≤ 0.14）
+    if (this.x > 1) this._drawEdgeWash(ctx, 0, 1, h);
+    if (this.x < this.maxX - 1) this._drawEdgeWash(ctx, w, -1, h);
+    // 位置条：底边居中，一笔淡墨横线，滑块是一枚朱砂小印，宽 = 视口 / 世界
     const trackW = 132;
     const trackX = (w - trackW) / 2;
     const trackY = h - 9;
     const thumbW = Math.max(14, trackW * (this.viewW / this.worldW));
     const thumbX = trackX + (trackW - thumbW) * (this.maxX ? this.x / this.maxX : 0);
-    ctx.fillStyle = 'rgba(28,26,23,0.14)';
-    ctx.fillRect(trackX, trackY, trackW, 3);
-    ctx.fillStyle = 'rgba(138,41,32,0.65)';
-    ctx.fillRect(thumbX, trackY - 1, thumbW, 5);
+    ctx.fillStyle = 'rgba(28,26,23,0.16)';
+    ctx.fillRect(trackX, trackY, trackW, 2);
+    ctx.save();
+    ctx.translate(thumbX + thumbW / 2, trackY + 1);
+    ctx.rotate(-0.08);
+    ctx.fillStyle = 'rgba(138,41,32,0.7)';
+    ctx.fillRect(-thumbW / 2, -4, thumbW, 8);
+    ctx.restore();
+    ctx.restore();
+  }
+
+  // 边缘墨晕：edgeX 为视口边缘，inward 为墨晕向视口内侧伸出的方向（+1 左缘，-1 右缘）
+  _drawEdgeWash(ctx, edgeX, inward, h) {
+    const R = 48; // 水平半径
+    const blobs = [[0.25, 0.4, 0.12], [0.6, 0.5, 0.14], [0.88, 0.3, 0.1]]; // [纵向位置, 纵向高度, 透明度]
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(inward > 0 ? edgeX : edgeX - R, 0, R, h);
+    ctx.clip();
+    for (let i = 0; i < blobs.length; i++) {
+      const ry = (h * blobs[i][1]) / 2;
+      ctx.save();
+      ctx.translate(edgeX, h * blobs[i][0]);
+      ctx.scale(inward, ry / R);
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
+      g.addColorStop(0, `rgba(28,26,23,${blobs[i][2]})`);
+      g.addColorStop(1, 'rgba(28,26,23,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(-R, -R, R * 2, R * 2);
+      ctx.restore();
+    }
     ctx.restore();
   }
 }

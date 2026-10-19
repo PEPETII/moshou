@@ -17,7 +17,7 @@ html[data-input="touch"] .tower-select { touch-action: none; }
 html[data-input="touch"] #top-bar .stat .label { font-size: max(14px, var(--fs-min)); }
 html[data-input="touch"] #top-bar .core-stat .label { font-size: max(14px, var(--fs-min)); }
 html[data-input="touch"] #top-bar button{ font-size: max(11px, var(--fs-min)); }
-html[data-input="touch"] #back-to-menu-btn { font-size: max(13px, var(--fs-min)); }
+html[data-input="touch"] #pause-btn { font-size: max(13px, var(--fs-min)); }
 html[data-input="touch"] #bottom-bar .tower-select .tower-cost { font-size: max(12px, var(--fs-min)); }
 
 /* 征服侧栏 */

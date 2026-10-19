@@ -79,6 +79,8 @@ ConquestGame.prototype.update = function(now) {
 ConquestGame.prototype.draw = function() {
     const ctx = this.ctx;
     const cam = this.camera;
+    // 高清渲染：位图 = 逻辑尺寸 × 倍率
+    RenderScale.begin(this.canvas, ctx);
     const gridHeight = this.ROWS * this.CELL_SIZE;
     const worldW = this.COLS * this.CELL_SIZE;
 
@@ -87,10 +89,19 @@ ConquestGame.prototype.draw = function() {
     const shk = GlyphSystem.shakeOffset(this);
     ctx.translate(-(cam ? Math.round(cam.x) : 0) + shk.x, shk.y);
 
-    ctx.fillStyle = CONFIG.COLORS.bg;
-    ctx.fillRect(0, 0, worldW, gridHeight);
-
-    this.inkRenderer.drawDistantMountains(gridHeight, worldW);
+    // 底图走地形缓存（宣纸、远山、点缀），与塔防同一套水墨底图，不再每帧重画
+    if (window.MapBackground) {
+      MapBackground.drawTerrain(ctx, worldW, gridHeight, {
+        path: this.path,
+        cell: this.CELL_SIZE,
+        base: gridHeight,
+        scale: this.canvas.renderScale || 1
+      });
+    } else {
+      ctx.fillStyle = CONFIG.COLORS.bg;
+      ctx.fillRect(0, 0, worldW, gridHeight);
+      this.inkRenderer.drawDistantMountains(gridHeight, worldW);
+    }
     this.drawGrid();
     this.drawPath();
     this.drawPlacementArea();
@@ -147,21 +158,29 @@ ConquestGame.prototype.drawGrid = function() {
   
 };
 ConquestGame.prototype.drawPath = function() {
-    this.ctx.strokeStyle = CONFIG.COLORS.pathLine;
-    this.ctx.lineWidth = this.CELL_SIZE - 4;
-    this.ctx.lineCap = "round";
-    this.ctx.lineJoin = "round";
+    // 墨廊与塔防一致：按世界尺寸生成并缓存，坐标仍取自 this.path
+    if (window.MapBackground) {
+      MapBackground.drawPathCorridor(this.ctx, this.path, this.CELL_SIZE, {
+        w: this.COLS * this.CELL_SIZE,
+        h: this.ROWS * this.CELL_SIZE
+      });
+    } else {
+      this.ctx.strokeStyle = CONFIG.COLORS.pathLine;
+      this.ctx.lineWidth = this.CELL_SIZE - 4;
+      this.ctx.lineCap = "round";
+      this.ctx.lineJoin = "round";
 
-    this.ctx.beginPath();
-    for (let i = 0; i < this.path.length; i++) {
-      const pos = gridToPixel(this.path[i].x, this.path[i].y);
-      if (i === 0) {
-        this.ctx.moveTo(pos.x, pos.y);
-      } else {
-        this.ctx.lineTo(pos.x, pos.y);
+      this.ctx.beginPath();
+      for (let i = 0; i < this.path.length; i++) {
+        const pos = gridToPixel(this.path[i].x, this.path[i].y);
+        if (i === 0) {
+          this.ctx.moveTo(pos.x, pos.y);
+        } else {
+          this.ctx.lineTo(pos.x, pos.y);
+        }
       }
+      this.ctx.stroke();
     }
-    this.ctx.stroke();
 
     this.ctx.fillStyle = "#6a6459";
     this.ctx.font = "12px Microsoft YaHei";
@@ -176,7 +195,8 @@ ConquestGame.prototype.drawPlacementArea = function() {
       for (let y = 1; y < this.ROWS - 1; y++) {
         const occupied = this.towers.some((t) => t.gx === x && t.gy === y);
         if (!occupied) {
-          this.ctx.fillStyle = CONFIG.COLORS.bg;
+          // 半透明宣纸色：格位仍然分明，地形底纹与点缀能透出来
+          this.ctx.fillStyle = "rgba(244, 239, 228, 0.6)";
           this.ctx.fillRect(
             x * this.CELL_SIZE + 1,
             y * this.CELL_SIZE + 1,
@@ -266,8 +286,8 @@ ConquestGame.prototype._cacheDragMetrics = function() {
     const rect = this.canvas.getBoundingClientRect();
     this._dragRectLeft = rect.left;
     this._dragRectTop = rect.top;
-    this._dragScaleX = 1 / (rect.width / this.canvas.width);
-    this._dragScaleY = 1 / (rect.height / this.canvas.height);
+    this._dragScaleX = 1 / (rect.width / canvasLogicalW(this.canvas));
+    this._dragScaleY = 1 / (rect.height / canvasLogicalH(this.canvas));
   
 };
 // 清理拖拽缓存
@@ -291,7 +311,7 @@ ConquestGame.prototype.drawInfo = function() {
       this.ctx.fillStyle = `rgba(196, 92, 72, ${alpha})`;
       this.ctx.font = '12px "ZCOOL XiaoWei", serif';
       this.ctx.textAlign = "right";
-      this.ctx.fillText(`危险: ${aliveCount}/${this.dangerLimit}`, this.canvas.width - 10, 20);
+      this.ctx.fillText(`危险: ${aliveCount}/${this.dangerLimit}`, canvasLogicalW(this.canvas) - 10, 20);
     }
 
     // 绘制快捷键提示
@@ -301,8 +321,8 @@ ConquestGame.prototype.drawInfo = function() {
 ConquestGame.prototype.drawKeyboardShortcutsHint = function() {
     const hints = [];
 
-    const startX = this.canvas.width - 10;
-    const startY = this.canvas.height - 10;
+    const startX = canvasLogicalW(this.canvas) - 10;
+    const startY = canvasLogicalH(this.canvas) - 10;
     const lineHeight = 16;
 
     this.ctx.textAlign = "right";
@@ -348,6 +368,6 @@ ConquestGame.prototype.drawSummonFlash = function() {
     } else {
       this.ctx.fillStyle = `rgba(255, 50, 50, ${alpha})`;
     }
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillRect(0, 0, canvasLogicalW(this.canvas), canvasLogicalH(this.canvas));
   
 };

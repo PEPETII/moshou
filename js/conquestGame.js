@@ -18,8 +18,8 @@ class ConquestGame {
     this.CELL_SIZE = CONFIG.CELL_SIZE;
 
     // 画布 = 视口（960×432）；世界 22 列 × 72 = 1584px，由镜头横向滚动
-    this.canvas.width = CONFIG.VIEW_W;
-    this.canvas.height = CONFIG.VIEW_H;
+    // 位图按屏幕实际像素生成（高清），坐标系仍是逻辑 960×432
+    RenderScale.setup(this.canvas, CONFIG.VIEW_W, CONFIG.VIEW_H);
     this.worldW = this.COLS * this.CELL_SIZE;
     this.camera = new Camera({
       canvas: this.canvas,
