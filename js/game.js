@@ -62,6 +62,7 @@ class Game {
     this._pathCellSet = new Set();
 
     this.menuInkBg = new MenuInkBackground();
+    this.menuMapBg = new MenuMapBackground();
     this.inkTrailAnimation = new InkTrailAnimation(this);
 
     // UI 更新帧计数器（避免每帧都刷新 UI）

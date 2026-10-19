@@ -16,6 +16,7 @@
 
     <!-- 主菜单 -->
     <div id="main-menu">
+        <canvas id="menu-map-canvas"></canvas>
         <canvas id="menu-ink-canvas"></canvas>
         <h1 id="main-menu-title" aria-label="墨守成规"><span class="title-ink">墨</span><span class="title-script">守 成 规</span></h1>
         <span class="menu-seal" aria-hidden="true">守</span>

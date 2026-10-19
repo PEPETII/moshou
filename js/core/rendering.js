@@ -95,7 +95,27 @@ Game.prototype.draw = function() {
     this.debugStats.draw(this.ctx);
   
 };
+/**
+ * 是否处于"炮塔待放置"状态。
+ *
+ * 唯一状态源是 ui.placementDrag.active：塔卡 pointerdown 进入，
+ * pointerup / pointercancel / lostpointercapture 退出（触摸端经
+ * input-card-gesture 同样落到 beginPlacementDrag）。这里不再引入第二套标志，
+ * 避免网格与实际能否落子脱节。
+ */
+Game.prototype.isPlacementActive = function() {
+    const ui = this.ui;
+    return !!(ui && ui.placementDrag && ui.placementDrag.active);
+};
+/**
+ * 网格只作为"可放置位置"的辅助提示：未进入放置态就不画。
+ */
+Game.prototype.shouldShowGrid = function() {
+    return this.isPlacementActive();
+};
 Game.prototype.drawGrid = function() {
+    if (!this.shouldShowGrid()) return;
+
     this.ctx.strokeStyle = CONFIG.COLORS.grid;
     this.ctx.lineWidth = 1;
 
@@ -119,28 +139,31 @@ Game.prototype.drawGrid = function() {
 Game.prototype.drawPath = function() {
     const paths = Array.isArray(this.path[0]) ? this.path : [this.path];
 
-    for (const path of paths) {
-      this.ctx.strokeStyle = CONFIG.COLORS.pathLine;
-      this.ctx.lineWidth = CONFIG.CELL_SIZE - 4;
-      this.ctx.lineCap = "round";
-      this.ctx.lineJoin = "round";
-
-      this.ctx.beginPath();
-      for (let i = 0; i < path.length; i++) {
-        const pos = gridToPixel(path[i].x, path[i].y);
-        if (i === 0) {
-          this.ctx.moveTo(pos.x, pos.y);
-        } else {
-          this.ctx.lineTo(pos.x, pos.y);
+    // 路径样式改为 demo 的墨廊（三层淡墨 + 飞白边 + 行进箭标）。
+    // 坐标直接取自关卡 path，不做任何换算或位移，行走逻辑完全不变。
+    if (window.MapBackground) {
+      MapBackground.drawPathCorridor(this.ctx, this.path, CONFIG.CELL_SIZE);
+    } else {
+      for (const path of paths) {
+        this.ctx.strokeStyle = CONFIG.COLORS.pathLine;
+        this.ctx.lineWidth = CONFIG.CELL_SIZE - 4;
+        this.ctx.lineCap = "round";
+        this.ctx.lineJoin = "round";
+        this.ctx.beginPath();
+        for (let i = 0; i < path.length; i++) {
+          const pos = gridToPixel(path[i].x, path[i].y);
+          if (i === 0) this.ctx.moveTo(pos.x, pos.y);
+          else this.ctx.lineTo(pos.x, pos.y);
         }
+        this.ctx.stroke();
       }
-      this.ctx.stroke();
+    }
 
-      this.ctx.fillStyle = "#6a6459";
-      this.ctx.font = "12px Microsoft YaHei";
-      this.ctx.textAlign = "center";
-      this.ctx.textBaseline = "middle";
-
+    this.ctx.fillStyle = "#6a6459";
+    this.ctx.font = "12px Microsoft YaHei";
+    this.ctx.textAlign = "center";
+    this.ctx.textBaseline = "middle";
+    for (const path of paths) {
       const start = gridToPixel(path[0].x, path[0].y);
       this.ctx.fillText("入口", start.x, start.y - 25);
     }

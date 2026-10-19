@@ -69,13 +69,32 @@ class StaticCanvasLayer {
     this.canvas = document.createElement('canvas');
     this.ctx = this.canvas.getContext('2d');
     this.dirty = true;
+    // 缓存里当前是否烘进了网格。网格只服务于"炮塔待放置"状态，
+    // 因此缓存内容必须跟随放置态切换，否则会出现"松手后网格仍在"。
+    this._gridVisible = false;
   }
 
   invalidate() {
     this.dirty = true;
   }
 
+  /**
+   * 让网格显隐与放置态保持一致。
+   * 状态一变就置脏，下一行 _ensure() 会在同一帧重建缓存，
+   * 从而做到进入/退出放置态当帧生效，且网格仍位于路径墨廊之下（z 序不变）。
+   *
+   * @returns {boolean} 本次调用是否检测到状态切换
+   */
+  syncGridVisibility() {
+    const visible = !!(this.game.shouldShowGrid && this.game.shouldShowGrid());
+    if (visible === this._gridVisible) return false;
+    this._gridVisible = visible;
+    this.dirty = true;
+    return true;
+  }
+
   draw(targetCtx) {
+    this.syncGridVisibility();
     this._ensure();
     targetCtx.drawImage(this.canvas, 0, 0);
   }
@@ -98,10 +117,19 @@ class StaticCanvasLayer {
 
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     const gridHeight = CONFIG.GRID_ROWS * CONFIG.CELL_SIZE;
-    ctx.fillStyle = CONFIG.COLORS.bg;
-    ctx.fillRect(0, 0, this.canvas.width, gridHeight);
-    game.inkRenderer.drawDistantMountains(gridHeight);
-    game.drawGrid();
+    // 底图（宣纸 + 远山 + 苔石）由 mapBackground 统一生成并缓存
+    if (window.MapBackground) {
+      MapBackground.drawTerrain(ctx, this.canvas.width, this.canvas.height, {
+        path: game.path,
+        cell: CONFIG.CELL_SIZE,
+        base: gridHeight
+      });
+    } else {
+      ctx.fillStyle = CONFIG.COLORS.bg;
+      ctx.fillRect(0, 0, this.canvas.width, gridHeight);
+    }
+    // 网格位置固定在原地形之上、路径墨廊之下，只在放置态出现
+    if (this._gridVisible) game.drawGrid();
     game.drawPath();
     game.drawCore();
     game.drawLevelInfo();

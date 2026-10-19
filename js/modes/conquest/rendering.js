@@ -86,6 +86,9 @@ ConquestGame.prototype.draw = function() {
     this.drawDragPreview();
   
 };
+// 征服模式的棋盘是"格位分区"本身（空场时唯一的分格依据就是网格线），
+// 且该模式没有"从塔卡放置新塔"的流程（炮塔靠召唤随机生成），
+// 因此网格保持常驻，不跟随放置态显隐——否则空场会退化成一块无分格的淡色平板。
 ConquestGame.prototype.drawGrid = function() {
     this.ctx.strokeStyle = CONFIG.COLORS.grid;
     this.ctx.lineWidth = 1;
