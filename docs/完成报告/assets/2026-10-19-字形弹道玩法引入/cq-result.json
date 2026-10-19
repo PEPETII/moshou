@@ -1,0 +1,41 @@
+{
+ "征服主题数": 1,
+ "征服关卡数": 2,
+ "敌潮弹窗": {
+  "open": true,
+  "sel": "flood"
+ },
+ "征服放置": {
+  "summoned": 14,
+  "types": [
+   "water",
+   "fire"
+  ],
+  "dangerLimit": 200,
+  "cols": 22,
+  "world": 1584,
+  "battle": true
+ },
+ "征服战斗中": {
+  "enemies": 15,
+  "kills": 70,
+  "hold": 139,
+  "camMax": 624,
+  "upgradeBtn": 0
+ },
+ "征服镜头最右": {
+  "x": 624,
+  "max": 624
+ },
+ "征服胜利": {
+  "open": true,
+  "title": "胜",
+  "text": "关卡 1-1 完成! 坚守已成!"
+ },
+ "回选关": 2,
+ "征服失败": {
+  "open": true,
+  "title": "破",
+  "text": "群邪越境 · 防线失守"
+ }
+}

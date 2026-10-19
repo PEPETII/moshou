@@ -1,0 +1,96 @@
+{
+ "菜单按钮": [
+  "守塔 防",
+  "征征 服",
+  "谱图 鉴",
+  "设设 置"
+ ],
+ "设置-开关文案(默认)": "打击反馈 · 开",
+ "设置-点击后": "打击反馈 · 关 / off",
+ "设置-刷新后": "打击反馈 · 关 / off",
+ "设置-恢复后": "打击反馈 · 开 / on",
+ "塔防主题数": 1,
+ "塔防关卡节点": 2,
+ "敌潮弹窗": {
+  "open": true,
+  "selected": [
+   "sparse:density-option",
+   "normal:density-option",
+   "flood:density-option selected"
+  ]
+ },
+ "开局状态": {
+  "battle": true,
+  "density": "flood",
+  "enemies": 43,
+  "hold": 145.26689999999877,
+  "cards": [
+   "fire",
+   "water"
+  ]
+ },
+ "放塔": {
+  "out": [
+   "fire0,0",
+   "water1,0",
+   "fire2,0",
+   "water3,0",
+   "fire4,0",
+   "water5,0",
+   "fire6,0",
+   "water7,0",
+   "fire8,0",
+   "water9,0"
+  ],
+  "cand": 83,
+  "pg": 127,
+  "trail": false
+ },
+ "战斗中": {
+  "towers": 10,
+  "enemies": 24,
+  "kills": 76,
+  "holdLeft": 137,
+  "camX": 0,
+  "worldW": 1872,
+  "cell": 72,
+  "cw": 960,
+  "ch": 432,
+  "stack": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ]
+ },
+ "滚轮": 1,
+ "镜头最右": {
+  "x": 912,
+  "max": 912
+ },
+ "塔信息": {
+  "upgradeBtn": 0,
+  "sell": true
+ },
+ "出售": {
+  "before": 10,
+  "after": 9
+ },
+ "胜利弹窗": {
+  "open": true,
+  "title": "胜",
+  "text": "守境已成 · 第 1-1 境\n星级: ★★★\n赏墨: 110",
+  "ended": true
+ },
+ "失败弹窗": {
+  "open": true,
+  "title": "破",
+  "ended": true
+ }
+}
