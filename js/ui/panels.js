@@ -15,20 +15,14 @@ UI.prototype.showTowerInfo = function(tower, x, y, source) {
       this.longPressTimer = null;
     }
 
-    const config = tower.isFusion ?
-      CONFIG.FUSION_TOWERS[tower.fusionType] :
-      CONFIG.TOWERS[tower.type];
+    const config = CONFIG.TOWERS[tower.type];
 
     this.towerInfo.querySelector(".info-char").textContent = tower.char;
-    this.towerInfo.querySelector(".info-level").textContent =
-      tower.isFusion ? "融合 Lv.1" : `Lv.${tower.level}`;
+    this.towerInfo.querySelector(".info-desc").textContent = config && config.desc ? config.desc : "";
 
     let stats = "";
-    if (tower.isFusion) {
-      stats += `组合: ${tower.components.map(c => CONFIG.TOWERS[c]?.char || c).join('+')}\n`;
-    }
     if (tower.damage > 0) stats += `伤害: ${tower.damage}<br>`;
-    if (tower.range) stats += `范围: ${tower.range}格<br>`;
+    if (tower.range) stats += `范围: ${+tower.range.toFixed(1)}格<br>`;
     if (tower.cooldown)
       stats += `攻速: ${(tower.cooldown / 1000).toFixed(1)}秒<br>`;
     if (tower.slow) stats += `减速: ${Math.round(tower.slow * 100)}%<br>`;
@@ -84,19 +78,7 @@ UI.prototype.showTowerInfo = function(tower, x, y, source) {
     const existingDetonate = actionsDiv.querySelector('.detonate-btn');
     if (existingDetonate) existingDetonate.remove();
 
-    const upgradeBtn = this.towerInfo.querySelector(".upgrade-btn");
     const sellBtn = this.towerInfo.querySelector(".sell-btn");
-
-    if (tower.isFusion) {
-      upgradeBtn.textContent = "融合不可升级";
-      upgradeBtn.disabled = true;
-    } else if (tower.level >= tower.maxLevel) {
-      upgradeBtn.textContent = "已满级";
-      upgradeBtn.disabled = true;
-    } else {
-      upgradeBtn.textContent = `升级 ${tower.upgradeCost * tower.level}墨`;
-      upgradeBtn.disabled = this.game.ink < tower.upgradeCost * tower.level;
-    }
 
     sellBtn.textContent = `出售 +${tower.getSellValue()}墨`;
 
@@ -222,8 +204,6 @@ UI.prototype.showModal = function(title, text, buttonText = "确定", onBtnClick
 UI.prototype.hideModal = function() {
     this.modal.classList.add("hidden");
     InkUI.hideReturnButton();
-    // 清理待处理的融合状态和事件监听器
-    this._cleanupFusionModalListeners();
   
 };
 UI.prototype.updateUnlocks = function(unlockedTypes) {

@@ -32,7 +32,6 @@ async function main() {
 
   try {
     await screenshot(browser, path.join(DIR, 'poster1.html'), path.join(DIR, 'poster1-tower-defense.png'));
-    await screenshot(browser, path.join(DIR, 'poster2.html'), path.join(DIR, 'poster2-fusion-system.png'));
     await screenshot(browser, path.join(DIR, 'poster3.html'), path.join(DIR, 'poster3-conquest-mode.png'));
   } finally {
     await browser.close();

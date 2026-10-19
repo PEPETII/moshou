@@ -3,11 +3,11 @@
   const audio = global.InkAudio;
   if (!audio) return;
 
-  // 炮塔 → 攻击音色系别。融合塔未列出时取其第一个组成塔的系别。
+  // 炮塔 → 攻击音色系别。未列出的塔取默认系别 metal。
   const FAMILY_BY_TOWER = {
-    fire: 'fire', xinZhongYan: 'fire', detonator: 'fire',
+    fire: 'fire', detonator: 'fire',
     water: 'water', ice: 'water', frost: 'water', moat: 'water',
-    wood: 'wind', wind: 'wind', poison: 'wind', parasite: 'wind', ruFengSiZhen: 'wind', arrow: 'wind',
+    wood: 'wind', wind: 'wind', poison: 'wind', parasite: 'wind', arrow: 'wind',
     gold: 'metal', mirror: 'metal', bell: 'metal', wheel: 'metal', talisman: 'metal',
     thunder: 'zap', light: 'zap', star: 'zap',
     earth: 'thud', mountain: 'thud', dark: 'thud', shadow: 'thud', bunker: 'thud', wall: 'thud'
@@ -18,8 +18,7 @@
   audio.familyOf = function familyOf(tower) {
     if (!tower) return 'metal';
     if (FAMILY_BY_TOWER[tower.type]) return FAMILY_BY_TOWER[tower.type];
-    const first = Array.isArray(tower.components) ? tower.components[0] : null;
-    return (first && FAMILY_BY_TOWER[first]) || 'metal';
+    return 'metal';
   };
 
   audio.deathVariantOf = function deathVariantOf(enemy) {
@@ -107,15 +106,6 @@
     }
   });
 
-  audio.defineCue('fusion', {
-    cooldown: 180,
-    render(a) {
-      a.noise(0.08, 'lowpass', 1200, 0.08);
-      a.tone(210, 145, 0.17, 0.12, 'triangle');
-      a.tone(392, 523, 0.22, 0.07, 'sine', 0.02);
-    }
-  });
-
   audio.defineCue('wave', {
     cooldown: 500,
     priority: 'high',
@@ -142,15 +132,6 @@
       const j = a.jitter(0.03);
       a.tone(880 * j, 780 * j, 0.06, 0.08, 'triangle');
       a.noise(0.03, 'bandpass', 2400, 0.05);
-    }
-  });
-
-  audio.defineCue('upgrade', {
-    cooldown: 150,
-    render(a) {
-      a.tone(392, 523, 0.12, 0.07, 'triangle');
-      a.tone(523, 784, 0.18, 0.07, 'sine', 0.07);
-      a.noise(0.05, 'highpass', 2600, 0.04, 0.07);
     }
   });
 

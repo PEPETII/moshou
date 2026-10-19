@@ -1,4 +1,4 @@
-// UI：鼠标输入、拖拽融合与共用交互助手
+// UI：鼠标输入、拖拽与共用交互助手
 // 触摸输入见 js/ui/input-touch.js（按输入能力分流，避免两套逻辑互相干扰）
 UI.prototype.setupEventListeners = function() {
     const mouseMoveHandler = (e) => {
@@ -25,6 +25,10 @@ UI.prototype.setupEventListeners = function() {
       // 如果拖拽刚完成，忽略点击
       if (this.dragJustCompleted) return;
 
+      // 镜头平移松手时合成的点击不算选塔
+      const cam = this.canvas.camera;
+      if (cam && cam.wasJustPanned()) return;
+
       const result = getGridFromEvent(e, this.canvas);
       if (!result) return;
 
@@ -46,26 +50,6 @@ UI.prototype.setupEventListeners = function() {
     };
     this.addTrackedEventListener(this.canvas, "contextmenu", contextMenuHandler);
 
-    const startWaveBtn = document.getElementById("start-wave");
-    if (startWaveBtn) {
-      this.addTrackedEventListener(startWaveBtn, "click", () => {
-        this.game.startWave();
-      });
-    }
-
-    const upgradeBtn = document.querySelector(".upgrade-btn");
-    if (upgradeBtn) {
-      this.addTrackedEventListener(upgradeBtn, "click", () => {
-        if (this.selectedTower) {
-          this.selectedTower.upgrade();
-          // 用原始锚点重排，避免"取面板中心再当锚点"造成面板逐次漂移
-          const anchor = this._infoAnchor || { x: 0, y: 0, source: "mouse" };
-          this.showTowerInfo(this.selectedTower, anchor.x, anchor.y, anchor.source);
-          this.game.updateUI();
-        }
-      });
-    }
-
     const sellBtn = document.querySelector(".sell-btn");
     if (sellBtn) {
       this.addTrackedEventListener(sellBtn, "click", () => {
@@ -77,7 +61,7 @@ UI.prototype.setupEventListeners = function() {
       });
     }
 
-    // === 拖拽融合事件监听（鼠标） ===
+    // === 拖拽事件监听（鼠标） ===
     this.setupDragAndDrop();
     this.setupPlacementDragEvents();
 
@@ -189,6 +173,16 @@ UI.prototype.updatePlacementDrag = function(e) {
     this.hoveredCell = cell ? { gx: cell.gx, gy: cell.gy } : null;
 };
 
+// 镜头在指针不动时仍会滚动（边缘自动滚动、键盘），每帧按最新镜头重算落点格
+UI.prototype.syncPlacementDragCell = function() {
+    const drag = this.placementDrag;
+    if (!drag || !drag.active) return;
+    const cell = getGridFromEvent({ clientX: drag.clientX, clientY: drag.clientY }, this.canvas);
+    drag.gx = cell ? cell.gx : null;
+    drag.gy = cell ? cell.gy : null;
+    this.hoveredCell = cell ? { gx: cell.gx, gy: cell.gy } : null;
+};
+
 UI.prototype.finishPlacementDrag = function(e) {
     const drag = this.placementDrag;
     if (!drag || !drag.active || drag.pointerId !== e.pointerId) return;
@@ -239,12 +233,11 @@ UI.prototype.pickTowerNear = function(clientX, clientY, options) {
 
     if (!towers.length) return null;
 
-    const rect = canvas.getBoundingClientRect();
-    if (!rect.width || !rect.height) return null;
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const px = (clientX - rect.left) * scaleX;
-    const py = (clientY - rect.top) * scaleY;
+    // 世界坐标 = 画布坐标 + 镜头偏移（统一走 clientToWorld）
+    const world = clientToWorld(clientX, clientY, canvas);
+    if (!world) return null;
+    const px = world.x;
+    const py = world.y;
 
     // 先做严格的格命中，命中就直接返回
     const gx = Math.floor(px / CONFIG.CELL_SIZE);
@@ -271,7 +264,7 @@ UI.prototype.pickTowerNear = function(clientX, clientY, options) {
     return bestDistance <= maxDistance ? best : null;
 };
 
-// === 拖拽融合系统（鼠标） ===
+// === 拖拽系统（鼠标） ===
 UI.prototype.setupDragAndDrop = function() {
     const mouseDownHandler = (e) => {
       const result = getGridFromEvent(e, this.canvas);
@@ -310,7 +303,7 @@ UI.prototype.setupDragAndDrop = function() {
           tolerance: 0.5
         });
         if (targetTower) {
-          this.attemptFusion(this.draggingTower, targetTower);
+          this.rejectTowerDrop();
         }
 
         // 标记拖拽刚完成，防止触发点击事件
@@ -337,93 +330,9 @@ UI.prototype._resetDragState = function() {
     this._clearDragCache();
 };
 
-UI.prototype.attemptFusion = function(tower1, tower2) {
-    const preview = this.game.getFusionPreview(tower1, tower2);
-    if (!preview) {
-      this.showToast('这两个炮塔无法融合', 'warning');
-      return;
-    }
-
-    // 显示融合确认弹窗
-    this.showFusionConfirm(tower1, tower2, preview);
-};
-
-UI.prototype.showFusionConfirm = function(tower1, tower2, preview) {
-    const canFuse = this.game.canFuse(tower1, tower2);
-    // 炮塔信息面板与合字弹窗同时显示会互相遮挡（手机窄屏尤其明显）
-    this.clearTowerSelection();
-
-    let message = `将 ${tower1.char} 和 ${tower2.char} 融合成 ${preview.char}\n`;
-    message += `效果: ${preview.desc}\n`;
-    message += `费用: ${preview.cost}墨\n`;
-    if (preview.tier) {
-      message += `阶位: T${preview.tier}${preview.isEvolution ? ' (进化)' : ''}\n`;
-    }
-    if (preview.onPath) {
-      message += `约束: 该融合塔必须位于路径格\n`;
-    }
-
-    if (!canFuse && !preview.canAfford) {
-      message += `\n※ 墨水不足!`;
-    } else if (!canFuse && preview.canAfford) {
-      message += `\n※ 当前组合不满足融合条件（进化白名单或路径限制）`;
-    }
-
-    const modal = document.getElementById('modal');
-    const titleEl = document.getElementById('modal-title');
-    const textEl = document.getElementById('modal-text');
-    const btnEl = document.getElementById('modal-btn');
-    const returnBtn = InkUI.ensureReturnButton();
-
-    InkUI.setModalScene('fusion', { left: tower1.char, right: tower2.char, result: preview.char });
-    titleEl.textContent = '合字';
-    textEl.textContent = message;
-    btnEl.textContent = canFuse ? '合 字' : '知道了';
-    btnEl.disabled = false;
-    btnEl.onclick = null;
-    returnBtn.textContent = '取消';
-    returnBtn.style.display = canFuse ? 'inline-block' : 'none';
-    returnBtn.onclick = () => this.hideModal();
-    modal.classList.remove('hidden');
-
-    // 清理之前可能存在的事件监听器
-    this._cleanupFusionModalListeners();
-
-    // 保存融合信息
-    this.pendingFusion = canFuse ? { tower1, tower2 } : null;
-    this._fusionProcessing = false; // 初始化处理标志位
-
-    // 使用 addEventListener 绑定事件，避免覆盖其他处理器
-    this._fusionConfirmHandler = () => {
-      // 防抖：防止重复处理
-      if (this._fusionProcessing) return;
-      this._fusionProcessing = true;
-
-      // 禁用按钮防止重复点击
-      btnEl.disabled = true;
-
-      if (this.pendingFusion) {
-        const fused = this.game.fuseTowers(this.pendingFusion.tower1, this.pendingFusion.tower2);
-        if (fused) InkUI.showFusionFeedback(preview.char);
-        this.pendingFusion = null;
-        this.selectedTower = null;
-        this.hideTowerInfo();
-      }
-      this.hideModal();
-    };
-
-    btnEl.addEventListener('click', this._fusionConfirmHandler);
-};
-
-// 清理融合模态框的事件监听器
-UI.prototype._cleanupFusionModalListeners = function() {
-    const btnEl = document.getElementById('modal-btn');
-    if (this._fusionConfirmHandler && btnEl) {
-      btnEl.removeEventListener('click', this._fusionConfirmHandler);
-      this._fusionConfirmHandler = null;
-    }
-    this.pendingFusion = null;
-    this._fusionProcessing = false; // 重置处理标志位
+// 炮塔不可叠放：拖到另一座塔上一律拒绝，拖拽预览消失，塔留在原位
+UI.prototype.rejectTowerDrop = function() {
+    this.showToast('炮塔不可叠放', 'warning');
 };
 
 // 绘制拖拽预览（由 Game.draw 调用）
@@ -431,7 +340,9 @@ UI.prototype.drawDragPreview = function(ctx) {
     if (!this.isDragging || !this.draggingTower) return;
 
     // 使用缓存的 rect 和比例计算，避免每帧重新计算
-    const x = (this.dragCurrentPos.x - this._dragRectLeft) * this._dragScaleX;
+    // 画布坐标 + 镜头偏移 = 世界坐标（本函数在世界层内绘制）
+    const cam = this.canvas.camera;
+    const x = (this.dragCurrentPos.x - this._dragRectLeft) * this._dragScaleX + (cam ? cam.x : 0);
     const y = (this.dragCurrentPos.y - this._dragRectTop) * this._dragScaleY;
 
     // 触摸端看不到鼠标光标，必须显式画出"松手会落在哪一格"
@@ -455,12 +366,16 @@ UI.prototype.drawDragPreview = function(ctx) {
     ctx.fillStyle = "rgba(176, 58, 46, 0.1)";
     ctx.fill();
 
+    if (this.draggingTower.gl) {
+      GlyphTower.drawGhost(ctx, this.draggingTower.type, x, y, 0.6);
+      return;
+    }
     ctx.save();
     ctx.globalAlpha = 0.6;
     ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = this.draggingTower.isFusion ? '#6a6459' : '#1c1a17';
+    ctx.fillStyle = '#1c1a17';
     ctx.fillText(this.draggingTower.char, x, y);
     ctx.restore();
 };

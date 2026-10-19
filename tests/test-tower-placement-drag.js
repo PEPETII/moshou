@@ -108,7 +108,7 @@ function createHarness() {
     "js/config/domain-01.js",
     "js/config/domain-02.js",
     "js/config/domain-03.js",
-    "js/config/fusion.js",
+    "js/config/glyph-battle.js",
     "js/utils.js",
     "js/ui.js",
     "js/ui/input.js",
@@ -124,7 +124,6 @@ function createHarness() {
         this.gx = gx;
         this.gy = gy;
         this.char = CONFIG.TOWERS[type].char;
-        this.isFusion = false;
       }
     }
   `, context);
@@ -175,6 +174,8 @@ function createHarness() {
   game.ui = ui;
 
   ui.setupEventListeners();
+  // 放置校验与塔池无关：这里临时把木、山放进塔池，以覆盖「不能建造」「只能放路径」两类校验
+  vm.runInContext('CONFIG.ACTIVE_TOWERS = ["fire", "water", "wood", "mountain"]', context);
   ui.createTowerSelects();
 
   const ctx = {
@@ -231,7 +232,7 @@ function main() {
   assert.strictEqual(h.game.ink, originalInk);
   assert.strictEqual(h.ui.placementDrag.active, false);
 
-  let release = dragCard(h, "fire", 2, "mouse", 3 * 48 + 24, 3 * 48 + 24);
+  let release = dragCard(h, "fire", 2, "mouse", 3 * 72 + 36, 3 * 72 + 36);
   assert(fireCard.capturedPointerIds.has(2), "the card captures its active pointer");
   assert.strictEqual(h.ui.placementDrag.gx, 3);
   assert.strictEqual(h.ui.placementDrag.gy, 3);
@@ -243,16 +244,16 @@ function main() {
   assert.strictEqual(h.game.towers.length, 1);
   assert.strictEqual(h.game.ink, originalInk - CONFIG_COST(h.context, "fire"));
   assert.strictEqual(h.ui.placementDrag.active, false);
-  assert.strictEqual(h.ui.draggingTower, null, "placement must not use fusion drag state");
+  assert.strictEqual(h.ui.draggingTower, null, "placement must not use tower drag state");
 
-  h.canvas.dispatch("click", pointer(2, "mouse", 3 * 48 + 24, 3 * 48 + 24));
+  h.canvas.dispatch("click", pointer(2, "mouse", 3 * 72 + 36, 3 * 72 + 36));
   assert.strictEqual(h.ui.selectedTower, null, "the synthesized post-placement click is ignored");
-  h.canvas.dispatch("click", pointer(3, "mouse", 3 * 48 + 24, 3 * 48 + 24));
+  h.canvas.dispatch("click", pointer(3, "mouse", 3 * 72 + 36, 3 * 72 + 36));
   assert.strictEqual(h.ui.selectedTower, h.game.towers[0], "ordinary Canvas clicks still inspect towers");
-  h.canvas.dispatch("click", pointer(4, "mouse", 4 * 48 + 24, 4 * 48 + 24));
+  h.canvas.dispatch("click", pointer(4, "mouse", 4 * 72 + 36, 4 * 72 + 36));
   assert.strictEqual(h.ui.selectedTower, null, "clicking a blank cell closes the info panel");
 
-  release = dragCard(h, "water", 5, "mouse", 3 * 48 + 24, 3 * 48 + 24);
+  release = dragCard(h, "water", 5, "mouse", 3 * 72 + 36, 3 * 72 + 36);
   h.ctx.calls.length = 0;
   h.game.drawPlacementPreview();
   assert.strictEqual(h.ctx.calls.find((call) => call.method === "fillRect").fillStyle, "rgba(255, 0, 0, 0.3)");
@@ -276,48 +277,49 @@ function main() {
   h.game.ink = 500;
   h.ui.refreshTowerSelectAffordability();
 
-  release = dragCard(h, "wood", 8, "mouse", 4 * 48 + 24, 4 * 48 + 24);
+  release = dragCard(h, "wood", 8, "mouse", 4 * 72 + 36, 4 * 72 + 36);
   const inkBeforeInvalidDrop = h.game.ink;
   h.document.dispatch("pointerup", release);
   assert.strictEqual(h.game.ink, inkBeforeInvalidDrop);
   assert(h.ui.events.some((item) => item.includes("这里不能建造")));
 
-  release = dragCard(h, "mountain", 9, "mouse", 3 * 48 + 24, 3 * 48 + 24);
+  release = dragCard(h, "mountain", 9, "mouse", 3 * 72 + 36, 3 * 72 + 36);
   h.document.dispatch("pointerup", release);
   assert(h.ui.events.some((item) => item.includes("只能放在路径上")));
-  release = dragCard(h, "mountain", 10, "mouse", 4 * 48 + 24, 4 * 48 + 24);
+  release = dragCard(h, "mountain", 10, "mouse", 4 * 72 + 36, 4 * 72 + 36);
   h.document.dispatch("pointerup", release);
   assert.strictEqual(h.game.towers.length, 2, "the mountain tower remains placeable on a path cell");
 
-  release = dragCard(h, "water", 11, "touch", 5 * 48 + 24, 5 * 48 + 24);
+  release = dragCard(h, "water", 11, "touch", 5 * 72 + 36, 5 * 72 + 36);
   assert.strictEqual(h.ui.placementDrag.pointerType, "touch", "touch uses the same placement state");
   h.ctx.calls.length = 0;
   h.game.drawPlacementPreview();
   const ghost = h.ctx.calls.find((call) => call.method === "strokeText" && call.text === "水");
-  assert.strictEqual(ghost.y, 5 * 48 + 24 - 52, "touch ghost is raised 52 CSS pixels above the finger");
+  assert.strictEqual(ghost.y, 5 * 72 + 36 - 52, "touch ghost is raised 52 CSS pixels above the finger");
   h.document.dispatch("pointerup", release);
   assert.strictEqual(h.game.towers.length, 3);
 
   const inkBeforeCancel = h.game.ink;
   cardFor(h.bottomBar, "wood").dispatch("pointerdown", pointer(12, "touch", 1100, 500));
-  h.document.dispatch("pointermove", pointer(12, "touch", 6 * 48 + 24, 5 * 48 + 24));
-  h.document.dispatch("pointercancel", pointer(12, "touch", 6 * 48 + 24, 5 * 48 + 24));
+  h.document.dispatch("pointermove", pointer(12, "touch", 6 * 72 + 36, 5 * 72 + 36));
+  h.document.dispatch("pointercancel", pointer(12, "touch", 6 * 72 + 36, 5 * 72 + 36));
   assert.strictEqual(h.ui.placementDrag.active, false, "pointercancel clears the placement preview");
   assert.strictEqual(h.game.ink, inkBeforeCancel);
 
   const left = h.game.getTowerAt(5, 5);
-  const right = { gx: 6, gy: 5, char: "木", isFusion: false };
+  const right = { gx: 6, gy: 5, char: "木" };
   h.game.towers.push(right);
   h.game.runtimeIndexes.rebuildTowers();
-  let fusionCall = null;
-  h.ui.attemptFusion = (source, target) => { fusionCall = [source, target]; };
-  h.canvas.dispatch("mousedown", pointer(13, "mouse", 5 * 48 + 24, 5 * 48 + 24));
-  h.canvas.dispatch("mousemove", pointer(13, "mouse", 6 * 48 + 24, 5 * 48 + 24));
-  h.canvas.dispatch("mouseup", pointer(13, "mouse", 6 * 48 + 24, 5 * 48 + 24));
-  assert.deepStrictEqual(fusionCall, [left, right], "existing tower drag still reaches the fusion path");
+  let rejectCalls = 0;
+  h.ui.rejectTowerDrop = () => { rejectCalls++; };
+  h.canvas.dispatch("mousedown", pointer(13, "mouse", 5 * 72 + 36, 5 * 72 + 36));
+  h.canvas.dispatch("mousemove", pointer(13, "mouse", 6 * 72 + 36, 5 * 72 + 36));
+  h.canvas.dispatch("mouseup", pointer(13, "mouse", 6 * 72 + 36, 5 * 72 + 36));
+  assert.strictEqual(rejectCalls, 1, "dragging a tower onto another tower is rejected");
+  assert.strictEqual(h.game.getTowerAt(5, 5), left, "dragged tower stays in place");
   assert.strictEqual(h.ui.draggingTower, null);
 
-  console.log("主游戏炮塔卡片拖放测试通过：鼠标/触屏放置、校验反馈、取消、预览与融合隔离");
+  console.log("主游戏炮塔卡片拖放测试通过：鼠标/触屏放置、校验反馈、取消、预览与叠放拒绝");
 }
 
 function CONFIG_COST(context, type) {

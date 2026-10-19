@@ -164,9 +164,6 @@ Tower.prototype.drawProjectilesWithAnimation = function(ctx) {
         case 'wood':
           this.drawWoodProjectile(ctx, p);
           break;
-        case 'xinZhongYan':
-          this.drawXinZhongYanProjectile(ctx, p);
-          break;
         case 'ice':
           this.drawIceProjectile(ctx, p);
           break;
@@ -224,9 +221,6 @@ Tower.prototype.drawTrail = function(ctx, p) {
           break;
         case 'wood':
           color = `rgba(100, 100, 100, ${alpha})`;
-          break;
-        case 'xinZhongYan':
-          color = `rgba(255, 80, 100, ${alpha})`;
           break;
         case 'ice':
           color = `rgba(128, 216, 255, ${alpha})`;
@@ -314,26 +308,6 @@ Tower.prototype.drawWoodProjectile = function(ctx, p) {
     ctx.translate(p.x, p.y);
     const angle = (p.x + p.y) % 360 * Math.PI / 180 * 0.1;
     ctx.rotate(angle);
-  
-};
-Tower.prototype.drawXinZhongYanProjectile = function(ctx, p) {
-    ctx.translate(p.x, p.y);
-    ctx.rotate(p.rotation || 0);
-
-    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 18);
-    gradient.addColorStop(0, 'rgba(255, 150, 100, 0.7)');
-    gradient.addColorStop(0.5, 'rgba(255, 80, 100, 0.4)');
-    gradient.addColorStop(1, 'rgba(255, 50, 80, 0)');
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(0, 0, 18, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.font = "bold 14px 'Ma Shan Zheng', cursive";
-    ctx.fillStyle = "#ff5060";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("心", 0, 0);
   
 };
 Tower.prototype.drawIceProjectile = function(ctx, p) {

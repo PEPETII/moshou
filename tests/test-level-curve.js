@@ -1,5 +1,6 @@
 /**
- * 关卡曲线护栏：直接读取真实关卡数据与征服模式生成器。
+ * 关卡数据合法性（原「关卡曲线」测试在工单 07 改写：只剩 4 关，曲线已无意义）。
+ * 覆盖：塔防 1-1、1-2 与征服 1-1、1-2 的 id、网格、路径连续性、核心位置、坚守时长。
  */
 const fs = require('fs');
 const path = require('path');
@@ -11,8 +12,8 @@ ctx.window = ctx;
 ctx.globalThis = ctx;
 vm.createContext(ctx);
 const files = [
-  'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/fusion.js',
-  'js/utils.js', 'js/levelsData.js', 'js/data/levels/part-01.js', 'js/data/levels/part-02.js', 'js/data/levels/export.js',
+  'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/glyph-battle.js',
+  'js/utils.js', 'js/levelsData.js', 'js/data/levels/part-01.js', 'js/data/levels/export.js',
   'js/levelManager.js',
 ];
 const conquestSrc = fs.readFileSync(path.join(ROOT, 'js/conquestLevelsData.js'), 'utf8').replace(/^const /gm, 'var ');
@@ -26,46 +27,25 @@ function check(name, ok, detail) {
   console.log(`${ok ? '✓' : '✗'} ${name}${detail ? ' — ' + detail : ''}`);
 }
 
-const E = CONFIG.ENEMIES;
-const totalHp = (lv) => lv.waves.reduce((a, w) => a + w.enemies.reduce((b, g) => b + E[g.type].hp * g.count, 0), 0);
+const ids = levelManager.getAll().map((l) => l.id);
+check('塔防只有 1-1、1-2', ids.join() === '1-1,1-2', ids.join());
+check('征服只有 1-1、1-2', Object.keys(CONQUEST_LEVELS_DATA).sort().join() === '1-1,1-2', Object.keys(CONQUEST_LEVELS_DATA).join());
 
-// 每个主题 10 关，且全部敌人类型存在
-for (let t = 1; t <= 5; t++) {
-  check(`主题 ${t} 共 10 关`, levelManager.getLevelsByTheme(t).length === 10);
+for (const id of ['1-1', '1-2']) {
+  const lv = levelManager.get(id);
+  const p = lv.path;
+  const inGrid = p.every((c) => c.x >= 0 && c.x < CONFIG.GRID_COLS && c.y >= 0 && c.y < CONFIG.GRID_ROWS);
+  const adj = p.every((c, i) => i === 0 || Math.abs(c.x - p[i - 1].x) + Math.abs(c.y - p[i - 1].y) === 1);
+  const uniq = new Set(p.map((c) => c.x + ',' + c.y)).size === p.length;
+  const last = p[p.length - 1];
+  check(`塔防 ${id}：路径在 ${CONFIG.GRID_COLS}×${CONFIG.GRID_ROWS} 网格内、相邻连续、无重复`, p.length > 1 && inGrid && adj && uniq);
+  check(`塔防 ${id}：核心在路径终点`, lv.core && lv.core.x === last.x && lv.core.y === last.y);
+  check(`塔防 ${id}：坚守时长与初始参数合法`, (lv.holdSeconds === undefined || lv.holdSeconds > 0) && lv.coreHp > 0 && lv.startInk > 0);
 }
-let unknown = [];
-for (const lv of levelManager.getAll()) for (const w of lv.waves) for (const g of w.enemies) if (!E[g.type]) unknown.push(`${lv.id}:${g.type}`);
-check('关卡引用的敌人类型都存在', unknown.length === 0, unknown.join(','));
 
-// 主题内总 HP 基本单调（容许 5% 回落）
-const bad = [];
-for (let t = 1; t <= 5; t++) {
-  const lvs = levelManager.getLevelsByTheme(t);
-  for (let i = 1; i < lvs.length; i++) {
-    if (totalHp(lvs[i]) < totalHp(lvs[i - 1]) * 0.95) bad.push(`${lvs[i - 1].id}->${lvs[i].id}`);
-  }
+for (const [id, lv] of Object.entries(CONQUEST_LEVELS_DATA)) {
+  check(`征服 ${id}：基础字段合法`, lv.id === id && lv.startInk > 0 && lv.summonCost > 0 && (lv.holdSeconds === undefined || lv.holdSeconds > 0));
 }
-check('主题内总 HP 基本单调不降(容差 5%)', bad.length === 0, bad.join(' '));
-
-// 各主题平均总 HP 不低于主题 1
-const avg = (t) => levelManager.getLevelsByTheme(t).reduce((a, l) => a + totalHp(l), 0) / 10;
-check('各主题平均总 HP ≥ 主题 1', [2, 3, 4, 5].every((t) => avg(t) >= avg(1)), [1, 2, 3, 4, 5].map((t) => Math.round(avg(t))).join('/'));
-
-// 第一关不含 overlord
-check('1-1 不含始终霸王', !JSON.stringify(levelManager.get('1-1').waves).includes('overlord'));
-
-// 征服模式
-const cl = Object.values(CONQUEST_LEVELS_DATA);
-check('征服模式 25 关', cl.length === 25);
-let distinct = true;
-for (let t = 1; t <= 5; t++) {
-  const sigs = cl.filter((l) => l.theme === t).map((l) => JSON.stringify(l.waves));
-  if (new Set(sigs).size < 3) distinct = false;
-}
-check('征服同主题各关波次不再完全相同', distinct);
-check('征服每波数量在 3~50 且 delay 被设置', cl.every((l) => l.waves.every((w) => w.count >= 3 && w.count <= 50 && w.delay >= 300)));
-check('征服末主题末波为始终霸王', CONQUEST_LEVELS_DATA['5-5'].waves.slice(-1)[0].type === 'overlord');
-check('征服召唤费用随数量递增配置存在', cl.every((l) => l.summonCostGrowth > 0));
 
 if (failed) { console.log(`\n${failed} 项失败`); process.exit(1); }
-console.log('\n关卡曲线护栏通过');
+console.log('\n关卡数据校验通过');

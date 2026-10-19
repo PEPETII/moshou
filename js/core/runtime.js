@@ -25,5 +25,6 @@ Game.prototype.stop = function() {
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
     }
+    GlyphSystem.release();
   
 };

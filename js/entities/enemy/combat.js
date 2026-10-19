@@ -140,6 +140,7 @@ Enemy.prototype.triggerVaporize = function() {
   
 };
 Enemy.prototype.triggerShake = function() {
+    if (this._glyphHit) return;
     this.shakeEndTime = Date.now() + this.shakeDuration;
   
 };

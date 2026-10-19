@@ -2,6 +2,7 @@
 Game.prototype.gameOver = function(victory) {
     this.gameEnded = true;
     this.victory = victory;
+    this.battleActive = false;
     this.inputLocked = true;
 
     if (victory) {
@@ -76,6 +77,7 @@ Game.prototype.nextLevel = function() {
       cancelAnimationFrame(this.animationId);
     }
     this.start();
+    this.promptDensity();
   
 };
 Game.prototype.restartLevel = function() {
@@ -94,16 +96,14 @@ Game.prototype.restartLevel = function() {
       cancelAnimationFrame(this.animationId);
     }
     this.start();
+    this.promptDensity();
   
 };
 /**
    * 返回关卡选择界面（征服模式）
    */
 Game.prototype.returnToLevelSelect = function() {
-    if (this.spawnTimerId) {
-      clearTimeout(this.spawnTimerId);
-      this.spawnTimerId = null;
-    }
+    DensityPicker.close();
 
     this.stop();
     this.gameStarted = false;
@@ -117,12 +117,11 @@ Game.prototype.returnToLevelSelect = function() {
 
     this.towers = [];
     this.enemies = [];
-    this.spawnQueue = [];
     this.runtimeIndexes.rebuildTowers();
     this.runtimeIndexes.rebuildEnemies();
     this.gameEnded = false;
     this.victory = false;
-    this.waveInProgress = false;
+    this.battleActive = false;
 
     // 显示关卡选择界面
     if (this.ui.currentConquestThemeId) {
@@ -161,6 +160,7 @@ Game.prototype.startGame = function(levelId) {
       cancelAnimationFrame(this.animationId);
     }
     this.start();
+    this.promptDensity();
 
     // 内容尺寸在这里才确定（塔卡是 loadLevel 里重建的），必须重新计算缩放。
     // 旧实现只在 window.load 时算一次，进入战斗后缩放与实际内容不符。
@@ -168,10 +168,7 @@ Game.prototype.startGame = function(levelId) {
   
 };
 Game.prototype.returnToMenu = function() {
-    if (this.spawnTimerId) {
-      clearTimeout(this.spawnTimerId);
-      this.spawnTimerId = null;
-    }
+    DensityPicker.close();
 
     // 先停止动画，再停止游戏循环，确保状态干净
     if (this.inkTrailAnimation && this.inkTrailAnimation.active) {
@@ -193,12 +190,11 @@ Game.prototype.returnToMenu = function() {
 
     this.towers = [];
     this.enemies = [];
-    this.spawnQueue = [];
     this.runtimeIndexes.rebuildTowers();
     this.runtimeIndexes.rebuildEnemies();
     this.gameEnded = false;
     this.victory = false;
-    this.waveInProgress = false;
+    this.battleActive = false;
     this.inputLocked = false;
 
     // 清理粒子系统和子弹池

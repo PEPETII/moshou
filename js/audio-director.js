@@ -8,7 +8,7 @@
   const POLL_MS = 250;
   const UNLOCK_EVENTS = ['pointerdown', 'touchend', 'click', 'keydown'];
   // 这些按钮有各自的音效，不再叠加通用点击音。
-  const TAP_SKIP = '#start-wave, #conquest-wave-btn, .sell-btn, .upgrade-btn, #modal-btn, #modal-return-btn, #conquest-summon-btn';
+  const TAP_SKIP = '.sell-btn, #modal-btn, #modal-return-btn, #conquest-summon-btn';
   const TAP_TARGETS = 'button, .menu-btn, .theme-card, .conquest-theme-card, .conquest-level-item, .menu-level-item, .tower-select, [data-ui-sound]';
 
   const isShown = (id) => {
@@ -49,10 +49,11 @@
 
     const theme = themeOf(game, isConquest);
     if (game.gameEnded) return { scene: 'result', theme, intensity: 0 };
-    if (!game.waveInProgress) return { scene: 'prep', theme, intensity: 0 };
+    if (!game.battleActive) return { scene: 'prep', theme, intensity: 0 };
 
-    const crowd = Math.min(1, aliveEnemyCount(game) / (isConquest ? 40 : 18));
-    const progress = game.maxWave ? Math.min(1, (game.wave || 0) / game.maxWave) : 0;
+    // 连续刷怪：拥挤度按存活数相对 ENEMY_CAP 估算，进度按坚守已过时间
+    const crowd = Math.min(1, aliveEnemyCount(game) / (((global.CONFIG && global.CONFIG.ENEMY_CAP) || 260) * 0.3));
+    const progress = game.holdTotal ? Math.min(1, 1 - (game.holdLeft || 0) / game.holdTotal) : 0;
     return { scene: 'battle', theme, intensity: crowd * 0.6 + progress * 0.4 };
   }
 

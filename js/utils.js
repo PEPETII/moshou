@@ -113,36 +113,59 @@ function isInsideCanvas(x, y, canvas) {
 }
 
 /**
- * 从鼠标或触摸事件中获取网格坐标
+ * 客户端坐标 → 画布（屏幕/视口）坐标，已扣除 CSS 缩放。
+ * 返回 null 表示画布当前没有尺寸（隐藏中）。不含镜头偏移。
+ * @returns {{x:number,y:number}|null}
+ */
+function clientToCanvas(clientX, clientY, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return null;
+  return {
+    x: (clientX - rect.left) * (canvas.width / rect.width),
+    y: (clientY - rect.top) * (canvas.height / rect.height),
+  };
+}
+
+/**
+ * 客户端坐标 → 世界坐标（屏幕坐标 + 镜头偏移）。
+ * 镜头取自 canvas.camera（Camera 构造时挂上）；没有镜头时偏移为 0，与旧行为一致。
+ * 返回的 sx/sy 是画布坐标，x/y 是世界坐标；不在视口内时 inside=false。
+ */
+function clientToWorld(clientX, clientY, canvas, camera) {
+  const p = clientToCanvas(clientX, clientY, canvas);
+  if (!p) return null;
+  const cam = camera || canvas.camera;
+  const offset = cam ? cam.x : 0;
+  return {
+    sx: p.x,
+    sy: p.y,
+    x: p.x + offset,
+    y: p.y,
+    inside: p.x >= 0 && p.x <= canvas.width && p.y >= 0 && p.y <= canvas.height,
+  };
+}
+
+/**
+ * 从鼠标或触摸事件中获取网格坐标（世界格，含镜头偏移）
  * @param {MouseEvent|TouchEvent} e - 事件对象
  * @param {HTMLCanvasElement} canvas - Canvas元素
- * @returns {Object} 包含 gx, gy 网格坐标的对象，如果不在画布内返回 null
+ * @param {Camera} [camera] - 可省略，默认取 canvas.camera
+ * @returns {Object} 包含 gx, gy 网格坐标与世界坐标 x, y 的对象，如果不在视口内返回 null
  */
-function getGridFromEvent(e, canvas) {
-  const rect = canvas.getBoundingClientRect();
+function getGridFromEvent(e, canvas, camera) {
   const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
   const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
 
-  // 计算 CSS 缩放比例
-  const scaleX = canvas.width / rect.width;
-  const scaleY = canvas.height / rect.height;
+  const w = clientToWorld(clientX, clientY, canvas, camera);
+  if (!w || !w.inside) return null;
 
-  // 将鼠标/触摸坐标转换为 Canvas 内部坐标
-  const x = (clientX - rect.left) * scaleX;
-  const y = (clientY - rect.top) * scaleY;
+  const gx = Math.floor(w.x / CONFIG.CELL_SIZE);
+  const gy = Math.floor(w.y / CONFIG.CELL_SIZE);
 
-  // 检查是否在画布内
-  if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) {
-    return null;
-  }
-
-  const gx = Math.floor(x / CONFIG.CELL_SIZE);
-  const gy = Math.floor(y / CONFIG.CELL_SIZE);
-
-  return { gx, gy, x, y };
+  return { gx, gy, x: w.x, y: w.y, sx: w.sx, sy: w.sy };
 }
 
 // 导出工具函数（用于模块化环境）
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { distance, distanceSq, gridToPixel, pixelToGrid, lerp, clamp, calculateDragDistance, checkDragThreshold, isInsideCanvas };
+  module.exports = { distance, distanceSq, gridToPixel, pixelToGrid, clientToCanvas, clientToWorld, getGridFromEvent, lerp, clamp, calculateDragDistance, checkDragThreshold, isInsideCanvas };
 }

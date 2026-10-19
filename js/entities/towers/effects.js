@@ -46,7 +46,7 @@ Tower.prototype.updateShadowCopy = function(now) {
     let bestDps = 0;
     let bestTower = null;
     for (const t of neighbors) {
-      if (t.isFusion || t.type === 'shadow') continue;
+      if (t.type === 'shadow') continue;
       const dps = t.damage / (t.cooldown / 1000);
       if (dps > bestDps) { bestDps = dps; bestTower = t; }
     }

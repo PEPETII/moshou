@@ -10,8 +10,8 @@ class ConquestProgressManager {
       unlockedThemes: [1],
       lastPlayedLevel: '1-1'
     };
-    this.totalLevelsPerTheme = 5;  // 每个主题5个关卡
-    this.totalThemes = 5;
+    this.totalLevelsPerTheme = 2;  // 实验阶段：每个主题 2 个关卡（工单 02）
+    this.totalThemes = 1;          // 实验阶段：仅 1 个主题
     this._memoryProgress = null;  // 内存降级备份
     this._storageWarningShown = false;  // 防止重复提示
   }
@@ -21,6 +21,28 @@ class ConquestProgressManager {
    * @returns {Object} 进度数据对象
    */
   getProgress() {
+    return this._sanitizeProgress(this._readProgress());
+  }
+
+  /**
+   * 丢弃已不存在的关卡 ID / 主题 ID / 最后游玩关卡（旧存档兼容），不改写 localStorage
+   * @private
+   */
+  _sanitizeProgress(p) {
+    const hasData = typeof CONQUEST_LEVELS_DATA !== 'undefined';
+    const exists = (id) => !hasData || (typeof id === 'string' && Object.prototype.hasOwnProperty.call(CONQUEST_LEVELS_DATA, id));
+    const themeCount = typeof CONQUEST_THEMES !== 'undefined' ? CONQUEST_THEMES.length : this.totalThemes;
+    const completed = Array.isArray(p.completedLevels) ? p.completedLevels.filter(exists) : [];
+    const themes = Array.isArray(p.unlockedThemes) ? p.unlockedThemes.filter((t) => t >= 1 && t <= themeCount) : [];
+    return {
+      completedLevels: completed,
+      unlockedThemes: themes.length ? themes : [1],
+      lastPlayedLevel: exists(p.lastPlayedLevel) ? p.lastPlayedLevel : '1-1'
+    };
+  }
+
+  /** 读取原始进度（内存备份优先，其次 localStorage） */
+  _readProgress() {
     // 优先检查内存备份（降级方案）
     if (this._memoryProgress) {
       return {
@@ -224,7 +246,7 @@ class ConquestProgressManager {
    */
   _updateUnlockedThemes(progress) {
     // 所有主题默认解锁，无需更新
-    progress.unlockedThemes = [1, 2, 3, 4, 5];
+    progress.unlockedThemes = [1];
   }
 
   /**

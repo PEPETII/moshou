@@ -22,10 +22,14 @@ ConquestGame.prototype.stop = function() {
       cancelAnimationFrame(this.animationId);
     }
     this.gameStarted = false;
+    GlyphSystem.release();
     this.cleanupKeyboardShortcuts();
   
 };
 ConquestGame.prototype.update = function(now) {
+    // 镜头独立于结算：结算画面里也能左右查看
+    if (this.camera) this.camera.update(now);
+
     if (this.gameEnded) return;
 
     if (this.lastTime <= 0) {
@@ -33,8 +37,15 @@ ConquestGame.prototype.update = function(now) {
       return;
     }
 
-    const deltaTime = Math.min(now - this.lastTime, 50);
+    // 顿帧（打击反馈）：命中停顿时游戏时间 × 0.06
+    const deltaTime = GlyphSystem.scaleFrame(Math.min(now - this.lastTime, 50));
     this.lastTime = now;
+
+    // 全局大招间隔倒计时（字形塔的大招自动释放，见 GlyphSystem）
+    GlyphSystem.tick(this, deltaTime / 1000);
+
+    // 连续刷怪与坚守计时（工单 04）
+    this.updateSpawner(deltaTime / 1000);
 
     for (const tower of this.towers) {
       tower.update(now, deltaTime, this.enemies);
@@ -47,43 +58,70 @@ ConquestGame.prototype.update = function(now) {
 
     this.enemies = this.enemies.filter((e) => !e.dead);
 
-    const aliveCount = this.enemies.filter((e) => !e.dead).length;
-    if (aliveCount >= this.maxAliveEnemies && !this.gameEnded) {
+    // 字形弹道与特效：塔本帧发出的弹道在敌人移动之后推进
+    GlyphSystem.update(this, deltaTime / 1000);
+
+    // 失败线：场上存活数达到 dangerLimit
+    if (this.battleActive && !this.gameEnded && this.aliveEnemyCount() >= this.dangerLimit) {
       this.gameOver(false);
     }
 
-    if (this.waveInProgress) {
-      this.checkWaveComplete();
+    // HUD 数字每 10 帧刷新一次，避免每帧写 DOM
+    this._uiTick = (this._uiTick || 0) + 1;
+    if (this._uiTick >= 10) {
+      this._uiTick = 0;
+      this.updateUI();
     }
 
     this.particleSystem.update(deltaTime);
   
 };
 ConquestGame.prototype.draw = function() {
+    const ctx = this.ctx;
+    const cam = this.camera;
     const gridHeight = this.ROWS * this.CELL_SIZE;
-    this.ctx.fillStyle = CONFIG.COLORS.bg;
-    this.ctx.fillRect(0, 0, this.canvas.width, gridHeight);
+    const worldW = this.COLS * this.CELL_SIZE;
 
-    this.inkRenderer.drawDistantMountains(gridHeight);
+    // 世界层：随镜头平移
+    ctx.save();
+    const shk = GlyphSystem.shakeOffset(this);
+    ctx.translate(-(cam ? Math.round(cam.x) : 0) + shk.x, shk.y);
+
+    ctx.fillStyle = CONFIG.COLORS.bg;
+    ctx.fillRect(0, 0, worldW, gridHeight);
+
+    this.inkRenderer.drawDistantMountains(gridHeight, worldW);
     this.drawGrid();
     this.drawPath();
     this.drawPlacementArea();
+    GlyphSystem.drawStain(ctx);
     this.drawDragPlacementPreview();
+
+    // 绘制顺序：地面效果（焚后火字）→ 敌人 → 塔 → 弹道与大招 → 粒子
+    GlyphSystem.drawGround(ctx, this);
+
+    for (const enemy of this.enemies) {
+      enemy.draw(ctx, this.inkRenderer);
+    }
 
     const timestamp = performance.now();
     for (const tower of this.towers) {
       if (this.isDragging && tower === this.draggingTower) continue;
-      tower.draw(this.ctx, timestamp);
+      tower.draw(ctx, timestamp);
     }
 
-    for (const enemy of this.enemies) {
-      enemy.draw(this.ctx, this.inkRenderer);
-    }
-
-    this.particleSystem.draw(this.ctx);
-    this.drawInfo();
-    this.drawSummonFlash();
+    GlyphSystem.drawShots(ctx, this);
+    this.particleSystem.draw(ctx);
+    GlyphSystem.drawFX(ctx);
     this.drawDragPreview();
+
+    ctx.restore();
+
+    // HUD 层：不随镜头平移
+    this.drawInfo();
+    GlyphSystem.drawHud(ctx);
+    this.drawSummonFlash();
+    if (cam) cam.drawHints(ctx);
   
 };
 // 征服模式的棋盘是"格位分区"本身（空场时唯一的分格依据就是网格线），
@@ -157,31 +195,14 @@ ConquestGame.prototype.drawDragPlacementPreview = function() {
     const targetTower = this.getTowerAt(gx, gy);
 
     if (targetTower && targetTower !== this.draggingTower) {
-      const preview = this.getFusionPreview(this.draggingTower, targetTower);
-      if (preview) {
-        this.ctx.fillStyle = "rgba(196, 92, 72, 0.3)";
-        this.ctx.fillRect(
-          gx * this.CELL_SIZE,
-          gy * this.CELL_SIZE,
-          this.CELL_SIZE,
-          this.CELL_SIZE
-        );
-
-        this.ctx.fillStyle = preview.color || "#c45c48";
-        this.ctx.font = 'bold 16px "Ma Shan Zheng", cursive';
-        this.ctx.textAlign = "center";
-        this.ctx.textBaseline = "middle";
-        const pos = gridToPixel(gx, gy);
-        this.ctx.fillText(preview.char, pos.x, pos.y);
-      } else {
-        this.ctx.fillStyle = "rgba(125, 52, 44, 0.2)";
-        this.ctx.fillRect(
-          gx * this.CELL_SIZE,
-          gy * this.CELL_SIZE,
-          this.CELL_SIZE,
-          this.CELL_SIZE
-        );
-      }
+      // 不可叠放：目标格标红，松手后塔弹回原位
+      this.ctx.fillStyle = "rgba(125, 52, 44, 0.2)";
+      this.ctx.fillRect(
+        gx * this.CELL_SIZE,
+        gy * this.CELL_SIZE,
+        this.CELL_SIZE,
+        this.CELL_SIZE
+      );
     } else if (this.canPlaceAt(gx, gy)) {
       this.ctx.fillStyle = "rgba(28, 26, 23, 0.16)";
       this.ctx.fillRect(
@@ -209,7 +230,8 @@ ConquestGame.prototype.drawDragPreview = function() {
     if (!this.isDragging || !this.draggingTower) return;
 
     // 使用缓存的 rect 和比例计算，避免每帧重新计算
-    const x = (this.dragCurrentPos.x - this._dragRectLeft) * this._dragScaleX;
+    // 画布坐标 + 镜头偏移 = 世界坐标（本函数在世界层内绘制）
+    const x = (this.dragCurrentPos.x - this._dragRectLeft) * this._dragScaleX + (this.camera ? this.camera.x : 0);
     const y = (this.dragCurrentPos.y - this._dragRectTop) * this._dragScaleY;
 
     // 触摸端：手指压在触点上，把幽灵塔与射程圈整体上移，
@@ -225,12 +247,16 @@ ConquestGame.prototype.drawDragPreview = function() {
     this.ctx.fillStyle = "rgba(176, 58, 46, 0.1)";
     this.ctx.fill();
 
+    if (this.draggingTower.gl) {
+      GlyphTower.drawGhost(this.ctx, this.draggingTower.type, x, drawY, 0.6);
+      return;
+    }
     this.ctx.save();
     this.ctx.globalAlpha = 0.6;
     this.ctx.font = `bold 28px ${CONFIG.FONTS.BRUSH}`;
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
-    this.ctx.fillStyle = this.draggingTower.isFusion ? "#6a6459" : "#ffff00";
+    this.ctx.fillStyle = "#ffff00";
     this.ctx.fillText(this.draggingTower.char, x, drawY);
     this.ctx.restore();
   
@@ -259,13 +285,13 @@ ConquestGame.prototype.drawInfo = function() {
     this.ctx.fillText("征服模式", 10, 20);
 
     const aliveCount = this.enemies.filter((e) => !e.dead).length;
-    const dangerRatio = aliveCount / this.maxAliveEnemies;
+    const dangerRatio = aliveCount / this.dangerLimit;
     if (dangerRatio > 0.6) {
       const alpha = 0.3 + 0.3 * Math.sin(Date.now() / 300);
       this.ctx.fillStyle = `rgba(196, 92, 72, ${alpha})`;
       this.ctx.font = '12px "ZCOOL XiaoWei", serif';
       this.ctx.textAlign = "right";
-      this.ctx.fillText(`危险: ${aliveCount}/${this.maxAliveEnemies}`, this.canvas.width - 10, 20);
+      this.ctx.fillText(`危险: ${aliveCount}/${this.dangerLimit}`, this.canvas.width - 10, 20);
     }
 
     // 绘制快捷键提示

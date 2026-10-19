@@ -17,9 +17,7 @@ const TOWER_TRAIL_COLORS = {
   mountain: '#6a6459',
   wood: '#90b090',
   gold: '#a67c00',
-  earth: '#8b7355',
-  xinZhongYan: '#ff4400',
-  ruFengSiZhen: '#88ccaa'
+  earth: '#8b7355'
 };
 
 class InkTrailAnimation {
@@ -45,7 +43,6 @@ class InkTrailAnimation {
     this._levelData = levelData;
 
     this._prepareTowerCards();
-    this._disableWaveButton();
   }
 
   stop() {
@@ -54,7 +51,6 @@ class InkTrailAnimation {
     this.entities = [];
     this.stampEffects = [];
     this._restoreTowerCards();
-    this._enableWaveButton();
   }
 
   _prepareTowerCards() {
@@ -142,26 +138,9 @@ class InkTrailAnimation {
     });
   }
 
-  _disableWaveButton() {
-    const btn = document.getElementById('start-wave');
-    if (btn) btn.disabled = true;
-  }
-
-  _enableWaveButton() {
-    if (!this.game) return;
-    this.game.updateUI();
-  }
-
-  _getUniqueEnemyTypes(levelData) {
-    const types = new Set();
-    if (levelData && levelData.waves) {
-      for (const wave of levelData.waves) {
-        for (const group of wave.enemies) {
-          types.add(group.type);
-        }
-      }
-    }
-    return Array.from(types);
+  _getUniqueEnemyTypes() {
+    // 连续刷怪没有固定波次，演出直接使用出场敌人
+    return CONFIG.ACTIVE_ENEMIES.slice();
   }
 
   _getVisibleTowerTypes() {
@@ -320,8 +299,7 @@ class InkTrailAnimation {
       this.active = false;
       this.complete = true;
       this._restoreTowerCards();
-      this._enableWaveButton();
-      if (this.onComplete) this.onComplete();
+        if (this.onComplete) this.onComplete();
     }
   }
 

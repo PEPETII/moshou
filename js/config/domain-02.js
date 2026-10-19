@@ -10,7 +10,8 @@ Object.assign(CONFIG, {  // 上下各4行 + 中间1行路 = 9行
       cooldown: 900,
       upgradeCost: 60,
       maxLevel: 3,
-      desc: "发射旋转的火字追踪导弹",
+      size: 68,
+      desc: "普攻「火星」：左右两点轮流化作追踪火星，叠加灼烧。大招「焚」：整字掷出，落地炸开，留下燃烧的火字焦土（蓄满自动释放）。",
       upgradeParams: { damageInc: 1, rangeInc: 0.5, cooldownDec: 100 },
     },
     water: {
@@ -23,7 +24,8 @@ Object.assign(CONFIG, {  // 上下各4行 + 中间1行路 = 9行
       slowDuration: 2800,
       upgradeCost: 45,
       maxLevel: 3,
-      desc: "延缓敌人移动速度45%",
+      size: 68,
+      desc: "普攻「水箭」：竖钩拉成水柱，贯穿、击退并打湿减速。大招「潮」：三笔化浪沿路倒卷，卷入敌人后落下并眩晕（蓄满自动释放）。",
       upgradeParams: { rangeInc: 1, cooldownDec: 100, slowInc: 0.1 },
     },
     mountain: {
@@ -75,36 +77,6 @@ Object.assign(CONFIG, {  // 上下各4行 + 中间1行路 = 9行
       maxLevel: 3,
       unlockLevel: 4,
       desc: "范围AOE伤害",
-      upgradeParams: { damageInc: 1, rangeInc: 0.5, cooldownDec: 100 },
-    },
-    xinZhongYan: {
-      char: "心中炎",
-      cost: 260,
-      damage: 3.2,
-      range: 6.0,
-      cooldown: 1450,
-      burn: true,
-      burnDuration: 3200,
-      burnDamage: 1.2,
-      upgradeCost: 120,
-      maxLevel: 3,
-      unlockLevel: 5,
-      desc: "心火攻击，高伤害带灼烧",
-      upgradeParams: { damageInc: 1, rangeInc: 0.5, cooldownDec: 100 },
-    },
-    ruFengSiZhen: {
-      char: "如风似真",
-      cost: 310,
-      damage: 2.6,
-      range: 5.2,
-      cooldown: 1100,
-      chain: true,
-      chainCount: 4,
-      chainRange: 160,
-      upgradeCost: 150,
-      maxLevel: 3,
-      unlockLevel: 6,
-      desc: "风链弹射，攻击在敌人间弹跳",
       upgradeParams: { damageInc: 1, rangeInc: 0.5, cooldownDec: 100 },
     },
     thunder: {
@@ -572,14 +544,10 @@ Object.assign(CONFIG, {  // 上下各4行 + 中间1行路 = 9行
       desc: '旋转扫射攻击',
       upgradeParams: { damageInc: 0.45, rangeInc: 0.5, rotationSpeedInc: 12, fanAngleInc: 10 },
     },
-    fusion: {
-      char: "融合",
-      cost: 0,
-      damage: 0,
-      range: 0,
-      cooldown: 1000,
-      maxLevel: 1,
-      desc: "融合炮塔基类",
-    },
   },
+
+  // 字形弹道实验（工单 02）：当前开放的塔池。其余单字塔配置与代码保留但下架，
+  // 不出现在卡片栏、征服召唤、图鉴中，也不保证仍能正常运行。
+  ACTIVE_TOWERS: ['fire', 'water'],
+  // 出场敌人 ACTIVE_ENEMIES 在 config/glyph-battle.js（工单 04）
 });

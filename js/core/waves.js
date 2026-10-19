@@ -1,109 +1,76 @@
-// Game：波次、敌人与战斗调度
-Game.prototype.startWave = function() {
-    if (this.inputLocked || this.waveInProgress || this.gameEnded) return;
-    if (this.wave >= this.maxWave) return;
-    if (this.inkTrailAnimation && this.inkTrailAnimation.active) return;
+// Game：连续刷怪、敌人与战斗调度（工单 04：固定波次已改为连续刷怪 + 限时坚守）
 
-    this._waveCompleteChecking = false;
-
-    if (this.spawnTimerId) {
-      clearTimeout(this.spawnTimerId);
-      this.spawnTimerId = null;
-    }
-
-    this.wave++;
-    this.waveInProgress = true;
-    if (window.InkAudio) window.InkAudio.play('wave');
-
-    for (const tower of this.towers) {
-      tower.healedThisWave = 0;
-      if (tower.type === 'treasure') {
-        tower.waveCount++;
-        let ink = tower.inkPerWave;
-        if (tower.waveCount % tower.interestInterval === 0) {
-          ink += tower.interestBonus;
-        }
-        this.ink += ink;
-      }
-    }
-
-    const level = this.currentLevelData;
-    const waveData = level.waves[this.wave - 1];
-
-    this.spawnQueue = [];
-    for (const enemyGroup of waveData.enemies) {
-      for (let i = 0; i < enemyGroup.count; i++) {
-        this.spawnQueue.push({
-          type: enemyGroup.type,
-          delay: enemyGroup.delay,
-        });
-      }
-    }
-
-    this.spawnedCount = 0;
-
-    this.spawnNextEnemy();
-    this.updateUI();
-  
+// 路程系统：塔防的入口向画外延伸半格，让敌人从画外走进来
+Game.prototype.getPathTrack = function(path) {
+    return PathTrack.forPath(path, { extendEntry: true });
 };
-Game.prototype.spawnNextEnemy = function() {
-    if (this.spawnedCount >= this.MAX_SPAWN_COUNT) {
-      console.warn('达到最大生成数量限制');
-      return;
-    }
-
-    if (this.spawnQueue.length === 0) {
-      this.checkWaveComplete();
-      return;
-    }
-
-    const data = this.spawnQueue.shift();
-
+// 场上存活的敌人数（用于 ENEMY_CAP）
+Game.prototype.aliveEnemyCount = function() {
+    let n = 0;
+    for (const e of this.enemies) if (!e.dead) n++;
+    return n;
+};
+// 连续刷怪：创建一只指定类型的敌人（多条路径时随机选一条）
+Game.prototype.spawnGlyphEnemy = function(type) {
     const paths = Array.isArray(this.path[0]) ? this.path : [this.path];
     const randomPath = paths[Math.floor(Math.random() * paths.length)];
-
-    const enemy = new Enemy(data.type, randomPath, this);
+    const enemy = new Enemy(type, randomPath, this);
     this.enemies.push(enemy);
-    this.spawnedCount++;
+    return enemy;
+};
+// 重置连续刷怪与坚守计时的全部状态（载入关卡时调用；开战前 battleActive 为 false）
+Game.prototype.resetBattleState = function(level) {
+    this.battleActive = false;
+    this.inputLocked = false;
+    this.density = null;
+    this.spawnAcc = 0;
+    this.giantTimer = 0;
+    this.holdTotal = (level && level.holdSeconds) || CONFIG.HOLD_SECONDS;
+    this.holdLeft = this.holdTotal;
+    this.kills = 0;
+    this.leaks = 0;
+    // 字形弹道、特效与全局大招间隔
+    if (typeof GlyphSystem !== 'undefined') GlyphSystem.reset(this);
+};
+Game.prototype.updateSpawner = function(dt) {
+    BattleDirector.update(this, dt);
+};
+// 玩家确认敌潮档位后开战：开始计时、预铺敌人
+Game.prototype.beginBattle = function(densityKey) {
+    BattleDirector.begin(this, densityKey);
     this.runtimeIndexes.rebuildEnemies();
-
-    if (this.spawnQueue.length > 0) {
-      const nextDelay = this.spawnQueue[0].delay;
-      this.spawnTimerId = setTimeout(() => this.spawnNextEnemy(), nextDelay);
-    } else {
-      this.checkWaveComplete();
-    }
-  
+    this.updateUI();
+    if (window.InkAudio) window.InkAudio.play('wave');
+};
+// 开局前弹出敌潮选择；暂停和继续不会再次弹出
+Game.prototype.promptDensity = function() {
+    this.battleActive = false;
+    DensityPicker.open(
+      (key) => this.beginBattle(key),
+      () => this.returnToMenu()
+    );
 };
 Game.prototype.spawnSplitEnemy = function(parent) {
     for (let i = 0; i < parent.splitCount; i++) {
-      const enemy = new Enemy(
-        "corpse",
-        parent.path.slice(parent.pathIndex),
-        this,
-      );
+      const enemy = new Enemy("corpse", parent.path, this);
       enemy.char = "小";
       enemy.maxHp = parent.splitHp;
       enemy.hp = parent.splitHp;
-      enemy.speed = 1.5;
+      enemy.baseSpeed = enemy.speed = 1.5;
       enemy.reward = Math.floor(parent.reward / 3);
-      enemy.x = parent.x + (i === 0 ? -15 : 15);
-      enemy.y = parent.y;
+      enemy.s = parent.s;
+      enemy.lane = parent.lane + (i === 0 ? -8 : 8);
+      enemy.syncPosition();
       this.enemies.push(enemy);
     }
     this.runtimeIndexes.rebuildEnemies();
   
 };
-// 在指定位置召唤敌人
-Game.prototype.spawnEnemyAt = function(enemyType, pathIndex, x, y) {
-    const paths = Array.isArray(this.path[0]) ? this.path : [this.path];
-    const randomPath = paths[Math.floor(Math.random() * paths.length)];
-
-    const enemy = new Enemy(enemyType, randomPath, this);
-    enemy.pathIndex = Math.min(pathIndex, randomPath.length - 1);
-    enemy.x = x + (Math.random() - 0.5) * 30;
-    enemy.y = y + (Math.random() - 0.5) * 30;
-    this.enemies.push(enemy);
+// 在路径里程 s 处召唤敌人（死亡召唤、召唤师使用）
+Game.prototype.spawnEnemyAt = function(enemyType, s, x, y) {
+    const enemy = this.spawnGlyphEnemy(enemyType);
+    enemy.s = Math.min(Math.max(0, s), enemy.track.total);
+    enemy.syncPosition();
     this.runtimeIndexes.rebuildEnemies();
     
     // 创建召唤特效
@@ -126,16 +93,6 @@ Game.prototype.triggerExplosion = function(x, y, damage, range) {
     this.particleSystem.createExplosion(x, y, damage * 5, '#ff6644');
   
 };
-Game.prototype.spawnEnemy = function(enemyType) {
-    const paths = Array.isArray(this.path[0]) ? this.path : [this.path];
-    const randomPath = paths[Math.floor(Math.random() * paths.length)];
-
-    const enemy = new Enemy(enemyType, randomPath, this);
-    this.enemies.push(enemy);
-    this.runtimeIndexes.rebuildEnemies();
-    this.updateUI();
-  
-};
 Game.prototype.updateAuras = function() {
     // 每轮先清零，光环塔被出售/移走后加成才会消失
     for (const t of this.towers) t.auraBonuses = {};
@@ -156,7 +113,7 @@ Game.prototype.updateAuras = function() {
       const rangePx = tower.auraRange * CONFIG.CELL_SIZE;
       const rangeSq = rangePx * rangePx;
       for (const other of this.towers) {
-        if (other === tower || other.isFusion) continue;
+        if (other === tower) continue;
         if (distanceSq(tower.x, tower.y, other.x, other.y) > rangeSq) continue;
 
         for (const auraEntry of auraEntries) {
@@ -199,46 +156,5 @@ Game.prototype.updateGlobalSlow = function() {
   
 };
 Game.prototype.updateSpecialTowers = function() {
-  
-};
-Game.prototype.checkWaveComplete = function() {
-    if (this._waveCompleteChecking) return;
-    this._waveCompleteChecking = true;
-
-    this.runtimeIndexes.rebuildEnemies();
-    const aliveEnemies = this.runtimeIndexes.aliveEnemies;
-
-    if (aliveEnemies.length === 0 && this.spawnQueue.length === 0) {
-      this.waveInProgress = false;
-
-      for (const tower of this.towers) {
-        if (tower.type === 'healer') {
-          let heal = tower.healPerWave;
-          if (this.coreHp / this.maxCoreHp < tower.emergencyThreshold) {
-            heal += tower.emergencyBonus;
-          }
-          this.coreHp = Math.min(this.maxCoreHp, this.coreHp + heal);
-        }
-      }
-
-      for (const tower of this.towers) {
-        if (tower.onPath && tower.repairRatio > 0 && tower.hp < tower.maxHp) {
-          tower.hp = Math.min(tower.maxHp, tower.hp + Math.floor(tower.maxHp * tower.repairRatio));
-        }
-        if (tower.type === 'trap') {
-          tower.triggerCount = tower.maxTriggers;
-        }
-      }
-
-      this.updateUI();
-
-      if (this.wave >= this.maxWave) {
-        this.gameOver(true);
-      } else if (window.InkAudio) {
-        window.InkAudio.play('waveClear');
-      }
-    }
-
-    this._waveCompleteChecking = false;
   
 };

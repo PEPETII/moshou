@@ -62,22 +62,19 @@ async function overflowReport(page) {
     await tapSel(page, '#btn-enemy-encyclopedia', 900); await shot('06-dex-enemies');
     await tapSel(page, '#enemy-encyclopedia-grid > *', 700); await shot('07-dex-enemy-detail');
     await tapSel(page, '#close-enemy-detail'); await tapSel(page, '#back-to-encyclopedia-from-enemies');
-    await tapSel(page, '#btn-fusion-encyclopedia', 900); await shot('08-dex-fusion');
-    await tapSel(page, '#fusion-encyclopedia-grid > *', 700); await shot('09-dex-fusion-detail');
-    await tapSel(page, '#fusion-detail-panel button'); await tapSel(page, '#back-to-encyclopedia-from-fusion');
     await tapSel(page, '#back-to-menu-from-encyclopedia');
   });
-  await step('自定义', async () => { await tapSel(page, '#btn-custom', 900); await shot('10-custom'); await tapSel(page, '#back-to-menu-from-custom'); });
+  // 「自定」入口自 2026-10-19 起隐藏，不再截图
   await step('征服选主题', async () => { await tapSel(page, '#btn-conquest', 900); await shot('11-conquest-theme'); });
   await step('征服选关', async () => { await tapSel(page, '.conquest-theme-card', 900); await shot('12-conquest-levels'); });
   await step('征服战斗', async () => {
     await tapSel(page, '.conquest-level-item', 900);
+    await tapSel(page, '#density-picker-ok', 600);   // 开局前的敌潮选择，默认「潮」
     await page.waitForTimeout(800);
     await page.evaluate(() => { const g = window.conquestGame; g.ink = 900; g.updateUI(); });
     for (let i = 0; i < 3; i++) await tapSel(page, '#conquest-summon-btn', 350);
     await shot('13-conquest-battle');
-    await tapSel(page, '#conquest-wave-btn', 600);
-    await page.waitForTimeout(6000);
+    await page.waitForTimeout(6000);   // 连续刷怪，无需再点开始波次
     await shot('14-conquest-wave');
     const m = await page.evaluate(() => { const r = document.getElementById('conquest-canvas').getBoundingClientRect(); const c = document.getElementById('conquest-side-panel').getBoundingClientRect(); return { scale: getComputedStyle(document.documentElement).getPropertyValue('--ui-scale'), canvas: [r.left, r.top, r.right, r.bottom].map(Math.round), side: [c.left, c.top, c.right, c.bottom].map(Math.round) }; });
     console.log('征服布局', JSON.stringify(m));

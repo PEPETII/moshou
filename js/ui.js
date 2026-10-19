@@ -18,7 +18,7 @@ class UI {
     this.hoveredCell = null;
     this.selectedTower = null;
 
-    // 拖拽融合相关属性
+    // 拖拽相关属性
     this.draggingTower = null;
     this.dragStartPos = null;
     this.dragCurrentPos = null;

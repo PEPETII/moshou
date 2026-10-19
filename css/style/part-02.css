@@ -108,16 +108,7 @@
     font-size: 16px;
   }
 
-  #wave-btn-small #start-wave,
-  #start-wave {
-    padding: 4px 12px;
-    font-size: 12px;
-  }
-
-  #fusion-encyclopedia-btn {
-    padding: 4px 8px;
-    font-size: 12px;
-  }
+  
 
   #bottom-bar {
     padding: 6px 12px;
@@ -162,16 +153,7 @@
     font-size: 14px;
   }
 
-  #wave-btn-small #start-wave,
-  #start-wave {
-    padding: 3px 10px;
-    font-size: 11px;
-  }
-
-  #fusion-encyclopedia-btn {
-    padding: 3px 6px;
-    font-size: 11px;
-  }
+  
 
   #bottom-bar {
     padding: 4px 8px;
@@ -200,10 +182,7 @@
     min-height: 44px;
   }
 
-  #start-wave {
-    min-height: 44px;
-    min-width: 80px;
-  }
+  
 
   .menu-btn {
     min-height: 44px;
@@ -348,23 +327,12 @@
     font-size: 16px;
   }
 
-  .conquest-wave-btn {
-    padding: 10px;
-    font-size: 16px;
-    letter-spacing: 3px;
-    margin-bottom: 8px;
-  }
+  
 
   .conquest-menu-btn {
     padding: 8px;
     font-size: 12px;
     margin-bottom: 12px;
-  }
-
-  #conquest-fusion-encyclopedia-btn {
-    padding: 5px 10px;
-    font-size: 12px;
-    margin-bottom: 6px;
   }
 
   .conquest-rules {
@@ -436,19 +404,10 @@
     font-size: 14px;
   }
 
-  .conquest-wave-btn {
-    padding: 8px;
-    font-size: 14px;
-    letter-spacing: 2px;
-  }
+  
 
   .conquest-menu-btn {
     padding: 6px;
-    font-size: 11px;
-  }
-
-  #conquest-fusion-encyclopedia-btn {
-    padding: 4px 8px;
     font-size: 11px;
   }
 

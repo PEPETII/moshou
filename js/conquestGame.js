@@ -1,17 +1,10 @@
+// 征服模式的敌人：沿环形回路绕圈，s 到达终点后归零继续，不会抵达核心（失败条件见 CONQUEST_DANGER_LIMIT）
 class ConquestEnemy extends Enemy {
   constructor(type, path, game) {
     super(type, path, game);
-    this.speed *= 1.5;
-    this.baseSpeed = this.speed;
-  }
-
-  reachCore() {
-    this.game.coreHp -= this.damage;
-    if (window.InkAudio) window.InkAudio.play('core');
-    if (this.game.coreHp <= 0) {
-      this.game.gameOver(false);
-    }
-    this.dead = true;
+    // 征服原有的速度 ×1.5（工单 04 核对后保留）
+    this.baseSpeed *= 1.5;
+    this.speed = this.baseSpeed;
   }
 }
 
@@ -20,12 +13,27 @@ class ConquestGame {
     this.canvas = document.getElementById("conquest-canvas");
     this.ctx = this.canvas.getContext("2d");
 
-    this.COLS = 16;
-    this.ROWS = 9;
+    this.COLS = CONFIG.CONQUEST_COLS;
+    this.ROWS = CONFIG.GRID_ROWS;
     this.CELL_SIZE = CONFIG.CELL_SIZE;
 
-    this.canvas.width = this.COLS * this.CELL_SIZE;
-    this.canvas.height = this.ROWS * this.CELL_SIZE;
+    // 画布 = 视口（960×432）；世界 22 列 × 72 = 1584px，由镜头横向滚动
+    this.canvas.width = CONFIG.VIEW_W;
+    this.canvas.height = CONFIG.VIEW_H;
+    this.worldW = this.COLS * this.CELL_SIZE;
+    this.camera = new Camera({
+      canvas: this.canvas,
+      worldW: this.worldW,
+      viewW: CONFIG.VIEW_W,
+      viewH: CONFIG.VIEW_H,
+      hitTower: (cx, cy, isTouch) => !!this._pickTowerNear(cx, cy, {
+        tolerance: isTouch ? (window.DeviceProfile && window.DeviceProfile.tapTolerance) : undefined,
+      }),
+      onScroll: () => { if (this.hideTowerInfo) this.hideTowerInfo(); },
+      getDragPoint: () => (this.isDragging && this.draggingTower && this.dragCurrentPos
+        ? { clientX: this.dragCurrentPos.x, clientY: this.dragCurrentPos.y }
+        : null),
+    });
 
     this.inkRenderer = new InkRenderer(this.ctx);
     this.particleSystem = new ParticleSystem();
@@ -39,8 +47,8 @@ class ConquestGame {
     this.summonCost = this.levelConfig.summonCost || 80;
     this.summonCostGrowth = this.levelConfig.summonCostGrowth || 0;
     this.summonedCount = 0;
-    this.maxWave = this.levelConfig.maxWave || 3;
-    this.maxAliveEnemies = this.levelConfig.maxAliveEnemies || 50;
+    // 失败线：场上存活数 ≥ dangerLimit（原 maxAliveEnemies = 50，现 CONQUEST_DANGER_LIMIT）
+    this.dangerLimit = this.levelConfig.dangerLimit || CONFIG.CONQUEST_DANGER_LIMIT;
 
     this.towers = [];
     this.enemies = [];
@@ -49,10 +57,8 @@ class ConquestGame {
 
     this.coreHp = this.levelConfig.coreHp || 20;
 
-    this.wave = 0;
-    this.waveInProgress = false;
-    this.spawnQueue = [];
-    this._autoWaveStarted = false;
+    // 连续刷怪 + 限时坚守（工单 04）
+    this.resetBattleState(this.levelConfig);
 
     this.path = this.buildPath();
     this.placementGrid = this.buildPlacementGrid();
@@ -63,7 +69,6 @@ class ConquestGame {
 
     this.lastTime = 0;
     this.animationId = null;
-    this.spawnTimerId = null;
     this.gameStarted = false;
 
     this.summonFlashTime = 0;
@@ -84,9 +89,6 @@ class ConquestGame {
     // 炮塔位置索引 Map，用于 O(1) 查询
     this._towerIndex = new Map();
 
-    // 融合模态框事件处理器引用（用于清理）
-    this._fusionModalHandler = null;
-
     // 键盘事件处理器引用
     this._keyboardHandler = null;
 
@@ -95,9 +97,7 @@ class ConquestGame {
 
     // 绑定UI事件处理方法（确保多次调用setupUI时防重复检查有效）
     this._boundSummonTower = this.summonTower.bind(this);
-    this._boundStartWave = this.startWave.bind(this);
     this._boundReturnToLevelSelect = this.returnToLevelSelect.bind(this);
-    this._boundShowFusionEncyclopedia = this.showFusionEncyclopedia.bind(this);
 
     this._uiEventsActive = false;
     this.setupUI();
@@ -129,12 +129,6 @@ class ConquestGame {
     // 停止游戏循环
     this.stop();
 
-    // 清理 spawn 定时器
-    if (this.spawnTimerId) {
-      clearTimeout(this.spawnTimerId);
-      this.spawnTimerId = null;
-    }
-
     // 移除所有追踪的事件监听器
     if (this._eventListeners && this._eventListeners.length > 0) {
       for (const { target, type, listener, options } of this._eventListeners) {
@@ -152,11 +146,9 @@ class ConquestGame {
     this._eventListeners = [];
     this._uiEventsActive = false;
 
-    // 清理融合模态框监听器
-    this._cleanupFusionModalListeners();
-
     // 清理键盘快捷键
     this.cleanupKeyboardShortcuts();
+    if (this.camera) this.camera.unbindInput();
 
     // 清理拖拽状态
     this.draggingTower = null;
@@ -172,13 +164,6 @@ class ConquestGame {
       id: 1,
       startInk: 300,
       summonCost: 80,
-      maxWave: 3,
-      maxAliveEnemies: 50,
-      waves: [
-        { type: "corpse", count: 30 },
-        { type: "ghost", count: 30 },
-        { type: "armor", count: 30 },
-      ],
     };
   
   }
@@ -206,11 +191,10 @@ class ConquestGame {
   }
 
   setupUI() {
+    // 镜头输入（滚轮/键盘/拖拽平移）；监听随 destroy() 一并解除
+    if (this.camera) this.camera.bindInput();
+
     this.addTrackedEventListener(document.getElementById("conquest-summon-btn"), "click", this._boundSummonTower);
-
-    this.addTrackedEventListener(document.getElementById("conquest-wave-btn"), "click", this._boundStartWave);
-
-    this.addTrackedEventListener(document.getElementById("conquest-fusion-encyclopedia-btn"), "click", this._boundShowFusionEncyclopedia);
 
     this.addTrackedEventListener(document.getElementById("conquest-menu-btn"), "click", this._boundReturnToLevelSelect);
 
@@ -222,7 +206,7 @@ class ConquestGame {
         this.hoveredCell = null;
       }
 
-      if (this.draggingTower && !this.draggingTower.isFusion) {
+      if (this.draggingTower) {
         this.dragCurrentPos = { x: e.clientX, y: e.clientY };
         const dist = calculateDragDistance(this.dragStartPos.x, this.dragStartPos.y, this.dragCurrentPos.x, this.dragCurrentPos.y);
         if (checkDragThreshold(dist, this.dragThreshold)) {
@@ -269,7 +253,7 @@ class ConquestGame {
           const { gx, gy } = result;
           const targetTower = this.getTowerAt(gx, gy);
           if (targetTower && targetTower !== this.draggingTower) {
-            this.attemptFusion(this.draggingTower, targetTower);
+            this._notify("炮塔不可叠放", "warning");
           } else if (this.canPlaceAt(gx, gy)) {
             this.moveTower(this.draggingTower, gx, gy);
           }
@@ -328,7 +312,7 @@ class ConquestGame {
         this._clearDragCache();
         return;
       }
-      if (this.draggingTower && !this.draggingTower.isFusion) {
+      if (this.draggingTower) {
         const touch = e.touches[0];
         this.dragCurrentPos = { x: touch.clientX, y: touch.clientY };
         const dist = calculateDragDistance(this.dragStartPos.x, this.dragStartPos.y, this.dragCurrentPos.x, this.dragCurrentPos.y);
@@ -352,7 +336,7 @@ class ConquestGame {
             const { gx, gy } = result;
             const targetTower = this.getTowerAt(gx, gy);
             if (targetTower && targetTower !== this.draggingTower) {
-              this.attemptFusion(this.draggingTower, targetTower);
+              this._notify("炮塔不可叠放", "warning");
             } else if (this.canPlaceAt(gx, gy)) {
               this.moveTower(this.draggingTower, gx, gy);
             }
@@ -420,8 +404,6 @@ class ConquestGame {
         if (isModalVisible) {
           // 关闭模态框
           modal.classList.add("hidden");
-          // 清理融合模态框监听器
-          this._cleanupFusionModalListeners();
           // 隐藏返回按钮（如果存在）
           const returnBtn = document.getElementById("modal-return-btn");
           if (returnBtn) returnBtn.style.display = "none";
@@ -442,14 +424,6 @@ class ConquestGame {
       if (isInputFocused) return;
 
       switch (e.key) {
-        case " ": // 空格键：开始波次
-        case "Spacebar": // 兼容旧浏览器
-          e.preventDefault(); // 防止页面滚动
-          if (!this.waveInProgress && this.wave < this.maxWave) {
-            this.startWave();
-          }
-          break;
-
         case "s":
         case "S": // S键：召唤炮塔
           this.summonTower();
@@ -491,21 +465,6 @@ class ConquestGame {
     tower.y = pos.y;
     this.particleSystem.createExplosion(pos.x, pos.y, 8, CONFIG.COLORS.towerShadow);
     this.updateUI();
-  
-  }
-
-  getFusionType(type1, type2) {
-    return fusionSystem.getFusionType(type1, type2);
-  
-  }
-
-  canFuse(tower1, tower2) {
-    const result = fusionSystem.canFuse(tower1.type, tower2.type, {
-      tower1,
-      tower2,
-      ink: this.ink,
-    });
-    return result.canFuse;
   
   }
 }

@@ -140,30 +140,6 @@ UI.prototype.setupMenuEventListeners = function() {
       });
     }
 
-    // 游戏内融合图鉴按钮
-    const fusionEncyclopediaBtn = document.getElementById("fusion-encyclopedia-btn");
-    if (fusionEncyclopediaBtn) {
-      this.addTrackedEventListener(fusionEncyclopediaBtn, "click", () => {
-        this.showGameFusionEncyclopedia();
-      });
-    }
-
-    // 关闭游戏内融合图鉴模态窗口
-    const closeGameFusionModal = document.getElementById("close-game-fusion-modal");
-    if (closeGameFusionModal) {
-      this.addTrackedEventListener(closeGameFusionModal, "click", () => {
-        this.hideGameFusionEncyclopedia();
-      });
-    }
-
-    // 关闭游戏内融合详情面板
-    const closeGameFusionDetail = document.getElementById("close-game-fusion-detail");
-    if (closeGameFusionDetail) {
-      this.addTrackedEventListener(closeGameFusionDetail, "click", () => {
-        this.hideGameFusionDetail();
-      });
-    }
-
     // === 图鉴系统事件监听 ===
     this.setupEncyclopediaEventListeners();
 
@@ -199,7 +175,6 @@ UI.prototype.hideAllMenuPanels = function() {
     const encyclopediaContainer = document.getElementById("encyclopedia-container");
     const towerEncyclopediaContainer = document.getElementById("tower-encyclopedia-container");
     const enemyEncyclopediaContainer = document.getElementById("enemy-encyclopedia-container");
-    const fusionEncyclopediaContainer = document.getElementById("fusion-encyclopedia-container");
     const conquestThemeSelect = document.getElementById("conquest-theme-select-container");
     const conquestLevelSelect = document.getElementById("conquest-level-select-container");
 
@@ -211,7 +186,6 @@ UI.prototype.hideAllMenuPanels = function() {
     if (encyclopediaContainer) encyclopediaContainer.classList.add("hidden");
     if (towerEncyclopediaContainer) towerEncyclopediaContainer.classList.add("hidden");
     if (enemyEncyclopediaContainer) enemyEncyclopediaContainer.classList.add("hidden");
-    if (fusionEncyclopediaContainer) fusionEncyclopediaContainer.classList.add("hidden");
     if (conquestThemeSelect) conquestThemeSelect.classList.add("hidden");
     if (conquestLevelSelect) conquestLevelSelect.classList.add("hidden");
 

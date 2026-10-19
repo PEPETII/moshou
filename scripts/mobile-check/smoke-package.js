@@ -29,10 +29,10 @@ const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; cha
     await page.touchscreen.tap(b1.x + b1.width / 2, b1.y + b1.height / 2); await page.waitForTimeout(700);
     await page.evaluate(() => window.gameInstance.startGame('1-1'));
     await page.waitForFunction(() => !window.gameInstance.inkTrailAnimation.active, null, { timeout: 30000 });
-    await page.evaluate(() => { window.gameInstance.startWave(); });
+    await page.evaluate(() => { window.gameInstance.beginBattle('flood'); });   // 连续刷怪：直接以「潮」档开战
     await page.waitForTimeout(3000);
-    const state = await page.evaluate(() => ({ wave: window.gameInstance.wave, enemies: window.gameInstance.enemies.length }));
-    const okRun = state.wave === 1 && errs.length === 0;
+    const state = await page.evaluate(() => ({ battleActive: window.gameInstance.battleActive, enemies: window.gameInstance.enemies.length }));
+    const okRun = state.battleActive === true && state.enemies > 0 && errs.length === 0;
     if (!okRun) fail++;
     console.log((okRun ? '  OK  ' : ' FAIL ') + dev.name, JSON.stringify(state), errs.join(' | '));
     await ctx.close();

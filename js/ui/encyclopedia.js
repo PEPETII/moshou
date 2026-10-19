@@ -70,9 +70,6 @@ UI.prototype.setupEncyclopediaEventListeners = function() {
       this.addTrackedEventListener(tab, "click", clickHandler);
     });
 
-    // === 融合图鉴系统事件监听 ===
-    this.setupFusionEncyclopediaEventListeners();
-  
 };
 // === 图鉴系统方法 ===
 UI.prototype.showEncyclopedia = function() {
@@ -132,7 +129,7 @@ UI.prototype.getTowerCategory = function(type, config) {
     if (config.aura || config.globalSlow || config.copyEfficiency) {
       return 'support';
     }
-    if (type === 'xinZhongYan' || type === 'ruFengSiZhen' || type === 'thunder' || type === 'ice' || type === 'poison' || type === 'wind' || type === 'light' || type === 'dark' || type === 'star' || type === 'frost') {
+    if (type === 'thunder' || type === 'ice' || type === 'poison' || type === 'wind' || type === 'light' || type === 'dark' || type === 'star' || type === 'frost') {
       return 'element';
     }
     return 'special';
@@ -145,9 +142,9 @@ UI.prototype.populateTowerEncyclopedia = function(filter = 'all') {
 
     grid.innerHTML = "";
 
-    for (const [type, config] of Object.entries(CONFIG.TOWERS)) {
-      if (type === 'fusion') continue; // 跳过融合基类
-
+    for (const type of CONFIG.ACTIVE_TOWERS) {
+      const config = CONFIG.TOWERS[type];
+      if (!config) continue;
       const category = this.getTowerCategory(type, config);
       if (filter !== 'all' && category !== filter) continue;
 
@@ -197,6 +194,15 @@ UI.prototype.showTowerDetail = function(type, config) {
     // 构建属性列表
     let statsHtml = "";
     
+    if (config.glyph) {
+      // 字形塔：伤害、攻速由招式决定，只列射程与造价
+      statsHtml += this.createDetailStatRow("射程", config.range.toFixed(1) + "格");
+      statsHtml += this.createDetailStatRow("造价", config.cost + "墨", true);
+      statsEl.innerHTML = statsHtml;
+      descEl.textContent = config.desc || "暂无描述";
+      panel.classList.remove("hidden");
+      return;
+    }
     if (config.damage !== undefined && config.damage > 0) {
       statsHtml += this.createDetailStatRow("攻击力", config.damage);
     }
@@ -255,7 +261,9 @@ UI.prototype.populateEnemyEncyclopedia = function() {
 
     grid.innerHTML = "";
 
-    for (const [type, config] of Object.entries(CONFIG.ENEMIES)) {
+    for (const type of CONFIG.ACTIVE_ENEMIES) {
+      const config = CONFIG.ENEMIES[type];
+      if (!config) continue;
       const item = document.createElement("div");
       item.className = "encyclopedia-item";
       item.dataset.type = type;
@@ -292,7 +300,7 @@ UI.prototype.showEnemyDetail = function(type, config) {
     
     statsHtml += this.createDetailStatRow("生命值", config.hp);
     statsHtml += this.createDetailStatRow("攻击力", config.damage);
-    statsHtml += this.createDetailStatRow("移动速度", config.speed);
+    statsHtml += this.createDetailStatRow("移动速度", Math.round(config.speed * 100) / 100);
     statsHtml += this.createDetailStatRow("击败奖励", config.reward + "墨", true);
 
     // 特殊能力

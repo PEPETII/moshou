@@ -2,20 +2,28 @@
 Object.assign(CONFIG, {
 
   ENEMIES: {
+    // 字形弹道玩法（工单 04）：尸、鬼、巨使用原型数值。
+    // speedPx 为原型 px/s，glyph-battle.js 按 GLYPH_SCALE / CELL_SIZE 换算成引擎速度 speed（格/秒）。
+    // size 为原型字号（px），weight > 1 表示重敌（击退打折），float 表示漂浮（鬼）。
     corpse: {
       char: "尸",
-      hp: 5,
+      hp: 40,
       damage: 1,
-      speed: 1.0,
-      reward: 18,
+      speedPx: 46,
+      size: 30,
+      weight: 1,
+      reward: 4,
     },
     ghost: {
       char: "鬼",
-      hp: 4,
+      hp: 22,
       damage: 1,
-      speed: 1.7,
-      reward: 24,
+      speedPx: 82,
+      size: 28,
+      weight: 1,
+      float: true,
       flying: true,
+      reward: 4,
     },
     armor: {
       char: "甲",
@@ -36,12 +44,15 @@ Object.assign(CONFIG, {
       splitHp: 2,
       splitCount: 2,
     },
+    // 显示字改为单字「巨」（原型写法；旧「巨尸」仅为过去的叫法）
     giant: {
-      char: "巨尸",
-      hp: 34,
-      damage: 2,
-      speed: 0.72,
-      reward: 100,
+      char: "巨",
+      hp: 300,
+      damage: 3,
+      speedPx: 25,
+      size: 48,
+      weight: 4,
+      reward: 25,
     },
     superGiant: {
       char: "超巨尸",
@@ -367,10 +378,6 @@ Object.assign(CONFIG, {
     matriarch: '#4a148c',
     doomsday: '#212121',
   },
-
-  // 融合炮塔配置（运行时由文档配方生成）
-  FUSION_TOWERS: {},
-  FUSION_EVOLUTION_RECIPES: {},
 
   // 水墨渲染配置
   INK: {

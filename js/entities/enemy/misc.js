@@ -46,10 +46,42 @@ Enemy.prototype.reset = function(type, path, game) {
       }
     } else {
       this.path = path; // 保存 path 引用
-      const start = path[0];
-      this.x = start.x * CONFIG.CELL_SIZE + CONFIG.CELL_SIZE / 2;
-      this.y = start.y * CONFIG.CELL_SIZE + CONFIG.CELL_SIZE / 2;
     }
+
+    // ===== 路程制（工单 04）：位置由路径里程 s 决定，x/y 每帧由 track.pointAt(s) 推出 =====
+    // 对象池复用时必须在此重置全部字段，否则会残留上一只怪的眩晕、灼烧等状态
+    const spawnCfg = CONFIG.SPAWN || {};
+    const scale = CONFIG.GLYPH_SCALE || 1;
+    this.track = (game && game.getPathTrack)
+      ? game.getPathTrack(this.path)
+      : PathTrack.forPath(this.path);
+    this.s = Math.random() * (spawnCfg.startSpread || 0);
+    this.lane = (Math.random() * 2 - 1) * (spawnCfg.laneRange || 0) * scale;
+    this.size = config.drawSize || 26;
+    this.weight = config.weight || 1;
+    this.float = !!config.float;
+    this.bob = Math.random() * 6;
+    // 只有字形弹道的敌人（带 speedPx）才做速度随机浮动，其余敌人速度保持配置值
+    if (config.speedPx && spawnCfg.speedJitter) {
+      const k = 1 + (Math.random() * 2 - 1) * spawnCfg.speedJitter;
+      this.baseSpeed = config.speed * k;
+      this.speed = this.baseSpeed;
+    }
+    this.wet = 0;
+    this.burnStacks = 0;
+    this.burnTime = 0;
+    this.burnAcc = 0;
+    this.burnShow = 0;
+    this.stun = 0;
+    this.flash = 0;
+    this.carried = null;
+    this.pushVx = 0;
+    this.lastHitKind = null;
+    this._burnAccum = 0;
+    this._poisonAccum = 0;
+    this.x = 0;
+    this.y = 0;
+    this.syncPosition();
 
     this.slowed = false;
     this.slowEnd = 0;
@@ -209,7 +241,13 @@ Enemy.prototype.update = function(now, deltaTime) {
       this.markBonus = 0;
     }
 
-    if (this.frozen || this.stunned) return;
+    // 字形状态（灼烧、湿身、击中闪光）与位置同步不受旧版冻结/眩晕影响
+    this.tickGlyphStatus(deltaTime / 1000);
+
+    if (this.frozen || this.stunned) {
+      this.syncPosition();
+      return;
+    }
 
     this.updateShake();
 
@@ -333,49 +371,6 @@ Enemy.prototype.update = function(now, deltaTime) {
       return;
     }
 
-    // 边界检查：确保 pathIndex 在有效范围内
-    if (this.pathIndex >= this.path.length - 1) {
-      this.reachCore();
-      return;
-    }
-
-    const target = this.path[this.pathIndex + 1];
-    // 额外的安全检查：确保目标点存在
-    if (!target) {
-      this.reachCore();
-      return;
-    }
-    const targetX = target.x * CONFIG.CELL_SIZE + CONFIG.CELL_SIZE / 2;
-    const targetY = target.y * CONFIG.CELL_SIZE + CONFIG.CELL_SIZE / 2;
-
-    if (isNaN(targetX) || isNaN(targetY) || isNaN(this.x) || isNaN(this.y)) {
-      this.dead = true;
-      return;
-    }
-
-    const dx = targetX - this.x;
-    const dy = targetY - this.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    if (isNaN(dist) || dist <= 0) {
-      this.pathIndex++;
-      return;
-    }
-
-    if (dist < 2) {
-      this.pathIndex++;
-      return;
-    }
-
-    // 使用 timeScale 实现帧率独立的移动速度
-    // 原公式：moveSpeed = (speed * CELL_SIZE) / 60 是基于每帧的
-    // 新公式：moveSpeed = speed * CELL_SIZE * (deltaTime / 1000) 是基于时间的
-    const moveSpeed = this.speed * CONFIG.CELL_SIZE * (deltaTime / 1000);
-    if (isNaN(moveSpeed)) {
-      this.pathIndex++;
-      return;
-    }
-    this.x += (dx / dist) * moveSpeed;
-    this.y += (dy / dist) * moveSpeed;
+    this.advance(deltaTime);
   
 };

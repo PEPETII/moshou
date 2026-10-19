@@ -22,7 +22,6 @@ Tower.prototype.drawLightTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.light;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawDarkTower = function(ctx, progress) {
@@ -46,7 +45,6 @@ Tower.prototype.drawDarkTower = function(ctx, progress) {
     }
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.dark;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawStarTower = function(ctx, progress) {
@@ -67,7 +65,6 @@ Tower.prototype.drawStarTower = function(ctx, progress) {
                       this.lastElement === 'ice' ? '#80d8ff' : CONFIG.COLORS.star;
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : starColor;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawFrostTower = function(ctx, progress) {
@@ -86,7 +83,6 @@ Tower.prototype.drawFrostTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.frost;
     ctx.fillText(this.char, this.x + shakeX, this.y + shakeY);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawMountainTower = function(ctx, progress) {
@@ -131,7 +127,6 @@ Tower.prototype.drawDrumTower = function(ctx, progress) {
     ctx.stroke();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.drum;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawBannerTower = function(ctx, progress) {
@@ -152,7 +147,6 @@ Tower.prototype.drawBannerTower = function(ctx, progress) {
     ctx.setLineDash([]);
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.banner;
     ctx.fillText(this.char, this.x + windOffset, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawBellTower = function(ctx, progress) {
@@ -169,7 +163,6 @@ Tower.prototype.drawBellTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.bell;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawMirrorTower = function(ctx, progress) {
@@ -183,7 +176,6 @@ Tower.prototype.drawMirrorTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.mirror;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawZitherTower = function(ctx, progress) {
@@ -202,7 +194,6 @@ Tower.prototype.drawZitherTower = function(ctx, progress) {
     ctx.stroke();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.zither;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawTalismanTower = function(ctx, progress) {
@@ -219,7 +210,6 @@ Tower.prototype.drawTalismanTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.talisman;
     ctx.fillText(this.char, this.x, this.y + bounceOffset);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawFormationTower = function(ctx, progress) {
@@ -237,7 +227,6 @@ Tower.prototype.drawFormationTower = function(ctx, progress) {
     ctx.stroke();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.formation;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawLanternTower = function(ctx, progress) {
@@ -258,7 +247,6 @@ Tower.prototype.drawLanternTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.lantern;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawTreasureTower = function(ctx, progress) {
@@ -272,7 +260,6 @@ Tower.prototype.drawTreasureTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.treasure;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawHealerTower = function(ctx, progress) {
@@ -286,7 +273,6 @@ Tower.prototype.drawHealerTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.healer;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawSoulTower = function(ctx, progress) {
@@ -300,7 +286,6 @@ Tower.prototype.drawSoulTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.soul;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawShadowTower = function(ctx, progress) {
@@ -314,7 +299,6 @@ Tower.prototype.drawShadowTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.shadow;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawTimeTower = function(ctx, progress) {
@@ -327,7 +311,6 @@ Tower.prototype.drawTimeTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.time;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawDetonatorTower = function(ctx, progress) {
@@ -341,7 +324,6 @@ Tower.prototype.drawDetonatorTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.detonator;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawParasiteTower = function(ctx, progress) {
@@ -358,7 +340,6 @@ Tower.prototype.drawParasiteTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.parasite;
     ctx.fillText(this.char, this.x, this.y + bounceOffset);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawWheelTower = function(ctx, progress) {
@@ -378,7 +359,6 @@ Tower.prototype.drawWheelTower = function(ctx, progress) {
     ctx.stroke();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.wheel;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawPathTower = function(ctx, progress) {
@@ -431,15 +411,5 @@ Tower.prototype.drawBasicTower = function(ctx, progress) {
 
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.tower;
     ctx.fillText(this.char, this.x, this.y);
-
-    this.drawLevelInfo(ctx);
-  
-};
-Tower.prototype.drawLevelInfo = function(ctx) {
-    if (this.level > 1) {
-      ctx.font = "12px Microsoft YaHei";
-      ctx.fillStyle = "#888";
-      ctx.fillText(`Lv${this.level}`, this.x, this.y + 20);
-    }
   
 };

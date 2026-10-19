@@ -7,7 +7,6 @@ class LevelManager {
   constructor() {
     this._registry = new Map();
     this._cache = new Map();
-    this._waveTemplates = new Map();
     this._sortedIds = [];
     this._dirty = true;
     this._themes = new Map();
@@ -23,11 +22,7 @@ class LevelManager {
    */
   _initThemes() {
     const themeConfigs = {
-      1: { id: 1, name: "初墨", icon: "墨", color: "#6a6459", desc: "水墨初染，入门试炼", unlockRequirement: null },
-      2: { id: 2, name: "风林", icon: "风", color: "#81c784", desc: "疾风骤雨，速度试炼", unlockRequirement: { theme: 1, level: 5 } },
-      3: { id: 3, name: "火山", icon: "火", color: "#ff7043", desc: "烈焰焚天，力量试炼", unlockRequirement: { theme: 1, level: 10 } },
-      4: { id: 4, name: "玄冰", icon: "冰", color: "#4fc3f7", desc: "冰封千里，控制试炼", unlockRequirement: { theme: 2, level: 5 } },
-      5: { id: 5, name: "终焉", icon: "终", color: "#ab47bc", desc: "末日降临，终极试炼", unlockRequirement: { theme: 3, level: 5 } }
+      1: { id: 1, name: "初墨", icon: "墨", color: "#6a6459", desc: "水墨初染，入门试炼", unlockRequirement: null }
     };
     
     for (const [id, config] of Object.entries(themeConfigs)) {
@@ -118,10 +113,6 @@ class LevelManager {
     this._dirty = true;
   }
 
-  registerWaveTemplate(templateId, template) {
-    this._waveTemplates.set(templateId, template);
-  }
-
   get(id) {
     // 支持向后兼容：如果传入数字，转换为 "1-x" 格式
     if (typeof id === 'number') {
@@ -205,7 +196,6 @@ class LevelManager {
   _resolveLevel(rawData) {
     const paths = this._normalizePaths(rawData.path);
     const placementGrid = this._computePlacementGrid(paths, rawData.specialTerrain || []);
-    const waves = this._resolveWaves(rawData.waves);
 
     return {
       id: rawData.id,
@@ -219,7 +209,8 @@ class LevelManager {
       path: paths.length === 1 ? paths[0] : paths,
       core: rawData.core,
       placementGrid: placementGrid,
-      waves: waves,
+      // 连续刷怪（工单 04）：不再有固定波次；可选 holdSeconds 覆盖默认坚守时长
+      holdSeconds: rawData.holdSeconds,
       unlocks: rawData.unlocks || [],
       specialTerrain: rawData.specialTerrain || [],
       metadata: rawData.metadata || {}
@@ -259,45 +250,6 @@ class LevelManager {
     }
     return grid;
   }
-
-  _resolveWaves(wavesData) {
-    if (!wavesData) return [];
-
-    const resolved = [];
-    for (const wave of wavesData) {
-      if (wave.template) {
-        const template = this._waveTemplates.get(wave.template);
-        if (template) {
-          const merged = Object.assign({}, template, wave);
-          delete merged.template;
-          resolved.push(merged);
-        } else {
-          console.warn(`Wave template "${wave.template}" not found`);
-          resolved.push(wave);
-        }
-      } else {
-        resolved.push(wave);
-      }
-    }
-    return resolved;
-  }
 }
 
 const levelManager = new LevelManager();
-
-// 注册波次模板
-levelManager.registerWaveTemplate('basicSwarm', {
-  enemies: [{type:"corpse",count:5,delay:1000}]
-});
-
-levelManager.registerWaveTemplate('ghostRush', {
-  enemies: [{type:"ghost",count:3,delay:1500}]
-});
-
-levelManager.registerWaveTemplate('armoredFront', {
-  enemies: [{type:"armor",count:2,delay:2000}]
-});
-
-levelManager.registerWaveTemplate('bossWave', {
-  enemies: [{type:"superGiant",count:1,delay:3000},{type:"overlord",count:1,delay:5000}]
-});

@@ -20,6 +20,10 @@ Tower.prototype.getAttackAnimationProgress = function(timestamp) {
 };
 
 Tower.prototype.draw = function(ctx, timestamp) {
+    if (this.gl) {
+      GlyphTower.draw(ctx, this);
+      return;
+    }
     ctx.save();
 
     if (this.selected) {
@@ -56,12 +60,6 @@ Tower.prototype.draw = function(ctx, timestamp) {
           break;
         case 'earth':
           this.drawEarthTower(ctx, attackProgress);
-          break;
-        case 'xinZhongYan':
-          this.drawXinZhongYanTower(ctx, attackProgress);
-          break;
-        case 'ruFengSiZhen':
-          this.drawRuFengSiZhenTower(ctx, attackProgress);
           break;
         case 'thunder':
           this.drawThunderTower(ctx, attackProgress);
@@ -203,8 +201,6 @@ Tower.prototype.drawFireTower = function(ctx, progress) {
       ctx.arc(this.x + offsetX, this.y + offsetY, glowRadius, 0, Math.PI * 2);
       ctx.fill();
     }
-
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawWaterTower = function(ctx, progress) {
@@ -234,8 +230,6 @@ Tower.prototype.drawWaterTower = function(ctx, progress) {
 
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : "#00aaff";
     ctx.fillText(this.char, this.x, this.y + waveOffset);
-
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawWoodTower = function(ctx, progress) {
@@ -256,8 +250,6 @@ Tower.prototype.drawWoodTower = function(ctx, progress) {
 
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : "#90b090";
     ctx.fillText(this.char, this.x, this.y + bounceOffset);
-
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawGoldTower = function(ctx, progress) {
@@ -288,8 +280,6 @@ Tower.prototype.drawGoldTower = function(ctx, progress) {
 
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : "#ffd700";
     ctx.fillText(this.char, this.x, this.y);
-
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawEarthTower = function(ctx, progress) {
@@ -311,77 +301,6 @@ Tower.prototype.drawEarthTower = function(ctx, progress) {
 
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : "#8b7355";
     ctx.fillText(this.char, this.x + shakeX, this.y + shakeY);
-
-    this.drawLevelInfo(ctx);
-  
-};
-Tower.prototype.drawXinZhongYanTower = function(ctx, progress) {
-    // 心中炎：心火脉动效果
-    let scale = 1;
-    let glowIntensity = 0;
-
-    if (this.isAttacking && progress < 1) {
-      scale = 1 + 0.1 * Math.sin(progress * Math.PI);
-      glowIntensity = Math.sin(progress * Math.PI);
-    }
-
-    // 心火光晕
-    if (glowIntensity > 0) {
-      const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 30);
-      gradient.addColorStop(0, `rgba(255, 100, 50, ${glowIntensity * 0.6})`);
-      gradient.addColorStop(0.5, `rgba(255, 50, 100, ${glowIntensity * 0.3})`);
-      gradient.addColorStop(1, 'rgba(255, 0, 50, 0)');
-      ctx.fillStyle = gradient;
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, 30, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // 墨晕底座
-    this.drawInkBase(ctx, this.x, this.y, 'rgba(255, 80, 80, 0.2)', 20);
-
-    // 绘制"心中炎"三字 - 第一行两字，第二行一字
-    ctx.font = `bold ${16 * scale}px "Ma Shan Zheng", cursive`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : "#ff5050";
-    ctx.fillText("心中", this.x, this.y - 8);
-    ctx.fillText("炎", this.x, this.y + 10);
-
-    this.drawLevelInfo(ctx);
-  
-};
-Tower.prototype.drawRuFengSiZhenTower = function(ctx, progress) {
-    let windOffset = 0;
-
-    if (this.isAttacking && progress < 1) {
-      windOffset = Math.sin(progress * Math.PI) * 0.8;
-    }
-
-    ctx.strokeStyle = 'rgba(100, 200, 255, 0.2)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i < 3; i++) {
-      ctx.beginPath();
-      const startX = this.x - 25 + i * 20;
-      const startY = this.y - 10 + Math.sin(Date.now() / 900 + i) * 2.5;
-      ctx.moveTo(startX, startY);
-      ctx.quadraticCurveTo(startX + 10, startY - 5, startX + 20, startY);
-      ctx.stroke();
-    }
-
-    ctx.fillStyle = 'rgba(100, 180, 220, 0.2)';
-    ctx.beginPath();
-    ctx.arc(this.x, this.y + 5, 22, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.font = 'bold 14px "Ma Shan Zheng", cursive';
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : "#64b4dc";
-    ctx.fillText("如风", this.x + windOffset, this.y - 8);
-    ctx.fillText("似真", this.x + windOffset, this.y + 8);
-
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawThunderTower = function(ctx, progress) {
@@ -405,7 +324,6 @@ Tower.prototype.drawThunderTower = function(ctx, progress) {
     }
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.thunder;
     ctx.fillText(this.char, this.x, this.y);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawIceTower = function(ctx, progress) {
@@ -430,7 +348,6 @@ Tower.prototype.drawIceTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.ice;
     ctx.fillText(this.char, this.x, this.y + waveOffset);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawPoisonTower = function(ctx, progress) {
@@ -447,7 +364,6 @@ Tower.prototype.drawPoisonTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.poison;
     ctx.fillText(this.char, this.x, this.y + bounceOffset);
-    this.drawLevelInfo(ctx);
   
 };
 Tower.prototype.drawWindTower = function(ctx, progress) {
@@ -474,6 +390,5 @@ Tower.prototype.drawWindTower = function(ctx, progress) {
     ctx.fill();
     ctx.fillStyle = this.selected ? CONFIG.COLORS.highlight : CONFIG.COLORS.wind;
     ctx.fillText(this.char, this.x + windOffset, this.y);
-    this.drawLevelInfo(ctx);
   
 };

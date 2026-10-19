@@ -24,16 +24,6 @@ async function place(page, list) {
   return page.evaluate((list) => list.map(([t, x, y]) => window.gameInstance.placeTower(t, x, y)), list);
 }
 
-// 把两座相邻塔融合（用游戏自身的校验）
-async function fuse(page, a, b) {
-  return page.evaluate(([a, b]) => {
-    const g = window.gameInstance;
-    const t1 = g.getTowerAt(a[0], a[1]), t2 = g.getTowerAt(b[0], b[1]);
-    if (!t1 || !t2) return 'missing';
-    return g.canFuse(t1, t2) ? g.fuseTowers(t1, t2) : 'cannot';
-  }, [a, b]);
-}
-
 // 让墨水保持在一个合理的显示值，避免卡牌/炮塔出现「墨乏」灰态
 async function keepInk(page, ink = 520) {
   await page.evaluate((ink) => {
@@ -57,4 +47,4 @@ const untilSpread = (page, n, spread, timeout = 60000) => page.waitForFunction((
 const startWave = (page) => page.evaluate(() => window.gameInstance.startWave());
 const enemyCount = (page) => page.evaluate(() => window.gameInstance.enemies.length);
 
-module.exports = { keepInk, untilSpread, VIEW, openGame, begin, place, fuse, startWave, enemyCount };
+module.exports = { keepInk, untilSpread, VIEW, openGame, begin, place, startWave, enemyCount };

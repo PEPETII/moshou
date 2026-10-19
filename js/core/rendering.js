@@ -1,19 +1,14 @@
 // Game：普通模式绘制和 HUD
 Game.prototype.updateUI = function() {
     document.getElementById("ink").textContent = this.ink;
-    document.getElementById("wave").textContent =
-      `${this.wave}/${this.maxWave}`;
+    // 坚守剩余时间（开战前显示满时长）
+    const holdEl = document.getElementById("hold-time");
+    if (holdEl) holdEl.textContent = BattleDirector.formatHold(this.holdLeft);
     this.runtimeIndexes.rebuildEnemies();
-    const remainingEnemies = this.spawnQueue.length + this.runtimeIndexes.aliveEnemies.length;
-    document.getElementById("enemies").textContent = remainingEnemies;
+    document.getElementById("enemies").textContent = this.runtimeIndexes.aliveEnemies.length;
     document.getElementById("core-hp").textContent =
       `${this.coreHp}/${this.maxCoreHp}`;
     document.querySelector('#top-bar .core-stat').classList.toggle('critical', this.coreHp <= this.maxCoreHp * 0.3);
-
-    const waveBtn = document.getElementById("start-wave");
-    waveBtn.disabled =
-      this.waveInProgress || this.wave >= this.maxWave || this.gameEnded;
-    waveBtn.textContent = this.wave >= this.maxWave ? "通关" : "开始波次";
 
     // 塔卡的"墨水不足"状态必须随墨水实时刷新，
     // 否则玩家攒够钱后卡仍是灰的、点击无响应（移动端表现为"点了没反应"）
@@ -23,6 +18,12 @@ Game.prototype.updateUI = function() {
   
 };
 Game.prototype.update = function(now) {
+    // 镜头独立于暂停/结算：暂停和结算画面里也能左右查看整张地图
+    if (this.camera) {
+      this.camera.update(now);
+      this.ui.syncPlacementDragCell();
+    }
+
     if (this.gameEnded) return;
 
     if (this.isPaused) return;
@@ -33,10 +34,18 @@ Game.prototype.update = function(now) {
     }
 
     // 计算 deltaTime（毫秒），限制最大值为 50ms 防止卡顿时游戏跳变
-    const deltaTime = Math.min(now - this.lastTime, 50);
+    // 顿帧（打击反馈）：命中停顿时游戏时间 × 0.06，暂停时不会走到这里
+    const deltaTime = GlyphSystem.scaleFrame(Math.min(now - this.lastTime, 50));
     this.lastTime = now;
 
     this.inkTrailAnimation.update();
+
+    // 全局大招间隔倒计时（字形塔的大招自动释放，见 GlyphSystem）
+    GlyphSystem.tick(this, deltaTime / 1000);
+
+    // 连续刷怪与坚守计时；新敌人入场后立即重建索引，塔本帧就能瞄到
+    this.updateSpawner(deltaTime / 1000);
+    this.runtimeIndexes.rebuildEnemies();
 
     for (const tower of this.towers) {
       tower.update(now, deltaTime, this.runtimeIndexes.aliveEnemies);
@@ -53,14 +62,12 @@ Game.prototype.update = function(now) {
 
     this.enemies = this.enemies.filter((e) => !e.dead);
     this.runtimeIndexes.rebuildTowers();
-    if (this.enemies.length !== this._lastEnemyCount) {
-      this.runtimeIndexes.rebuildEnemies();
-      this._lastEnemyCount = this.enemies.length;
-    }
+    // 同一帧有怪出生也有怪死亡时数量不变，不能靠数量判断，每帧重建（O(n)，n ≤ ENEMY_CAP）
+    this.runtimeIndexes.rebuildEnemies();
+    this._lastEnemyCount = this.enemies.length;
 
-    if (this.waveInProgress) {
-      this.checkWaveComplete();
-    }
+    // 字形弹道与特效：塔本帧发出的弹道在敌人移动之后推进
+    GlyphSystem.update(this, deltaTime / 1000);
 
     this.particleSystem.update(deltaTime);
     this.debugStats.update(now);
@@ -74,25 +81,44 @@ Game.prototype.update = function(now) {
   
 };
 Game.prototype.draw = function() {
-    this.staticLayer.draw(this.ctx);
+    const ctx = this.ctx;
+    const cam = this.camera;
+
+    // 世界层：背景、路径、网格、塔、敌人、弹道、地面效果，随镜头平移
+    ctx.save();
+    const shk = GlyphSystem.shakeOffset(this);
+    ctx.translate(-(cam ? Math.round(cam.x) : 0) + shk.x, shk.y);
+
+    this.staticLayer.draw(ctx);
+    GlyphSystem.drawStain(ctx);
     this.drawPlacementPreview();
+
+    // 绘制顺序：地面效果（焚后火字）→ 敌人 → 塔 → 弹道与大招 → 粒子
+    GlyphSystem.drawGround(ctx, this);
+
+    for (const enemy of this.enemies) {
+      enemy.draw(ctx, this.inkRenderer);
+    }
 
     const timestamp = performance.now();
     for (const tower of this.towers) {
-      tower.draw(this.ctx, timestamp);
+      tower.draw(ctx, timestamp);
     }
 
-    for (const enemy of this.enemies) {
-      enemy.draw(this.ctx, this.inkRenderer);
-    }
+    GlyphSystem.drawShots(ctx, this);
+    this.particleSystem.draw(ctx);
+    GlyphSystem.drawFX(ctx);
 
-    this.particleSystem.draw(this.ctx);
+    this.ui.drawDragPreview(ctx);
 
-    this.inkTrailAnimation.draw(this.ctx);
+    ctx.restore();
 
-    this.ui.drawDragPreview(this.ctx);
-
-    this.debugStats.draw(this.ctx);
+    // HUD 层：不随镜头平移
+    this.drawLevelInfo();
+    GlyphSystem.drawHud(ctx);
+    this.inkTrailAnimation.draw(ctx);
+    if (cam) cam.drawHints(ctx);
+    this.debugStats.draw(ctx);
   
 };
 /**
@@ -131,7 +157,7 @@ Game.prototype.drawGrid = function() {
     for (let y = 0; y <= CONFIG.GRID_ROWS; y++) {
       this.ctx.beginPath();
       this.ctx.moveTo(0, y * CONFIG.CELL_SIZE);
-      this.ctx.lineTo(this.canvas.width, y * CONFIG.CELL_SIZE);
+      this.ctx.lineTo(CONFIG.GRID_COLS * CONFIG.CELL_SIZE, y * CONFIG.CELL_SIZE);
       this.ctx.stroke();
     }
   
@@ -272,6 +298,13 @@ Game.prototype.drawPlacementPreview = function() {
     );
     this.ctx.lineWidth = 1;
 
+    const isGlyph = typeof GlyphTower !== 'undefined' && GlyphTower.has(type);
+    if (isGlyph) {
+      // 字形塔：目标格上画半透明的火字或水字
+      const cell = gridToPixel(gx, gy);
+      GlyphTower.drawGhost(this.ctx, type, cell.x, cell.y, canPlace ? 0.55 : 0.4, canPlace ? null : "#b4473a");
+    }
+
     if (canPlace && Number.isFinite(config.range) && config.range > 0) {
       const pos = gridToPixel(gx, gy);
 
@@ -289,7 +322,9 @@ Game.prototype.drawPlacementPreview = function() {
 
     const rect = this.canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
-    const pointerX = (drag.clientX - rect.left) * (this.canvas.width / rect.width);
+    // 本函数在世界层内绘制：画布坐标 + 镜头偏移
+    const camX = this.camera ? this.camera.x : 0;
+    const pointerX = (drag.clientX - rect.left) * (this.canvas.width / rect.width) + camX;
     const pointerY = (drag.clientY - rect.top) * (this.canvas.height / rect.height);
     const fingerOffset = drag.pointerType === "touch"
       ? 52 * (this.canvas.height / rect.height)
@@ -305,8 +340,10 @@ Game.prototype.drawPlacementPreview = function() {
     this.ctx.lineWidth = 4;
     this.ctx.strokeStyle = "rgba(250, 248, 241, 0.92)";
     this.ctx.fillStyle = canPlace ? "#1c1a17" : "#b4473a";
-    this.ctx.strokeText(config.char, pointerX, ghostY);
-    this.ctx.fillText(config.char, pointerX, ghostY);
+    if (!isGlyph) {
+      this.ctx.strokeText(config.char, pointerX, ghostY);
+      this.ctx.fillText(config.char, pointerX, ghostY);
+    }
     this.ctx.font = `12px ${CONFIG.FONTS.TEXT}`;
     this.ctx.fillText(`${config.cost}墨`, pointerX, ghostY + 23);
     this.ctx.restore();

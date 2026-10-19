@@ -32,12 +32,6 @@ ConquestGame.prototype.destroy = function() {
     // 停止游戏循环
     this.stop();
 
-    // 清理 spawn 定时器
-    if (this.spawnTimerId) {
-      clearTimeout(this.spawnTimerId);
-      this.spawnTimerId = null;
-    }
-
     // 移除所有追踪的事件监听器
     if (this._eventListeners && this._eventListeners.length > 0) {
       for (const { target, type, listener, options } of this._eventListeners) {
@@ -55,11 +49,9 @@ ConquestGame.prototype.destroy = function() {
     this._eventListeners = [];
     this._uiEventsActive = false;
 
-    // 清理融合模态框监听器
-    this._cleanupFusionModalListeners();
-
     // 清理键盘快捷键
     this.cleanupKeyboardShortcuts();
+    if (this.camera) this.camera.unbindInput();
 
     // 清理拖拽状态
     this.draggingTower = null;
@@ -93,13 +85,6 @@ ConquestGame.prototype.getDefaultLevelConfig = function() {
       id: 1,
       startInk: 300,
       summonCost: 80,
-      maxWave: 3,
-      maxAliveEnemies: 50,
-      waves: [
-        { type: "corpse", count: 30 },
-        { type: "ghost", count: 30 },
-        { type: "armor", count: 30 },
-      ],
     };
   
 };
@@ -124,11 +109,10 @@ ConquestGame.prototype.buildPlacementGrid = function() {
   
 };
 ConquestGame.prototype.setupUI = function() {
+    // 镜头输入（滚轮/键盘/拖拽平移）；监听随 destroy() 一并解除
+    if (this.camera) this.camera.bindInput();
+
     this.addTrackedEventListener(document.getElementById("conquest-summon-btn"), "click", this._boundSummonTower);
-
-    this.addTrackedEventListener(document.getElementById("conquest-wave-btn"), "click", this._boundStartWave);
-
-    this.addTrackedEventListener(document.getElementById("conquest-fusion-encyclopedia-btn"), "click", this._boundShowFusionEncyclopedia);
 
     this.addTrackedEventListener(document.getElementById("conquest-menu-btn"), "click", this._boundReturnToLevelSelect);
 
@@ -140,7 +124,7 @@ ConquestGame.prototype.setupUI = function() {
         this.hoveredCell = null;
       }
 
-      if (this.draggingTower && !this.draggingTower.isFusion) {
+      if (this.draggingTower) {
         this.dragCurrentPos = { x: e.clientX, y: e.clientY };
         const dist = calculateDragDistance(this.dragStartPos.x, this.dragStartPos.y, this.dragCurrentPos.x, this.dragCurrentPos.y);
         if (checkDragThreshold(dist, this.dragThreshold)) {
@@ -187,7 +171,7 @@ ConquestGame.prototype.setupUI = function() {
           const { gx, gy } = result;
           const targetTower = this.getTowerAt(gx, gy);
           if (targetTower && targetTower !== this.draggingTower) {
-            this.attemptFusion(this.draggingTower, targetTower);
+            this._notify("炮塔不可叠放", "warning");
           } else if (this.canPlaceAt(gx, gy)) {
             this.moveTower(this.draggingTower, gx, gy);
           }
@@ -252,8 +236,6 @@ ConquestGame.prototype.setupKeyboardShortcuts = function() {
         if (isModalVisible) {
           // 关闭模态框
           modal.classList.add("hidden");
-          // 清理融合模态框监听器
-          this._cleanupFusionModalListeners();
           // 隐藏返回按钮（如果存在）
           const returnBtn = document.getElementById("modal-return-btn");
           if (returnBtn) returnBtn.style.display = "none";
@@ -274,14 +256,6 @@ ConquestGame.prototype.setupKeyboardShortcuts = function() {
       if (isInputFocused) return;
 
       switch (e.key) {
-        case " ": // 空格键：开始波次
-        case "Spacebar": // 兼容旧浏览器
-          e.preventDefault(); // 防止页面滚动
-          if (!this.waveInProgress && this.wave < this.maxWave) {
-            this.startWave();
-          }
-          break;
-
         case "s":
         case "S": // S键：召唤炮塔
           this.summonTower();
@@ -322,36 +296,18 @@ ConquestGame.prototype.moveTower = function(tower, gx, gy) {
     this.updateUI();
   
 };
-ConquestGame.prototype.getFusionType = function(type1, type2) {
-    return fusionSystem.getFusionType(type1, type2);
-  
-};
-ConquestGame.prototype.canFuse = function(tower1, tower2) {
-    const result = fusionSystem.canFuse(tower1.type, tower2.type, {
-      tower1,
-      tower2,
-      ink: this.ink,
-    });
-    return result.canFuse;
-  
-};
 ConquestGame.prototype.showTowerInfo = function(tower, x, y) {
     const info = document.getElementById("conquest-tower-info");
     if (!info) return;
 
-    const config = tower.isFusion
-      ? CONFIG.FUSION_TOWERS[tower.fusionType]
-      : CONFIG.TOWERS[tower.type];
+    const config = CONFIG.TOWERS[tower.type];
 
     info.querySelector(".info-char").textContent = tower.char;
-    info.querySelector(".info-level").textContent = tower.isFusion ? "融合 Lv.1" : `Lv.${tower.level}`;
+    info.querySelector(".info-desc").textContent = config && config.desc ? config.desc : "";
 
     let stats = "";
-    if (tower.isFusion) {
-      stats += `组合: ${tower.components.map((c) => CONFIG.TOWERS[c]?.char || c).join("+")}<br>`;
-    }
     if (tower.damage > 0) stats += `伤害: ${tower.damage}<br>`;
-    if (tower.range) stats += `范围: ${tower.range}格<br>`;
+    if (tower.range) stats += `范围: ${+tower.range.toFixed(1)}格<br>`;
     if (tower.cooldown) stats += `攻速: ${(tower.cooldown / 1000).toFixed(1)}秒<br>`;
     if (tower.slow) stats += `减速: ${Math.round(tower.slow * 100)}%<br>`;
     if (tower.hp) stats += `生命: ${tower.hp}/${tower.maxHp}<br>`;
@@ -376,22 +332,6 @@ ConquestGame.prototype.showTowerInfo = function(tower, x, y) {
     }
     const isTouchDevice = !!(window.DeviceProfile && window.DeviceProfile.isTouch);
     closeHint.textContent = isTouchDevice ? "点击空白处关闭" : "右键取消选择";
-
-    const upgradeBtn = info.querySelector(".upgrade-btn");
-    if (tower.isFusion || tower.level >= tower.maxLevel) {
-      upgradeBtn.textContent = tower.isFusion ? "融合不可升级" : "已满级";
-      upgradeBtn.disabled = true;
-    } else {
-      upgradeBtn.textContent = `升级 ${tower.upgradeCost * tower.level}墨`;
-      upgradeBtn.disabled = this.ink < tower.upgradeCost * tower.level;
-      upgradeBtn.onclick = () => {
-        const upgraded = tower.upgrade();
-        if (upgraded) {
-          this.updateUI();
-          this.showTowerInfo(tower, x, y);
-        }
-      };
-    }
 
     // 面板定位：以视口为准做 clamp。
     // 旧实现取 #game-container 的 rect —— 征服模式下该容器不可见（rect 全 0），

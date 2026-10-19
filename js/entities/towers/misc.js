@@ -10,8 +10,6 @@ Tower.prototype.reset = function(type, gx, gy, game) {
 
     const config = CONFIG.TOWERS[type];
     this.char = config.char;
-    this.level = 1;
-    this.maxLevel = config.maxLevel;
 
     this.damage = config.damage;
     this.range = config.range;
@@ -104,7 +102,6 @@ Tower.prototype.reset = function(type, gx, gy, game) {
     this.maxHp = this.hp;
 
     this.cost = config.cost;
-    this.upgradeCost = config.upgradeCost;
 
     const pos = gridToPixel(gx, gy);
     this.x = pos.x;
@@ -132,77 +129,16 @@ Tower.prototype.reset = function(type, gx, gy, game) {
 
     // 风链弹射效果
     this.chainEffects = [];
-  
-};
-Tower.prototype.upgrade = function() {
-    if (this.level >= this.maxLevel) return false;
-    if (this.game.ink < this.upgradeCost * this.level) return false;
 
-    this.game.ink -= this.upgradeCost * this.level;
-    this.level++;
-
-    const config = CONFIG.TOWERS[this.type];
-    const params = config ? config.upgradeParams : null;
-
-    if (params) {
-      if (params.damageInc) this.damage += params.damageInc;
-      if (params.rangeInc) this.range += params.rangeInc;
-      if (params.cooldownDec && this.cooldown > 200) this.cooldown -= params.cooldownDec;
-      if (params.slowInc && this.slow) this.slow += params.slowInc;
-      if (params.hpInc && this.hp) {
-        this.hp += params.hpInc;
-        this.maxHp = this.hp;
-      }
-      if (params.chainCountInc && this.chainCount) this.chainCount += params.chainCountInc;
-      if (params.freezeDurationInc && this.freezeDuration) this.freezeDuration += params.freezeDurationInc;
-      if (params.poisonDamageInc && this.poisonDamage) this.poisonDamage += params.poisonDamageInc;
-      if (params.knockbackInc && this.knockback) this.knockback += params.knockbackInc;
-      if (params.pierceCountInc && this.pierceCount) this.pierceCount += params.pierceCountInc;
-      if (params.revealDurationInc && this.revealDuration) this.revealDuration += params.revealDurationInc;
-      if (params.killHealInc && this.killHeal) this.killHeal += params.killHealInc;
-      if (params.comboBonusInc && this.comboBonus) this.comboBonus += params.comboBonusInc;
-      if (params.aoeRangeInc && this.aoeRange) this.aoeRange += params.aoeRangeInc;
-      if (params.frostSlowInc && this.frostSlow) this.frostSlow += params.frostSlowInc;
-      if (params.auraRangeInc && this.auraRange) this.auraRange += params.auraRangeInc;
-      if (params.auraValueInc && this.auraValue) this.auraValue += params.auraValueInc;
-      if (params.stunDurationInc && this.stunDuration) this.stunDuration += params.stunDurationInc;
-      if (params.mountainBonusInc && this.mountainBonus) this.mountainBonus += params.mountainBonusInc;
-      if (params.markDurationInc && this.markDuration) this.markDuration += params.markDurationInc;
-      if (params.markBonusInc && this.markBonus) this.markBonus += params.markBonusInc;
-      if (params.markCountInc && this.markCount) this.markCount += params.markCountInc;
-      if (params.auraSlowInc && this.auraSlow) this.auraSlow += params.auraSlowInc;
-      if (params.repairRatioInc && this.repairRatio) this.repairRatio += params.repairRatioInc;
-      if (params.slowDurationInc && this.slowDuration) this.slowDuration += params.slowDurationInc;
-      if (params.triggerCountInc && this.triggerCount) this.triggerCount += params.triggerCountInc;
-      if (params.reflectDamageInc && this.reflectDamage) this.reflectDamage += params.reflectDamageInc;
-      if (params.damageReductionInc && this.damageReduction) this.damageReduction += params.damageReductionInc;
-      if (params.inkPerWaveInc && this.inkPerWave) this.inkPerWave += params.inkPerWaveInc;
-      if (params.interestBonusInc && this.interestBonus) this.interestBonus += params.interestBonusInc;
-      if (params.healPerWaveInc && this.healPerWave) this.healPerWave += params.healPerWaveInc;
-      if (params.emergencyBonusInc && this.emergencyBonus) this.emergencyBonus += params.emergencyBonusInc;
-      if (params.summonHpInc && this.summonHp) this.summonHp += params.summonHpInc;
-      if (params.summonDamageInc && this.summonDamage) this.summonDamage += params.summonDamageInc;
-      if (params.maxSummonsInc && this.maxSummons) this.maxSummons += params.maxSummonsInc;
-      if (params.copyEfficiencyInc && this.copyEfficiency) this.copyEfficiency += params.copyEfficiencyInc;
-      if (params.globalSlowInc && this.globalSlow) this.globalSlow += params.globalSlowInc;
-      if (params.explodeRangeInc && this.explodeRange) this.explodeRange += params.explodeRangeInc;
-      if (params.explosionDamageInc && this.explosionDamage) this.explosionDamage += params.explosionDamageInc;
-      if (params.explosionRangeInc && this.explosionRange) this.explosionRange += params.explosionRangeInc;
-      if (params.rotationSpeedInc && this.rotationSpeed) this.rotationSpeed += params.rotationSpeedInc;
-      if (params.fanAngleInc && this.fanAngle) this.fanAngle += params.fanAngleInc;
-      if (params.ulcerDurationInc && this.ulcerDuration) this.ulcerDuration += params.ulcerDurationInc;
-    } else {
-      this.damage += 1;
-      this.range += this.type === "water" ? 1 : 0.5;
-      if (this.cooldown > 200) this.cooldown -= 100;
-      if (this.slow) this.slow += 0.1;
-      if (this.hp) {
-        this.hp += 2;
-        this.maxHp = this.hp;
-      }
+    // 字形塔（火、水）：笔画、蓄力、招式全部由 GlyphTower 组件接管（工单 05）
+    this.gl = null;
+    if (typeof GlyphTower !== 'undefined' && GlyphTower.has(type)) {
+      GlyphTower.init(this);
+      // 旧的伤害、攻速、减速不再生效，信息面板也不应再显示它们
+      this.damage = 0;
+      this.cooldown = 0;
+      this.slow = 0;
     }
-
-    return true;
   
 };
 Tower.prototype.getSellValue = function() {
@@ -210,6 +146,11 @@ Tower.prototype.getSellValue = function() {
   
 };
 Tower.prototype.update = function(now, deltaTime, enemies) {
+    // 字形塔不再走旧的攻击和投射物管线
+    if (this.gl) {
+      GlyphTower.update(this, deltaTime / 1000);
+      return;
+    }
     // 使用 deltaTime 累积冷却时间，实现帧率独立的攻击冷却
     if (!this._cooldownAccum) this._cooldownAccum = 0;
     this._cooldownAccum += deltaTime * (1 + (this.auraBonuses?.attackSpeed || 0));
@@ -223,14 +164,6 @@ Tower.prototype.update = function(now, deltaTime, enemies) {
             this.attack(target, now);
             this._cooldownAccum = 0;
           }
-        }
-      }
-      // 带射程的路径融合塔（如山清水秀、火山）按冷却主动攻击
-      if (this.isFusion && this.range > 0 && this.cooldown < 900000 && this._cooldownAccum >= this.cooldown) {
-        const fusionTarget = this.findTarget(this.getAliveEnemies());
-        if (fusionTarget) {
-          this.attack(fusionTarget, now);
-          this._cooldownAccum = 0;
         }
       }
       if (this.type === 'trap' && this.triggerCount > 0) {

@@ -1,16 +1,6 @@
 // ConquestGame：征服关卡和实体流程
-ConquestGame.prototype.showFusionEncyclopedia = function() {
-    if (window.gameInstance && window.gameInstance.ui) {
-      window.gameInstance.ui.showGameFusionEncyclopedia();
-    }
-  
-};
 ConquestGame.prototype.returnToMenu = function() {
-    // 清理 spawn 定时器
-    if (this.spawnTimerId) {
-      clearTimeout(this.spawnTimerId);
-      this.spawnTimerId = null;
-    }
+    DensityPicker.close();
 
     // 调用 destroy 清理所有事件监听器和资源
     this.destroy();
@@ -24,20 +14,14 @@ ConquestGame.prototype.returnToMenu = function() {
 
     this.towers = [];
     this.enemies = [];
-    this.spawnQueue = [];
     this.gameEnded = false;
     this.victory = false;
-    this.waveInProgress = false;
-    this._autoWaveStarted = false;
+    this.battleActive = false;
   
 };
 // 根据关卡ID启动对应关卡
 ConquestGame.prototype.startLevel = function(levelId) {
-    // 清理旧的 spawn 定时器
-    if (this.spawnTimerId) {
-      clearTimeout(this.spawnTimerId);
-      this.spawnTimerId = null;
-    }
+    DensityPicker.close();
 
     // 获取关卡配置
     let levelConfig = null;
@@ -59,11 +43,9 @@ ConquestGame.prototype.startLevel = function(levelId) {
     this.stop();
     this.towers = [];
     this.enemies = [];
-    this.spawnQueue = [];
     this.gameEnded = false;
     this.victory = false;
-    this.waveInProgress = false;
-    this._autoWaveStarted = false;
+    this.battleActive = false;
 
     // 更新关卡配置
     this.levelConfig = levelConfig;
@@ -74,10 +56,9 @@ ConquestGame.prototype.startLevel = function(levelId) {
     this.summonCost = this.levelConfig.summonCost || 80;
     this.summonCostGrowth = this.levelConfig.summonCostGrowth || 0;
     this.summonedCount = 0;
-    this.maxWave = this.levelConfig.maxWave || 3;
-    this.maxAliveEnemies = this.levelConfig.maxAliveEnemies || 50;
+    this.dangerLimit = this.levelConfig.dangerLimit || CONFIG.CONQUEST_DANGER_LIMIT;
     this.coreHp = this.levelConfig.coreHp || 20;
-    this.wave = 0;
+    this.resetBattleState(this.levelConfig);
     this.nextPlacementIndex = 0;
 
     // 重新初始化放置网格
@@ -85,6 +66,9 @@ ConquestGame.prototype.startLevel = function(levelId) {
     this._placementGridSet = new Set(
       this.placementGrid.map((c) => `${c.x},${c.y}`)
     );
+
+    // 开局镜头对准左侧
+    if (this.camera) this.camera.jumpTo(0);
 
     // 重新设置UI事件监听（如果之前被destroy清理过）
     if (!this._uiEventsActive) {
@@ -102,9 +86,10 @@ ConquestGame.prototype.startLevel = function(levelId) {
     const tdContainer = document.getElementById("game-container");
     if (tdContainer) tdContainer.classList.add("hidden");
 
-    // 更新UI并启动游戏
+    // 更新UI并启动游戏；开战前先弹出敌潮选择（工单 04）
     this.updateUI();
     this.start();
+    this.promptDensity();
 
     // 征服模式内容宽 1072px、塔防模式 960px，尺寸不同，必须重算缩放
     if (typeof window.applyGameScale === "function") window.applyGameScale();
@@ -120,9 +105,9 @@ ConquestGame.prototype.getNextLevelId = function() {
     // 默认逻辑：正确解析 "主题-关卡" 格式
     const [theme, level] = String(this.currentLevelId).split('-').map(Number);
 
-    // 假设每个主题5关
-    const levelsPerTheme = 5;
-    const totalThemes = 5;
+    // 关卡规模取自征服关卡数据（实验阶段：1 个主题 × 2 关）
+    const levelsPerTheme = typeof CONQUEST_LEVELS_PER_THEME !== "undefined" ? CONQUEST_LEVELS_PER_THEME : 2;
+    const totalThemes = typeof CONQUEST_THEMES !== "undefined" ? CONQUEST_THEMES.length : 1;
 
     if (level < levelsPerTheme) {
       // 同一主题下一关
@@ -138,11 +123,7 @@ ConquestGame.prototype.getNextLevelId = function() {
 };
 // 返回关卡选择界面
 ConquestGame.prototype.returnToLevelSelect = function() {
-    // 清理 spawn 定时器
-    if (this.spawnTimerId) {
-      clearTimeout(this.spawnTimerId);
-      this.spawnTimerId = null;
-    }
+    DensityPicker.close();
 
     // 调用 destroy 清理所有事件监听器和资源
     this.destroy();
@@ -172,11 +153,9 @@ ConquestGame.prototype.returnToLevelSelect = function() {
     // 重置游戏状态
     this.towers = [];
     this.enemies = [];
-    this.spawnQueue = [];
     this.gameEnded = false;
     this.victory = false;
-    this.waveInProgress = false;
-    this._autoWaveStarted = false;
+    this.battleActive = false;
   
 };
 ConquestGame.prototype.startGame = function() {
@@ -193,9 +172,7 @@ ConquestGame.prototype.startGame = function() {
     this.ink = 300;
     this.towers = [];
     this.enemies = [];
-    this.wave = 0;
-    this.waveInProgress = false;
-    this.spawnQueue = [];
+    this.battleActive = false;
     this.gameEnded = false;
     this.victory = false;
     this.nextPlacementIndex = 0;
@@ -249,8 +226,9 @@ ConquestGame.prototype.spawnSplitEnemy = function(parent) {
       enemy.maxHp = parent.splitHp;
       enemy.hp = parent.splitHp;
       enemy.reward = Math.floor(parent.reward / 3);
-      enemy.x = parent.x + (i === 0 ? -15 : 15);
-      enemy.y = parent.y;
+      enemy.s = parent.s;
+      enemy.lane = parent.lane + (i === 0 ? -8 : 8);
+      enemy.syncPosition();
       this.enemies.push(enemy);
     }
   

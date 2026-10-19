@@ -18,7 +18,6 @@ UI.prototype.showConquestThemeSelect = function() {
       "encyclopedia-container",
       "tower-encyclopedia-container",
       "enemy-encyclopedia-container",
-      "fusion-encyclopedia-container",
       "conquest-level-select-container"
     ];
     containers.forEach(id => {
@@ -97,12 +96,12 @@ UI.prototype.isConquestThemeUnlocked = function(themeId, completedLevels) {
    */
 UI.prototype.getConquestThemeProgress = function(themeId, completedLevels) {
     let completed = 0;
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= CONQUEST_LEVELS_PER_THEME; i++) {
       if (completedLevels.includes(`${themeId}-${i}`)) {
         completed++;
       }
     }
-    return { completed, total: 5 };
+    return { completed, total: CONQUEST_LEVELS_PER_THEME };
   
 };
 /**
@@ -159,7 +158,7 @@ UI.prototype.renderConquestLevelSelect = function(themeId) {
     grid.innerHTML = "";
 
     // 渲染每个关卡（所有关卡默认解锁）
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= CONQUEST_LEVELS_PER_THEME; i++) {
       const levelId = `${themeId}-${i}`;
       const isCompleted = completedLevels.includes(levelId);
       // 所有关卡默认解锁

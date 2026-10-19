@@ -79,7 +79,7 @@ function loadGamePrototypes(context) {
     "js/config/domain-01.js",
     "js/config/domain-02.js",
     "js/config/domain-03.js",
-    "js/config/fusion.js",
+    "js/config/glyph-battle.js",
     "js/utils.js",
     "js/core/rendering.js",
     "js/modes/conquest/rendering.js",
@@ -137,20 +137,20 @@ function testConquestGridDrawing() {
   const context = createContext();
   loadGamePrototypes(context);
   const conquest = vm.runInContext("Object.create(ConquestGame.prototype)", context);
-  conquest.COLS = 16;
-  conquest.ROWS = 9;
-  conquest.CELL_SIZE = 48;
+  conquest.COLS = 22;
+  conquest.ROWS = 6;
+  conquest.CELL_SIZE = 72;
   conquest.ctx = createStrokeCtx();
 
   // 征服模式没有新塔放置流程，网格是棋盘分格本身，必须常驻
   conquest.isDragging = false;
   conquest.drawGrid();
-  assert.strictEqual(conquest.ctx.strokes, 17 + 10, "conquest keeps its board grid while idle");
+  assert.strictEqual(conquest.ctx.strokes, 23 + 7, "conquest keeps its board grid while idle");
 
   conquest.isDragging = true;
   conquest.ctx.strokes = 0;
   conquest.drawGrid();
-  assert.strictEqual(conquest.ctx.strokes, 17 + 10, "conquest grid is unaffected by tower dragging");
+  assert.strictEqual(conquest.ctx.strokes, 23 + 7, "conquest grid is unaffected by tower dragging");
 }
 
 function testStaticLayerRebuildsOnStateChange() {
@@ -165,6 +165,7 @@ function testStaticLayerRebuildsOnStateChange() {
     path: [],
     inkRenderer: { ctx: null },
     canvas: { width: 960, height: 432 },
+    worldW: 1872,
     shouldShowGrid: () => gridVisible,
     drawGrid: () => { gridDraws++; },
     drawPath: () => {},
@@ -174,6 +175,10 @@ function testStaticLayerRebuildsOnStateChange() {
 
   context.__game = game;
   const instance = vm.runInContext("new StaticCanvasLayer(__game)", context);
+  instance.draw({ drawImage() {} });
+  assert.strictEqual(instance.canvas.width, 1872, "static layer is generated at world width, not viewport width");
+  assert.strictEqual(instance.canvas.height, 432);
+  gridDraws = 0;
 
   const targetCtx = { drawImage() { rebuilds++; } };
 

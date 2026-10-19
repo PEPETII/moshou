@@ -9,21 +9,21 @@ const rel = (...p) => path.join(ROOT, ...p);
 const IDENT_FILES = [
   'js/game.js', 'js/tower.js',
   'js/core/towers.js', 'js/core/flow.js', 'js/core/misc.js', 'js/core/waves.js', 'js/core/rendering.js',
-  'js/fusionSystem.js', 'js/entities/towers/misc.js', 'js/entities/enemy/lifecycle.js',
+  'js/entities/towers/misc.js', 'js/entities/enemy/lifecycle.js',
   'js/ui/menu.js', 'js/ui/panels.js',
   'js/conquestGame.js', 'js/conquestLevelsData.js',
-  'js/modes/conquest/fusion.js', 'js/modes/conquest/misc.js', 'js/modes/conquest/flow.js', 'js/modes/conquest/waves.js',
+  'js/modes/conquest/misc.js', 'js/modes/conquest/flow.js', 'js/modes/conquest/waves.js',
 ];
 
 // 仅 startGold
 const STARTGOLD_FILES = [
-  'js/data/levels/part-01.js', 'js/data/levels/part-02.js',
+  'js/data/levels/part-01.js',
 ];
 
 // 仅文案
 const TEXT_FILES = [
   'js/ui/input.js', 'js/ui/input-touch.js', 'js/ui/toast.js',
-  'js/ui/encyclopedia.js', 'js/ui/fusion.js',
+  'js/ui/encyclopedia.js',
   'js/bootstrap/page-markup.js',
   'js/config/domain-02.js', 'tests/test-balance.js',
   'css/style/part-05.css',
@@ -52,7 +52,7 @@ function applyTextRules(src, file) {
   s = s.replace(/金\/波/g, '墨/波');
   s = s.replace(/产金/g, '产墨');
   s = s.replace(/ 金）/g, ' 墨）');
-  if (file.includes('encyclopedia') || file.includes('ui') && file.endsWith('fusion.js')) {
+  if (file.includes('encyclopedia')) {
     s = s.replace(/\+"金"/g, '+\"墨\"');
   }
   if (file.endsWith('flow.js') || file.includes('core/flow.js')) {

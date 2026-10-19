@@ -28,6 +28,9 @@ class RuntimeIndexes {
     this.towerByCell = new Map();
     this.blockingTowerByCell = new Map();
     this.aliveEnemies = [];
+    // 敌人空间分桶：怪多（上限 260）时，招式的范围查询不必扫全部敌人
+    this.bucketSize = 96;
+    this._buckets = new Map();
   }
 
   rebuildTowers() {
@@ -45,11 +48,49 @@ class RuntimeIndexes {
 
   rebuildEnemies() {
     this.aliveEnemies.length = 0;
+    this._buckets.clear();
+    const size = this.bucketSize;
     for (const enemy of this.game.enemies) {
       if (isAliveEnemy(enemy)) {
         this.aliveEnemies.push(enemy);
+        const key = this._bucketKey(Math.floor(enemy.x / size), Math.floor(enemy.y / size));
+        let list = this._buckets.get(key);
+        if (!list) {
+          list = [];
+          this._buckets.set(key, list);
+        }
+        list.push(enemy);
       }
     }
+  }
+
+  _bucketKey(cx, cy) {
+    // 世界坐标可能为负（敌人从画外走进来），加偏移后再打包
+    return (cx + 256) * 4096 + (cy + 256);
+  }
+
+  /**
+   * 圆形范围内的存活敌人（按桶筛选，再精确判距）。
+   * 注意：桶按上次 rebuildEnemies 时的位置，敌人移动一帧内偏差远小于桶边长。
+   */
+  enemiesInRange(x, y, radius) {
+    const size = this.bucketSize;
+    const r2 = radius * radius;
+    const out = [];
+    const x0 = Math.floor((x - radius) / size);
+    const x1 = Math.floor((x + radius) / size);
+    const y0 = Math.floor((y - radius) / size);
+    const y1 = Math.floor((y + radius) / size);
+    for (let cx = x0; cx <= x1; cx++) {
+      for (let cy = y0; cy <= y1; cy++) {
+        const list = this._buckets.get(this._bucketKey(cx, cy));
+        if (!list) continue;
+        for (const e of list) {
+          if (!e.dead && distanceSq(x, y, e.x, e.y) <= r2) out.push(e);
+        }
+      }
+    }
+    return out;
   }
 
   getTowerAt(gx, gy) {
@@ -101,8 +142,10 @@ class StaticCanvasLayer {
 
   _ensure() {
     const game = this.game;
-    if (this.canvas.width !== game.canvas.width || this.canvas.height !== game.canvas.height) {
-      this.canvas.width = game.canvas.width;
+    // 静态层按世界尺寸生成（比视口宽），随镜头平移后只露出视口那一段
+    const worldW = game.worldW || game.canvas.width;
+    if (this.canvas.width !== worldW || this.canvas.height !== game.canvas.height) {
+      this.canvas.width = worldW;
       this.canvas.height = game.canvas.height;
       this.dirty = true;
     }
@@ -132,7 +175,6 @@ class StaticCanvasLayer {
     if (this._gridVisible) game.drawGrid();
     game.drawPath();
     game.drawCore();
-    game.drawLevelInfo();
 
     game.ctx = prevCtx;
     game.inkRenderer.ctx = prevInkCtx;

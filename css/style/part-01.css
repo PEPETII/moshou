@@ -233,96 +233,6 @@ html, body {
   background: linear-gradient(90deg, transparent, #d0c6b0, transparent);
 }
 
-/* 顶部栏小型波次按钮 */
-#wave-btn-small {
-  display: inline-block;
-}
-
-#wave-btn-small #start-wave,
-#start-wave {
-  padding: 6px 16px;
-  font-size: 14px;
-  background: #f4efe4;
-  border: 1px solid #b8ac91;
-  color: #3d382f;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: "Ma Shan Zheng", cursive;
-  letter-spacing: 2px;
-  position: relative;
-  overflow: hidden;
-}
-
-#start-wave::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: radial-gradient(circle, rgba(28, 26, 23, 0.1) 0%, transparent 70%);
-  transform: translate(-50%, -50%);
-  transition: width 0.4s, height 0.4s;
-}
-
-/* 融合图鉴按钮样式 */
-#fusion-encyclopedia-btn {
-  padding: 6px 12px;
-  font-size: 14px;
-  background: #f4efe4;
-  border: 1px solid #b8ac91;
-  color: #c45c48;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: "Ma Shan Zheng", cursive;
-  letter-spacing: 2px;
-  position: relative;
-  overflow: hidden;
-}
-
-#fusion-encyclopedia-btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: radial-gradient(circle, rgba(196, 92, 72, 0.15) 0%, transparent 70%);
-  transform: translate(-50%, -50%);
-  transition: width 0.4s, height 0.4s;
-}
-
-#fusion-encyclopedia-btn:hover {
-  background: #ded5c0;
-  border-color: #c45c48;
-  color: #1c1a17;
-}
-
-#fusion-encyclopedia-btn:hover::before {
-  width: 200%;
-  height: 200%;
-}
-
-#start-wave:hover {
-  background: #ded5c0;
-  border-color: #6a6459;
-  color: #1c1a17;
-}
-
-#start-wave:hover::before {
-  width: 200%;
-  height: 200%;
-}
-
-#start-wave:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-#start-wave:disabled::before {
-  display: none;
-}
-
 /* 模态框样式 */
 #modal {
   position: fixed;
@@ -392,7 +302,7 @@ html, body {
   letter-spacing: 2px;
 }
 
-/* 征服模式融合/胜利弹窗动态创建的第二个操作按钮 */
+/* 征服模式胜利弹窗动态创建的第二个操作按钮 */
 #modal-return-btn {
   min-height: 44px;
   margin-top: 12px;
@@ -451,7 +361,7 @@ html, body {
   color: #1c1a17;
 }
 
-.info-level {
+.info-desc {
   color: #6a6459;
   font-size: 14px;
   font-family: "ZCOOL XiaoWei", serif;
@@ -486,14 +396,6 @@ html, body {
   background: #ded5c0;
   border-color: #444;
   color: #3d382f;
-}
-
-.upgrade-btn {
-  color: #7a9a6a !important;
-}
-
-.upgrade-btn:hover {
-  color: #8aaa7a !important;
 }
 
 .sell-btn {

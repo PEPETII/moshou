@@ -16,10 +16,7 @@ html[data-input="touch"] .tower-select { touch-action: none; }
 /* ---- 战斗 HUD 与塔卡：缩放后文字仍保持 ≥10.5px ---- */
 html[data-input="touch"] #top-bar .stat .label { font-size: max(14px, var(--fs-min)); }
 html[data-input="touch"] #top-bar .core-stat .label { font-size: max(14px, var(--fs-min)); }
-html[data-input="touch"] #top-bar button,
-html[data-input="touch"] #wave-btn-small #start-wave,
-html[data-input="touch"] #start-wave,
-html[data-input="touch"] #fusion-encyclopedia-btn { font-size: max(11px, var(--fs-min)); }
+html[data-input="touch"] #top-bar button{ font-size: max(11px, var(--fs-min)); }
 html[data-input="touch"] #back-to-menu-btn { font-size: max(13px, var(--fs-min)); }
 html[data-input="touch"] #bottom-bar .tower-select .tower-cost { font-size: max(12px, var(--fs-min)); }
 
@@ -51,8 +48,7 @@ html[data-input="touch"] #conquest-tower-info { touch-action: manipulation; }
 
   /* 图鉴三页：标题与筛选并排，列表占满剩余高度，返回钮收窄 */
   #tower-encyclopedia-container,
-  #enemy-encyclopedia-container,
-  #fusion-encyclopedia-container {
+#enemy-encyclopedia-container {
     display: flex;
     flex-direction: column;
     height: calc(100dvh - 12px);
@@ -81,17 +77,14 @@ html[data-input="touch"] #conquest-tower-info { touch-action: manipulation; }
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
-  #main-menu .encyclopedia-item,
-  #main-menu .fusion-item { min-height: 46px; }
+  #main-menu .encyclopedia-item { min-height: 46px; }
   #tower-encyclopedia-container > button,
-  #enemy-encyclopedia-container > button,
-  #fusion-encyclopedia-container > button:not(.guide-btn) {
+#enemy-encyclopedia-container > button {
     flex: 0 0 auto;
     min-height: 36px;
     padding-top: 2px;
     padding-bottom: 2px;
   }
-  #main-menu .encyclopedia-header .guide-btn { min-height: 34px; margin-left: auto; }
 
   /* 关卡长卷：返回钮不再压住版本号 */
   #main-menu:has(#level-list-container:not(.hidden), #theme-select-container:not(.hidden),
@@ -126,16 +119,22 @@ html[data-input="touch"] #conquest-side-panel .conquest-stat { padding: 2px 2px;
     min-width: 0;
   }
 }
-html[data-input="touch"] #conquest-side-panel .conquest-wave-btn { letter-spacing: 0; white-space: nowrap; }
 
 /* ---- 刘海/圆角安全区：菜单类页面不要贴进安全区 ---- */
 #main-menu {
   padding-left: var(--sal, 0px);
   padding-right: var(--sar, 0px);
 }
-#theme-select-container, #level-list-container, #encyclopedia-container,
-#tower-encyclopedia-container, #enemy-encyclopedia-container, #fusion-encyclopedia-container,
-#conquest-theme-select-container, #conquest-level-select-container, #custom-container,
-#custom-towers-container, #custom-levels-container, #custom-export-container {
+#theme-select-container,
+#level-list-container,
+#encyclopedia-container,
+#tower-encyclopedia-container,
+#enemy-encyclopedia-container,
+#conquest-theme-select-container,
+#conquest-level-select-container,
+#custom-container,
+#custom-towers-container,
+#custom-levels-container,
+#custom-export-container {
   max-width: calc(100vw - var(--sal, 0px) - var(--sar, 0px) - 12px);
 }

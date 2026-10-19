@@ -17,14 +17,11 @@
   }
 
   html[data-input="touch"] .filter-tab,
-  html[data-input="touch"] .detail-close-btn,
-  html[data-input="touch"] .guide-btn,
-  html[data-input="touch"] .encyclopedia-item,
-  html[data-input="touch"] .fusion-item,
-  html[data-input="touch"] .game-fusion-item,
-  html[data-input="touch"] .level-item,
-  html[data-input="touch"] .menu-level-item,
-  html[data-input="touch"] .conquest-level-item {
+html[data-input="touch"] .detail-close-btn,
+html[data-input="touch"] .encyclopedia-item,
+html[data-input="touch"] .level-item,
+html[data-input="touch"] .menu-level-item,
+html[data-input="touch"] .conquest-level-item {
     min-height: 44px;
   }
 
@@ -34,17 +31,16 @@
 
   /* 顶部栏 / 面板里的返回入口 */
   html[data-input="touch"] #back-to-menu,
-  html[data-input="touch"] #back-to-themes,
-  html[data-input="touch"] #back-to-menu-from-encyclopedia,
-  html[data-input="touch"] #back-to-encyclopedia-from-towers,
-  html[data-input="touch"] #back-to-encyclopedia-from-enemies,
-  html[data-input="touch"] #back-to-encyclopedia-from-fusion,
-  html[data-input="touch"] #back-to-menu-from-custom,
-  html[data-input="touch"] #back-to-custom-from-towers,
-  html[data-input="touch"] #back-to-custom-from-levels,
-  html[data-input="touch"] #back-to-custom-from-export,
-  html[data-input="touch"] #back-to-menu-from-conquest-theme,
-  html[data-input="touch"] #back-to-conquest-themes {
+html[data-input="touch"] #back-to-themes,
+html[data-input="touch"] #back-to-menu-from-encyclopedia,
+html[data-input="touch"] #back-to-encyclopedia-from-towers,
+html[data-input="touch"] #back-to-encyclopedia-from-enemies,
+html[data-input="touch"] #back-to-menu-from-custom,
+html[data-input="touch"] #back-to-custom-from-towers,
+html[data-input="touch"] #back-to-custom-from-levels,
+html[data-input="touch"] #back-to-custom-from-export,
+html[data-input="touch"] #back-to-menu-from-conquest-theme,
+html[data-input="touch"] #back-to-conquest-themes {
     min-height: 44px;
     min-width: 44px;
   }
@@ -61,8 +57,6 @@ html[data-input="touch"] .theme-card:hover,
 html[data-input="touch"] .conquest-theme-card:hover,
 html[data-input="touch"] .level-item:hover,
 html[data-input="touch"] .encyclopedia-item:hover,
-html[data-input="touch"] .fusion-item:hover,
-html[data-input="touch"] .game-fusion-item:hover,
 html[data-input="touch"] .conquest-level-item:hover {
   transform: none;
 }

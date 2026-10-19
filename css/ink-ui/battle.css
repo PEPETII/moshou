@@ -158,8 +158,7 @@ html[data-input="touch"] #bottom-bar .tower-select.locked {
 }
 #top-bar button:disabled,
 #tower-info button:disabled { color: var(--ink-faint) !important; opacity: 1; }
-#wave-btn-small #start-wave::before,
-#fusion-encyclopedia-btn::before,
+
 .summon-btn::before { display: none; }
 #tower-info,
 #conquest-tower-info {
@@ -187,7 +186,7 @@ html[data-input="touch"] #bottom-bar .tower-select.locked {
 #tower-info .sell-btn,
 #conquest-tower-info .sell-btn { color: var(--ink-seal-dark) !important; }
 
-/* 共享弹层的四种场景：融合、胜、破、普通告知。 */
+/* 共享弹层的三种场景：胜、破、普通告知。 */
 #modal {
   background: rgba(28, 26, 23, .26);
 }
@@ -217,22 +216,6 @@ html[data-input="touch"] #bottom-bar .tower-select.locked {
   font: 14px/1.55 "ZCOOL XiaoWei", serif;
   white-space: pre-line;
 }
-#modal-ritual { display: none; }
-#modal[data-scene="fusion"] #modal-ritual {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  min-height: 74px;
-  font: 42px "Ma Shan Zheng", cursive;
-}
-#modal[data-scene="fusion"] #ritual-left { animation: converge-left .45s ease-out both; }
-#modal[data-scene="fusion"] #ritual-right { animation: converge-right .45s ease-out both; }
-#modal[data-scene="fusion"] #ritual-result {
-  color: var(--ink-seal);
-  animation: ink-appear .4s .25s both;
-}
-#modal[data-scene="fusion"] #ritual-result::before { content: '→'; font: 19px "ZCOOL XiaoWei", serif; padding: 0 7px; color: var(--ink-faint); }
 #modal[data-scene="victory"] #modal-title,
 #modal[data-scene="defeat"] #modal-title { font-size: 88px; }
 #modal[data-scene="defeat"] #modal-title { color: var(--ink-seal-dark); }
@@ -265,33 +248,6 @@ html[data-input="touch"] #bottom-bar .tower-select.locked {
 #modal-btn:hover,
 #modal-return-btn:hover { background: var(--ink-shadow-paper) !important; }
 #modal-return-btn { color: var(--ink-soft) !important; }
-#fusion-ink-feedback {
-  position: fixed;
-  z-index: 4000;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  pointer-events: none;
-  color: var(--ink-strong);
-  font: 82px "Ma Shan Zheng", cursive;
-}
-#fusion-ink-feedback.hidden { display: none; }
-#fusion-ink-feedback.play { animation: fusion-echo .9s ease-out both; }
-.fusion-feedback-seal {
-  display: grid;
-  place-items: center;
-  width: 43px;
-  height: 43px;
-  border: 2px solid var(--ink-seal);
-  color: var(--ink-seal);
-  font-size: 27px;
-  transform: rotate(-8deg);
-}
-@keyframes converge-left { from { opacity: .2; transform: translateX(-24px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes converge-right { from { opacity: .2; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes fusion-echo { from { opacity: 0; filter: blur(8px); transform: scale(.85); } 30% { opacity: 1; filter: blur(0); } to { opacity: 0; filter: blur(3px); transform: scale(1.06); } }
 
 /* 征服侧栏和游戏内书谱。 */
 #conquest-side-panel {
@@ -307,45 +263,9 @@ html[data-input="touch"] #bottom-bar .tower-select.locked {
 #conquest-side-panel .conquest-stat { border: 0; border-bottom: 1px solid var(--ink-grid); padding: 6px 2px; }
 #conquest-side-panel .conquest-rules { border: 0; border-top: 1px solid var(--ink-grid); padding: 8px 2px; }
 .conquest-label, .rules-text, .summon-cost { color: var(--ink-soft); }
-.conquest-value, #conquest-ink, #conquest-wave, #conquest-enemies { color: var(--ink-strong); }
-.summon-btn, .conquest-wave-btn, .conquest-menu-btn,
-#conquest-fusion-encyclopedia-btn { width: 100%; margin-bottom: 4px; }
-#game-fusion-encyclopedia-modal,
-#game-fusion-detail-panel { background: rgba(28, 26, 23, .25); }
-.game-fusion-modal-content,
-.game-fusion-detail-content {
-  background: var(--ink-paper);
-  border: 1px solid var(--ink-grid);
-  border-top: 2px solid var(--ink-strong);
-  border-radius: 0;
-  box-shadow: 8px 8px 0 var(--ink-shadow-paper);
-}
-.game-fusion-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  overflow-y: auto;
-}
-.game-fusion-item {
-  display: grid;
-  grid-template-columns: 60px 1fr;
-  justify-items: start;
-  min-height: 52px;
-  padding: 6px 10px;
-  aspect-ratio: auto;
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid var(--ink-grid);
-  border-radius: 0;
-  box-shadow: none;
-  transform: none;
-}
-.game-fusion-item:hover { background: var(--ink-shadow-paper); box-shadow: none; transform: none; }
-.game-fusion-item .fusion-result-char { grid-row: span 3; color: var(--ink-strong); }
-.game-fusion-item :is(.fusion-components, .fusion-cost, .fusion-rarity-tag) { color: var(--ink-soft); }
-.game-fusion-item :is(.fusion-rarity-tag.rare, .fusion-rarity-tag.epic, .fusion-rarity-tag.legendary) { background: transparent; color: var(--ink-seal); }
-.game-fusion-materials, .game-fusion-detail-desc { background: transparent; border-radius: 0; border-color: var(--ink-grid); }
-.game-fusion-detail-close-btn, .close-modal-btn { min-width: 44px; min-height: 44px; background: transparent; border: 0; border-bottom: 1px solid var(--ink-grid); border-radius: 0; }
+.conquest-value, #conquest-ink, #conquest-hold, #conquest-danger { color: var(--ink-strong); }
+.summon-btn,
+.conquest-menu-btn { width: 100%; margin-bottom: 4px; }
 .event-notification, .merchant-inscription {
   min-width: min(360px, 88vw);
   max-width: 88vw;
@@ -387,14 +307,95 @@ html[data-input="touch"] #bottom-bar .tower-select.locked {
   #modal-content { max-height: 88vh; padding: 10px 20px; }
   #modal[data-scene="victory"] #modal-title,
   #modal[data-scene="defeat"] #modal-title { font-size: 54px; }
-  #modal[data-scene="fusion"] #modal-ritual { min-height: 48px; font-size: 29px; }
   #modal-text { font-size: 12px; }
   #modal-seal { width: 25px; height: 25px; margin-bottom: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  #modal-ritual *, #modal-seal, #fusion-ink-feedback.play { animation: none !important; }
+  #modal-seal { animation: none !important; }
 }
-html[data-ink-motion="reduced"] #modal-ritual *,
-html[data-ink-motion="reduced"] #modal-seal,
-html[data-ink-motion="reduced"] #fusion-ink-feedback.play { animation: none !important; }
-html[data-ink-motion="reduced"] #fusion-ink-feedback.play { opacity: 1; }
+html[data-ink-motion="reduced"] #modal-seal { animation: none !important; }
+
+/* 镜头（工单 03）：征服画布与塔防一致，视口固定 960×432，世界 1584px 由镜头横向滚动。
+   容器宽度必须等于画布宽度，否则 flex 居中会把画布两侧裁掉；各档 @media 的 max-width 一并覆盖。 */
+#conquest-game-container,
+html[data-input="touch"] #conquest-game-container {
+  width: 960px;
+  max-width: none;
+  flex: 0 0 960px;
+}
+
+/* 敌潮选择弹窗（工单 04）：开局前选「稀 / 常 / 潮」 */
+#density-picker {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-modal, 1000) + 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(28, 26, 23, .32);
+}
+#density-picker.hidden { display: none; }
+#density-picker-box {
+  width: min(560px, 92vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px 26px 18px;
+  background: var(--ink-paper);
+  border-top: 2px solid var(--ink-strong);
+  border-bottom: 1px solid var(--ink-grid);
+  box-shadow: 8px 8px 0 var(--ink-shadow-paper);
+  text-align: center;
+}
+#density-picker-title {
+  margin: 0 0 4px;
+  color: var(--ink-strong);
+  font: 40px "Ma Shan Zheng", cursive;
+  letter-spacing: .14em;
+}
+#density-picker-hint { margin: 0 0 14px; color: var(--ink-soft); font-size: 14px; }
+#density-picker-options { display: flex; gap: 10px; justify-content: center; }
+.density-option {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 10px 6px;
+  color: var(--ink-strong);
+  background: transparent;
+  border: 1px solid var(--ink-grid);
+  font-family: inherit;
+  cursor: pointer;
+}
+.density-option .density-label { font: 40px "Ma Shan Zheng", cursive; line-height: 1.1; }
+.density-option .density-rate,
+.density-option .density-giant { font-size: 13px; color: var(--ink-soft); }
+.density-option .density-desc { font-size: 12px; color: var(--ink-faint); }
+.density-option.selected {
+  border-color: var(--ink-seal);
+  background: var(--ink-shadow-paper);
+  box-shadow: inset 0 -3px 0 var(--ink-seal);
+}
+.density-option.selected .density-label { color: var(--ink-seal-dark); }
+#density-picker-actions { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
+#density-picker-actions button {
+  min-width: 96px;
+  min-height: 44px;
+  padding: 8px 18px;
+  font-size: 18px;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--ink-strong);
+  background: transparent;
+  border: 1px solid var(--ink-strong);
+}
+#density-picker-ok { color: #fff !important; background: var(--ink-seal) !important; border-color: var(--ink-seal) !important; }
+@media (max-height: 500px) and (orientation: landscape) {
+  #density-picker-box { padding: 8px 18px 10px; }
+  #density-picker-title { font-size: 28px; }
+  #density-picker-hint { margin-bottom: 6px; font-size: 12px; }
+  .density-option { padding: 6px 4px; }
+  .density-option .density-label { font-size: 30px; }
+  #density-picker-actions { margin-top: 8px; }
+}

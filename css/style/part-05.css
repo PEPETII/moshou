@@ -89,8 +89,6 @@ html[data-input="touch"] .tower-select,
 html[data-input="touch"] .filter-tab,
 html[data-input="touch"] .encyclopedia-card,
 html[data-input="touch"] .encyclopedia-item,
-html[data-input="touch"] .fusion-item,
-html[data-input="touch"] .game-fusion-item,
 html[data-input="touch"] .custom-card,
 html[data-input="touch"] .theme-card,
 html[data-input="touch"] .level-item,
@@ -112,26 +110,19 @@ html[data-input="touch"] .menu-level-item {
     min-height: clamp(var(--touch-min), calc(var(--touch-min) / var(--ui-scale)), 88px);
   }
 
-  html[data-input="touch"] #start-wave,
-  html[data-input="touch"] #fusion-encyclopedia-btn,
-  html[data-input="touch"] #back-to-menu-btn,
-  html[data-input="touch"] #sound-toggle,
-  html[data-input="touch"] .sound-toggle,
-  html[data-input="touch"] .summon-btn,
-  html[data-input="touch"] .conquest-wave-btn,
-  html[data-input="touch"] .conquest-menu-btn,
-  html[data-input="touch"] #conquest-summon-btn,
-  html[data-input="touch"] #conquest-fusion-encyclopedia-btn {
+  
+html[data-input="touch"] #back-to-menu-btn,
+html[data-input="touch"] #sound-toggle,
+html[data-input="touch"] .sound-toggle,
+html[data-input="touch"] .summon-btn,
+html[data-input="touch"] .conquest-menu-btn,
+html[data-input="touch"] #conquest-summon-btn {
     min-height: clamp(var(--touch-min), calc(var(--touch-min) / var(--ui-scale)), 88px);
   }
 
-  html[data-input="touch"] #start-wave {
-    min-width: clamp(80px, calc(80px / var(--ui-scale)), 140px);
-  }
+  
 
-  html[data-input="touch"] #fusion-encyclopedia-btn,
-  html[data-input="touch"] #back-to-menu-btn,
-  html[data-input="touch"] #conquest-fusion-encyclopedia-btn {
+  html[data-input="touch"] #back-to-menu-btn {
     min-width: clamp(var(--touch-min), calc(var(--touch-min) / var(--ui-scale)), 88px);
     display: inline-flex;
     align-items: center;
@@ -188,8 +179,6 @@ html[data-input="touch"] .tower-select:active,
 html[data-input="touch"] .filter-tab:active,
 html[data-input="touch"] .encyclopedia-card:active,
 html[data-input="touch"] .encyclopedia-item:active,
-html[data-input="touch"] .fusion-item:active,
-html[data-input="touch"] .game-fusion-item:active,
 html[data-input="touch"] .custom-card:active,
 html[data-input="touch"] .theme-card:not(.locked):active,
 html[data-input="touch"] .level-item:active,
@@ -198,20 +187,15 @@ html[data-input="touch"] .conquest-level-item:not(.locked):active,
 html[data-input="touch"] .menu-level-item:active,
 html[data-input="touch"] #modal-btn:active,
 html[data-input="touch"] #modal-return-btn:active,
-html[data-input="touch"] #start-wave:not(:disabled):active,
-html[data-input="touch"] #fusion-encyclopedia-btn:active,
 html[data-input="touch"] #back-to-menu-btn:active,
 html[data-input="touch"] .summon-btn:not(:disabled):active,
-html[data-input="touch"] .conquest-wave-btn:not(:disabled):active,
 html[data-input="touch"] .conquest-menu-btn:active,
 html[data-input="touch"] .detail-close-btn:active,
-html[data-input="touch"] .guide-btn:active,
 html[data-input="touch"] .info-actions button:not(:disabled):active,
 html[data-input="touch"] #back-to-menu:active,
 html[data-input="touch"] #back-to-themes:active,
 html[data-input="touch"] #back-to-encyclopedia-from-towers:active,
 html[data-input="touch"] #back-to-encyclopedia-from-enemies:active,
-html[data-input="touch"] #back-to-encyclopedia-from-fusion:active,
 html[data-input="touch"] #back-to-menu-from-encyclopedia:active,
 html[data-input="touch"] #back-to-menu-from-conquest-theme:active,
 html[data-input="touch"] #back-to-conquest-themes:active,

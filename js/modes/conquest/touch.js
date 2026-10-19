@@ -41,11 +41,11 @@
     var towers = this.towers || [];
     if (!towers.length) return null;
 
-    var rect = this.canvas.getBoundingClientRect();
-    if (!rect.width || !rect.height) return null;
-
-    var px = (clientX - rect.left) * (this.canvas.width / rect.width);
-    var py = (clientY - rect.top) * (this.canvas.height / rect.height);
+    // 世界坐标 = 画布坐标 + 镜头偏移（统一走 clientToWorld）
+    var world = clientToWorld(clientX, clientY, this.canvas);
+    if (!world) return null;
+    var px = world.x;
+    var py = world.y;
 
     var direct = this.getTowerAt(
       Math.floor(px / CONFIG.CELL_SIZE),
@@ -137,22 +137,8 @@
       self._clearDragCache();
     };
 
-    // 移动端提供“点选后再点目标”的融合路径。
-    // 拖拽仍然保留，用于移动炮塔和熟悉桌面操作的玩家；两条路径共享同一套融合校验。
+    // 点塔看信息，点空白关闭面板；拖拽用于移动炮塔，不可叠放到另一座塔上。
     var handleTap = function (tower, clientX, clientY) {
-      var selected = null;
-      for (var i = 0; i < self.towers.length; i++) {
-        if (self.towers[i].selected) {
-          selected = self.towers[i];
-          break;
-        }
-      }
-
-      if (tower && selected && selected !== tower) {
-        self.attemptFusion(selected, tower);
-        return;
-      }
-
       if (tower) {
         self.showTowerInfo(tower, clientX, clientY);
       } else {
@@ -216,7 +202,7 @@
       // 手指当前所在格 → 落点预览（移动端唯一的"松手前确认"通道）
       self._hoverCellAt(touch.clientX, touch.clientY);
 
-      if (st.moved && st.tower && !st.tower.isFusion) {
+      if (st.moved && st.tower) {
         if (!st.dragging) {
           st.dragging = true;
           self._dragSource = 'touch';
@@ -241,16 +227,15 @@
 
       var touch = e.changedTouches[0];
 
-      // ① 拖拽：优先按容差找融合目标，其次移动到抬起点所在格
+      // ① 拖拽：优先按容差找叠放目标，其次移动到抬起点所在格
       if (st.dragging && touch) {
-        // 融合目标同样带容差：手指偏移常超过半格，严格格命中会让融合几乎点不中。
-        // 误选的代价只是弹出确认框，而确认框现在有"取消"，可以放心放宽。
+        // 目标塔带容差：手指偏移常超过半格；落在另一座塔上一律拒绝，塔弹回原位。
         var target = self._pickTowerNear(touch.clientX, touch.clientY, {
           exclude: st.tower,
           tolerance: profile().tapTolerance
         });
         if (target) {
-          self.attemptFusion(st.tower, target);
+          self._notify('炮塔不可叠放', 'warning');
         } else {
           var cell = getGridFromEvent(touch, canvas);
           if (cell) {
@@ -270,9 +255,6 @@
 
       // ② 滑动取消：手指滑过再抬起视为放弃操作
       if (st.moved) {
-        if (st.tower && st.tower.isFusion) {
-          self._notify('融合塔不可移动', 'warning');
-        }
         resetDrag();
         self._scheduleHoverClear();
         return;

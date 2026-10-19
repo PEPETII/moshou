@@ -25,13 +25,15 @@
             <button class="menu-btn" id="btn-levels"><span class="menu-glyph">守</span><span>塔 防</span></button>
             <button class="menu-btn" id="btn-conquest"><span class="menu-glyph">征</span><span>征 服</span></button>
             <button class="menu-btn" id="btn-encyclopedia"><span class="menu-glyph">谱</span><span>图 鉴</span></button>
-            <button class="menu-btn" id="btn-custom"><span class="menu-glyph">作</span><span>自 定</span></button>
+            <button class="menu-btn" id="btn-custom" hidden style="display:none" aria-hidden="true" tabindex="-1"><span class="menu-glyph">作</span><span>自 定</span></button>
             <button class="menu-btn" id="btn-settings"><span class="menu-glyph">设</span><span>设 置</span></button>
         </div>
         <div id="settings-container" class="hidden">
             <h2>设 · 墨卷</h2>
             <button id="ink-motion-toggle" type="button" aria-pressed="false">墨迹动效 · 开</button>
             <p>减少动效时，书页与印章仍会清晰呈现。</p>
+            <button id="hit-feedback-toggle" type="button" aria-pressed="true">打击反馈 · 开</button>
+            <p>伤害数字、顿帧、震屏、碎字、墨渍与连斩。墨迹动效关闭时不震屏。</p>
             <div class="audio-settings">
                 <div class="audio-row">
                     <button data-sound-toggle type="button" aria-pressed="true">音效 · 开</button>
@@ -71,11 +73,6 @@
                     <span class="encyclopedia-icon">鬼</span>
                     <div class="encyclopedia-card-name">妖异录</div>
                     <div class="encyclopedia-card-desc">查看所有敌人详细信息</div>
-                </div>
-                <div class="encyclopedia-card" id="btn-fusion-encyclopedia">
-                    <span class="encyclopedia-icon">合</span>
-                    <div class="encyclopedia-card-name">合字谱</div>
-                    <div class="encyclopedia-card-desc">查看所有融合配方和属性</div>
                 </div>
             </div>
             <button id="back-to-menu-from-encyclopedia">主菜单</button>
@@ -130,83 +127,6 @@
                 <div class="detail-stats" id="enemy-detail-stats"></div>
                 <div class="detail-desc" id="enemy-detail-desc"></div>
                 <button class="detail-close-btn" id="close-enemy-detail">关闭</button>
-            </div>
-        </div>
-        
-        <!-- 融合图鉴界面 -->
-        <div id="fusion-encyclopedia-container" class="hidden">
-            <div class="encyclopedia-header">
-                <span class="encyclopedia-title">融合图鉴</span>
-                <button id="btn-fusion-guide" class="guide-btn">融合指南</button>
-            </div>
-            <div class="encyclopedia-grid" id="fusion-encyclopedia-grid"></div>
-            <button id="back-to-encyclopedia-from-fusion">图鉴</button>
-        </div>
-        
-        <!-- 融合配方详情面板 -->
-        <div id="fusion-detail-panel" class="hidden">
-            <div class="detail-content fusion-detail-content">
-                <div class="detail-header">
-                    <span class="detail-char" id="fusion-detail-char"></span>
-                    <div class="fusion-title-group">
-                        <span class="detail-name" id="fusion-detail-name"></span>
-                        <span class="fusion-rarity" id="fusion-detail-rarity"></span>
-                    </div>
-                </div>
-                <div class="fusion-materials" id="fusion-detail-materials"></div>
-                <div class="fusion-comparison" id="fusion-detail-comparison"></div>
-                <div class="detail-desc" id="fusion-detail-desc"></div>
-                <button class="detail-close-btn" id="close-fusion-detail">关闭</button>
-            </div>
-        </div>
-        
-        <!-- 融合指南面板 -->
-        <div id="fusion-guide-panel" class="hidden">
-            <div class="guide-content">
-                <div class="guide-header">
-                    <span class="guide-title">融合指南</span>
-                </div>
-                <div class="guide-steps">
-                    <div class="guide-step">
-                        <span class="step-number">1</span>
-                        <div class="step-content">
-                            <div class="step-title">选择材料</div>
-                            <div class="step-desc">在战场上放置两个可以融合的炮塔</div>
-                        </div>
-                    </div>
-                    <div class="guide-step">
-                        <span class="step-number">2</span>
-                        <div class="step-content">
-                            <div class="step-title">拖拽融合</div>
-                            <div class="step-desc">按住并拖拽一个炮塔到另一个炮塔上</div>
-                        </div>
-                    </div>
-                    <div class="guide-step">
-                        <span class="step-number">3</span>
-                        <div class="step-content">
-                            <div class="step-title">确认融合</div>
-                            <div class="step-desc">消耗墨水确认融合操作</div>
-                        </div>
-                    </div>
-                    <div class="guide-step">
-                        <span class="step-number">4</span>
-                        <div class="step-content">
-                            <div class="step-title">获得新炮塔</div>
-                            <div class="step-desc">融合成功，获得强大的融合炮塔</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="guide-notices">
-                    <div class="notice-title">注意事项</div>
-                    <ul class="notice-list">
-                        <li>融合后材料炮塔会消失，请谨慎选择</li>
-                        <li>融合炮塔无法再次进行融合</li>
-                        <li>需要足够的墨水才能进行融合</li>
-                        <li>并非所有炮塔组合都可以融合</li>
-                        <li>融合后的炮塔继承材料炮塔的位置</li>
-                    </ul>
-                </div>
-                <button class="detail-close-btn" id="close-fusion-guide">关闭</button>
             </div>
         </div>
         
@@ -351,8 +271,8 @@
                             <span id="ink" class="value">300</span>
                         </div>
                         <div class="stat">
-                            <span class="label">阵</span>
-                            <span id="wave" class="value">0/3</span>
+                            <span class="label">守时</span>
+                            <span id="hold-time" class="value">--:--</span>
                         </div>
                         <div class="stat">
                             <span class="label">尸</span>
@@ -361,12 +281,6 @@
                         <div class="stat core-stat">
                             <span class="label">守</span>
                             <span id="core-hp" class="value">20/20</span>
-                        </div>
-                        <div id="wave-btn-small">
-                            <button id="start-wave">波次</button>
-                        </div>
-                        <div class="stat">
-                            <button id="fusion-encyclopedia-btn" title="融合图鉴">合字谱</button>
                         </div>
                         <div class="stat">
                             <button id="back-to-menu-btn" title="主菜单">归卷</button>
@@ -406,14 +320,6 @@
                             <span class="tower-char">土</span>
                             <span class="tower-cost">220</span>
                         </div>
-                        <div class="tower-select locked" data-type="xinZhongYan">
-                            <span class="tower-char"><span>心中</span><span>炎</span></span>
-                            <span class="tower-cost">250</span>
-                        </div>
-                        <div class="tower-select locked" data-type="ruFengSiZhen">
-                            <span class="tower-char"><span>如风</span><span>似真</span></span>
-                            <span class="tower-cost">300</span>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -432,17 +338,15 @@
                             <span id="conquest-ink" class="conquest-value">300</span>
                         </div>
                         <div class="conquest-stat">
-                            <span class="conquest-label">波次</span>
-                            <span id="conquest-wave" class="conquest-value">0/3</span>
+                            <span class="conquest-label">坚守剩余</span>
+                            <span id="conquest-hold" class="conquest-value">--:--</span>
                         </div>
                         <div class="conquest-stat">
-                            <span class="conquest-label">现存敌人</span>
-                            <span id="conquest-enemies" class="conquest-value">0</span>
+                            <span class="conquest-label">危险</span>
+                            <span id="conquest-danger" class="conquest-value">0 / 200</span>
                         </div>
                     </div>
                     <div class="conquest-divider"></div>
-                    <button id="conquest-fusion-encyclopedia-btn" title="融合图鉴">合字谱</button>
-                    <button id="conquest-wave-btn" class="conquest-wave-btn">开始波次</button>
                     <button id="conquest-menu-btn" class="conquest-menu-btn">菜单</button>
                     <button class="sound-toggle" data-sound-toggle type="button" aria-pressed="true" aria-label="音效开关" title="音效开关">音效 · 开</button>
                     <button class="sound-toggle" data-bgm-toggle type="button" aria-pressed="true" aria-label="音乐开关" title="背景音乐开关">音乐 · 开</button>
@@ -451,7 +355,8 @@
                         <div class="rules-text">外圈为敌人循环路径</div>
                         <div class="rules-text">内圈可放置炮塔</div>
                         <div class="rules-text">召唤随机生成炮塔</div>
-                        <div class="rules-text">场上50怪即失败</div>
+                        <div class="rules-text">坚守时间到即胜</div>
+                        <div class="rules-text">场上怪物达到危险线即失败</div>
                     </div>
                 </div>
                 <div id="conquest-game-container">
@@ -466,53 +371,20 @@
 
     <div id="modal" class="hidden">
         <div id="modal-content">
-            <div id="modal-ritual" aria-hidden="true"><span id="ritual-left"></span><span id="ritual-right"></span><span id="ritual-result"></span></div>
             <h2 id="modal-title"></h2>
             <p id="modal-text"></p>
             <span id="modal-seal" aria-hidden="true">印</span>
             <button id="modal-btn">确定</button>
         </div>
     </div>
-    <div id="fusion-ink-feedback" class="hidden" aria-live="polite"><span class="fusion-feedback-word"></span><span class="fusion-feedback-seal">合</span></div>
-
-    <!-- 游戏内融合图鉴模态窗口 -->
-    <div id="game-fusion-encyclopedia-modal" class="hidden">
-        <div class="game-fusion-modal-content">
-            <div class="game-fusion-modal-header">
-                <h2>融合图鉴</h2>
-                <button class="close-modal-btn" id="close-game-fusion-modal">×</button>
-            </div>
-            <div class="game-fusion-modal-body">
-                <div class="game-fusion-grid" id="game-fusion-grid"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 游戏内融合详情面板 -->
-    <div id="game-fusion-detail-panel" class="hidden">
-        <div class="game-fusion-detail-content">
-            <div class="game-fusion-detail-header">
-                <span class="game-fusion-detail-char" id="game-fusion-detail-char"></span>
-                <div class="game-fusion-title-group">
-                    <span class="game-fusion-detail-name" id="game-fusion-detail-name"></span>
-                    <span class="game-fusion-rarity" id="game-fusion-detail-rarity"></span>
-                </div>
-            </div>
-            <div class="game-fusion-materials" id="game-fusion-detail-materials"></div>
-            <div class="game-fusion-detail-stats" id="game-fusion-detail-stats"></div>
-            <div class="game-fusion-detail-desc" id="game-fusion-detail-desc"></div>
-            <button class="game-fusion-detail-close-btn" id="close-game-fusion-detail">关闭</button>
-        </div>
-    </div>
 
     <div id="tower-info" class="hidden">
         <div class="info-header">
             <span class="info-char"></span>
-            <span class="info-level"></span>
+            <span class="info-desc"></span>
         </div>
         <div class="info-stats"></div>
         <div class="info-actions">
-            <button class="upgrade-btn">升级</button>
             <button class="sell-btn">出售</button>
         </div>
     </div>
@@ -520,11 +392,10 @@
     <div id="conquest-tower-info" class="hidden">
         <div class="info-header">
             <span class="info-char"></span>
-            <span class="info-level"></span>
+            <span class="info-desc"></span>
         </div>
         <div class="info-stats"></div>
         <div class="info-actions">
-            <button class="upgrade-btn">升级</button>
             <button class="sell-btn">出售</button>
         </div>
     </div>

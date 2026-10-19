@@ -2,9 +2,10 @@ class Game {
   constructor() {
     this.canvas = document.getElementById("game-canvas");
     this.ctx = this.canvas.getContext("2d");
-    // 画布尺寸必须与网格匹配：20列 x 48px = 960px，9行 x 48px = 432px
-    this.canvas.width = 960;
-    this.canvas.height = 432;
+    // 画布 = 视口（960×432，6 行 × 72px）；世界比视口宽，由镜头横向滚动查看
+    this.canvas.width = CONFIG.VIEW_W;
+    this.canvas.height = CONFIG.VIEW_H;
+    this.worldW = CONFIG.GRID_COLS * CONFIG.CELL_SIZE;
 
     this.inkRenderer = new InkRenderer(this.ctx);
 
@@ -20,15 +21,8 @@ class Game {
     this.core = null;
     this.placementGrid = [];
 
-    this.wave = 0;
-    this.maxWave = 3;
-    this.waveInProgress = false;
-    this.spawnQueue = [];
-    this.spawnTimer = null;
-    this.spawnTimerId = null;
-
-    this.MAX_SPAWN_COUNT = 500;
-    this.spawnedCount = 0;
+    // 连续刷怪 + 限时坚守（工单 04）：状态字段由 resetBattleState 统一初始化
+    this.resetBattleState(null);
 
     this.gameEnded = false;
     this.victory = false;
@@ -41,6 +35,7 @@ class Game {
     this._loadCompletedLevels();
 
     this.ui = new UI(this);
+    this._setupCamera();
 
     this.lastTime = 0;
     this.animationId = null;
@@ -50,11 +45,6 @@ class Game {
     this.runtimeIndexes = new RuntimeIndexes(this);
     this.staticLayer = new StaticCanvasLayer(this);
     this.debugStats = new DebugStatsOverlay(this);
-
-    this.freeUpgrades = 0;
-    this.rareItems = [];
-
-    this._waveCompleteChecking = false;
 
     this.gameStarted = false;
 
@@ -85,6 +75,30 @@ class Game {
       }
     });
   
+  }
+
+  // 镜头：画布挂上 canvas.camera，所有坐标换算（utils.js）据此加上镜头偏移
+  _setupCamera() {
+    const ui = this.ui;
+    this.camera = new Camera({
+      canvas: this.canvas,
+      worldW: this.worldW,
+      viewW: CONFIG.VIEW_W,
+      viewH: CONFIG.VIEW_H,
+      hitTower: (cx, cy, isTouch) => !!ui.pickTowerNear(cx, cy, {
+        tolerance: isTouch ? (window.DeviceProfile && window.DeviceProfile.tapTolerance) : undefined,
+      }),
+      // 信息面板是 DOM 浮层，不随镜头移动：镜头一滚就收起
+      onScroll: () => { if (ui.selectedTower) ui.clearTowerSelection(); },
+      getDragPoint: () => {
+        if (ui.placementDrag && ui.placementDrag.active) return ui.placementDrag;
+        if (ui.isDragging && ui.draggingTower && ui.dragCurrentPos) {
+          return { clientX: ui.dragCurrentPos.x, clientY: ui.dragCurrentPos.y };
+        }
+        return null;
+      },
+    });
+    this.camera.bindInput();
   }
 
   _initErrorReporting() {
@@ -185,7 +199,11 @@ class Game {
     try {
       const saved = localStorage.getItem('moshou_completed_levels');
       if (saved) {
-        this.completedLevels = JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // 丢弃已不存在的关卡 ID（旧存档兼容，不改写存档）
+        this.completedLevels = Array.isArray(parsed)
+          ? parsed.filter((id) => typeof levelManager === 'undefined' || levelManager.get(id))
+          : [];
       }
     } catch (e) {
       console.warn('无法加载已完成的关卡:', e);
@@ -220,8 +238,7 @@ class Game {
     this.ink = level.startInk;
     this.coreHp = level.coreHp;
     this.maxCoreHp = level.coreHp;
-    this.wave = 0;
-    this.maxWave = level.waves.length;
+    this.resetBattleState(level);
     this.towers = [];
     this.enemies = [];
     this.gameEnded = false;
@@ -243,6 +260,8 @@ class Game {
     this.runtimeIndexes.rebuildTowers();
     this.runtimeIndexes.rebuildEnemies();
     this.staticLayer.invalidate();
+    // 开局镜头对准入口（左端）
+    if (this.camera) this.camera.jumpTo(0);
 
     this.ui.updateUnlocks(this.getUnlockedTowers());
     this.updateUI();

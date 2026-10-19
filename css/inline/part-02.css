@@ -504,21 +504,3 @@
             background: #b8ac91;
             border-color: #6a6459;
         }
-
-        /* 融合图鉴样式 */
-        #fusion-encyclopedia-container {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 30px 20px;
-            max-width: 900px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        #fusion-encyclopedia-container.hidden {
-            display: none;
-        }

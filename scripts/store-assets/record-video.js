@@ -1,4 +1,6 @@
-// 录制实机演示：用真实鼠标拖拽布塔、融合、开波次；CDP screencast 抓帧后用 ffmpeg 转 H.264 MP4
+// 【过时提示】本脚本按字形弹道重构（2026-10-19）之前的玩法编写（多塔种、融合、48px 网格、手动开波次），
+// 未随重构更新，当前不保证可运行；需要时请参照 docs/完成报告/2026-10-19-字形弹道玩法引入-总报告.md 的后续工作重写。
+// 录制实机演示：用真实鼠标拖拽布塔、开波次；CDP screencast 抓帧后用 ffmpeg 转 H.264 MP4
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
@@ -52,16 +54,6 @@ const DSF = 1920 / S.VIEW.width;
     await mouse.move(c.x, c.y, { steps: 26 }); await wait(500);
     await mouse.up(); await wait(450);
   }
-  async function dragFuse(from, to) {
-    const a = await cellPos(...from), c = await cellPos(...to);
-    await mouse.move(a.x, a.y, { steps: 10 }); await wait(250);
-    await mouse.down(); await wait(120);
-    await mouse.move(c.x, c.y, { steps: 22 }); await wait(400);
-    await mouse.up(); await wait(1800);                 // 合字弹窗停留
-    const btn = await page.locator('#modal-btn').boundingBox();
-    await mouse.move(btn.x + btn.width / 2, btn.y + btn.height / 2, { steps: 12 }); await wait(350);
-    await mouse.down(); await mouse.up(); await wait(900);
-  }
   async function startWave() {
     const r = await page.locator('#start-wave').boundingBox();
     await mouse.move(r.x + r.width / 2, r.y + r.height / 2, { steps: 14 }); await wait(250);
@@ -79,18 +71,16 @@ const DSF = 1920 / S.VIEW.width;
   await dragPlace('water', 10, 7);
   await waveDone(); await wait(800);
 
-  // 第二波前：再放一座火塔并融合为「炎」
+  // 第二波前：再放一座火塔
   await dragPlace('fire', 9, 2);
-  await dragFuse([9, 2], [8, 2]);
   await dragPlace('gold', 15, 6);
   await startWave();
   await wait(2500);
   await dragPlace('light', 12, 7);
   await waveDone(); await wait(800);
 
-  // 第三波：融合雷塔，继续推进
+  // 第三波：再放一座雷塔，继续推进
   await dragPlace('thunder', 12, 3);
-  await dragFuse([12, 3], [11, 3]);
   await startWave();
   await wait(14000);
 

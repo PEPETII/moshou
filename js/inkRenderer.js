@@ -326,7 +326,7 @@ class InkRenderer {
   /**
    * 绘制远山背景
    */
-  drawDistantMountains(yBase) {
+  drawDistantMountains(yBase, worldW) {
     this.ctx.save();
     
     const mountains = [
@@ -336,18 +336,24 @@ class InkRenderer {
       { x: 600, width: 200, height: 70, opacity: 0.1 },
     ];
     
-    mountains.forEach(m => {
-      this.ctx.fillStyle = `rgba(40, 40, 40, ${m.opacity})`;
-      this.ctx.beginPath();
-      this.ctx.moveTo(m.x, yBase);
-      this.ctx.quadraticCurveTo(
-        m.x + m.width / 2, 
-        yBase - m.height, 
-        m.x + m.width, 
-        yBase
-      );
-      this.ctx.fill();
-    });
+    // 世界比视口宽：山形每 800px 重复一轮，铺满整张地图
+    const period = 800;
+    const tiles = Math.max(1, Math.ceil((worldW || period) / period));
+    for (let t = 0; t < tiles; t++) {
+      const ox = t * period;
+      mountains.forEach(m => {
+        this.ctx.fillStyle = `rgba(40, 40, 40, ${m.opacity})`;
+        this.ctx.beginPath();
+        this.ctx.moveTo(ox + m.x, yBase);
+        this.ctx.quadraticCurveTo(
+          ox + m.x + m.width / 2,
+          yBase - m.height,
+          ox + m.x + m.width,
+          yBase
+        );
+        this.ctx.fill();
+      });
+    }
     
     this.ctx.restore();
   }

@@ -4,11 +4,15 @@ Enemy.prototype.die = function() {
     this.dead = true;
     this.deathTime = Date.now();
     this.game.ink += this.reward;
+    this.game.kills = (this.game.kills || 0) + 1;
     this.game.updateUI();
 
     // 击杀时播放墨散音效并生成粒子。
     if (window.InkAudio) window.InkAudio.play('death', { variant: window.InkAudio.deathVariantOf(this) });
-    this.game.particleSystem.createExplosion(this.x, this.y, 15);
+    // 字形招式击杀由 GlyphFX.kill 出墨点碎字；反馈关闭时仍用旧爆散，避免死得毫无表现
+    if (!(this.lastHitKind && typeof GlyphFX !== 'undefined' && GlyphFX.feedback)) {
+      this.game.particleSystem.createExplosion(this.x, this.y, 15);
+    }
 
     // 死亡爆炸
     if (this.explodeOnDeath) {
@@ -27,7 +31,7 @@ Enemy.prototype.die = function() {
       const summonCount = this.deathSummonCount || this.summonCount;
       if (summonType && this.game && typeof this.game.spawnEnemyAt === 'function') {
         for (let i = 0; i < summonCount; i++) {
-          this.game.spawnEnemyAt(summonType, this.pathIndex, this.x, this.y);
+          this.game.spawnEnemyAt(summonType, this.s, this.x, this.y);
         }
       }
     }
@@ -43,7 +47,7 @@ Enemy.prototype.summonEnemies = function() {
     if (!this.summonType || !this.game.spawnEnemyAt) return;
     
     for (let i = 0; i < this.summonCount; i++) {
-      this.game.spawnEnemyAt(this.summonType, this.pathIndex, this.x, this.y);
+      this.game.spawnEnemyAt(this.summonType, this.s, this.x, this.y);
     }
   
 };
@@ -77,6 +81,7 @@ Enemy.prototype.performRangedAttack = function() {
 };
 Enemy.prototype.reachCore = function() {
     this.dead = true;
+    this.game.leaks = (this.game.leaks || 0) + 1;
     this.game.coreHp -= this.damage;
     
     // 吸血效果 - 蚂蟥等怪物攻击核心时回复生命

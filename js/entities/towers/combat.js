@@ -44,10 +44,6 @@ Tower.prototype.attack = function(target, now) {
       this.pierceAttack(target);
     } else if (this.type === "earth") {
       this.aoeAttack(target);
-    } else if (this.type === "xinZhongYan") {
-      this.xinZhongYanAttack(target);
-    } else if (this.type === "ruFengSiZhen") {
-      this.chainAttack(target);
     } else if (this.type === "thunder") {
       this.thunderAttack(target);
     } else if (this.type === "ice") {
@@ -133,74 +129,6 @@ Tower.prototype.aoeAttack = function(target) {
         enemy.takeDamage(this.damage);
       }
     }
-  
-};
-Tower.prototype.xinZhongYanAttack = function(target) {
-    // 心中炎：发射心火弹
-    this.addProjectile({
-      x: this.x,
-      y: this.y,
-      target: target,
-      damage: this.damage,
-      burn: true,
-      burnDuration: this.burnDuration,
-      burnDamage: this.burnDamage,
-      speed: 5,
-      rotation: 0,
-      trail: [],
-      type: 'xinZhongYan',
-      char: '心'
-    });
-  
-};
-Tower.prototype.chainAttack = function(target) {
-    // 如风似真：风链弹射
-    const hitEnemies = new Set();
-    let currentTarget = target;
-    let chainIndex = 0;
-
-    const chainEffect = {
-      segments: [],
-      startTime: Date.now(),
-      lifespan: 500
-    };
-
-    while (currentTarget && chainIndex < this.chainCount) {
-      if (hitEnemies.has(currentTarget)) break;
-
-      hitEnemies.add(currentTarget);
-
-      // 记录链路段
-      chainEffect.segments.push({
-        from: chainIndex === 0 ? { x: this.x, y: this.y } : { x: currentTarget.x, y: currentTarget.y },
-        to: { x: currentTarget.x, y: currentTarget.y }
-      });
-
-      // 造成伤害
-      const damageMultiplier = 1 - (chainIndex * 0.15); // 每次弹射伤害递减
-      currentTarget.takeDamage(this.damage * damageMultiplier);
-
-      // 寻找下一个目标
-      let nextTarget = null;
-      let nextDist = Infinity;
-
-      const chainRangeSq = this.chainRange * this.chainRange;
-      for (const enemy of this.getAliveEnemies()) {
-        if (enemy.hp <= 0 || hitEnemies.has(enemy)) continue;
-        const dist = distanceSq(currentTarget.x, currentTarget.y, enemy.x, enemy.y);
-        if (dist <= chainRangeSq && dist < nextDist) {
-          nextTarget = enemy;
-          nextDist = dist;
-        }
-      }
-
-      currentTarget = nextTarget;
-      chainIndex++;
-    }
-
-    // 添加链路视觉效果
-    this.chainEffects = this.chainEffects || [];
-    this.chainEffects.push(chainEffect);
   
 };
 Tower.prototype.thunderAttack = function(target) {

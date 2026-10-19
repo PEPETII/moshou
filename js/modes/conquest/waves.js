@@ -1,4 +1,4 @@
-// ConquestGame：召唤、波次和胜负
+// ConquestGame：召唤、连续刷怪和胜负
 // 当前召唤费用：基础费用随已召唤数量递增，避免无限铺塔
 ConquestGame.prototype.getSummonCost = function() {
     return Math.round(this.summonCost * (1 + (this.summonCostGrowth || 0) * (this.summonedCount || 0)));
@@ -19,11 +19,11 @@ ConquestGame.prototype.summonTower = function() {
     if (!pos) {
       this.summonFlashTime = Date.now();
       this.summonFlashType = "fail";
-      this._notify("内圈已无空位，先融合腾出位置", "warning");
+      this._notify("内圈已无空位，先出售腾出位置", "warning");
       return;
     }
 
-    const towerTypes = ["fire", "water", "mountain", "wood", "gold", "earth", "xinZhongYan", "ruFengSiZhen"];
+    const towerTypes = CONFIG.ACTIVE_TOWERS;
     const type = towerTypes[Math.floor(Math.random() * towerTypes.length)];
 
     this.ink -= cost;
@@ -55,96 +55,53 @@ ConquestGame.prototype.getNextPlacementPosition = function() {
     return null;
   
 };
-ConquestGame.prototype.startWave = function() {
-    if (this.waveInProgress || this.gameEnded) return;
-    if (this.wave >= this.maxWave) return;
-
-    this.wave++;
-    this.waveInProgress = true;
-    if (window.InkAudio) window.InkAudio.play('wave');
-
-    // 标记已开始自动波次，禁用按钮
-    this._autoWaveStarted = true;
-
-    // 使用关卡配置中的波次配置
-    const waves = this.levelConfig.waves || [
-      { type: "corpse", count: 50 },
-      { type: "ghost", count: 50 },
-      { type: "armor", count: 50 },
-    ];
-
-    const config = waves[this.wave - 1];
-    this.spawnQueue = [];
-    for (let i = 0; i < config.count; i++) {
-      this.spawnQueue.push({ type: config.type, delay: config.delay || 800 });
-    }
-
-    this.spawnNextEnemy();
-    this.updateUI();
-  
+// ---- 连续刷怪与限时坚守（工单 04）：与塔防共用 BattleDirector ----
+// 征服的路径是环形回路：入口不延伸，s 到终点后归零继续绕圈
+ConquestGame.prototype.getPathTrack = function(path) {
+    return PathTrack.forPath(path, { loop: true });
 };
-ConquestGame.prototype.spawnNextEnemy = function() {
-    if (this.spawnQueue.length === 0) {
-      this.checkWaveComplete();
-      return;
-    }
-
-    const data = this.spawnQueue.shift();
-
-    const startPos = this.path[0];
-    const startPx = gridToPixel(startPos.x, startPos.y);
-    const minSpawnDistance = this.CELL_SIZE * 1.5;
-
-    const lastAliveEnemy = [...this.enemies].reverse().find((e) => !e.dead);
-    if (lastAliveEnemy) {
-      const dx = lastAliveEnemy.x - startPx.x;
-      const dy = lastAliveEnemy.y - startPx.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (dist < minSpawnDistance) {
-        this.spawnQueue.unshift(data);
-        this.spawnTimerId = setTimeout(() => this.spawnNextEnemy(), 300);
-        return;
-      }
-    }
-
-    const enemy = new ConquestEnemy(data.type, this.path, this);
+ConquestGame.prototype.aliveEnemyCount = function() {
+    let n = 0;
+    for (const e of this.enemies) if (!e.dead) n++;
+    return n;
+};
+ConquestGame.prototype.spawnGlyphEnemy = function(type) {
+    const enemy = new ConquestEnemy(type, this.path, this);
     this.enemies.push(enemy);
-
-    const aliveCount = this.enemies.filter((e) => !e.dead).length;
-    if (aliveCount >= this.maxAliveEnemies && !this.gameEnded) {
-      this.gameOver(false);
-      return;
-    }
-
-    if (this.spawnQueue.length > 0) {
-      const nextDelay = this.spawnQueue[0].delay;
-      this.spawnTimerId = setTimeout(() => this.spawnNextEnemy(), nextDelay);
-    } else {
-      this.checkWaveComplete();
-    }
-  
+    return enemy;
 };
-ConquestGame.prototype.checkWaveComplete = function() {
-    const aliveEnemies = this.enemies.filter((e) => !e.dead);
-    if (aliveEnemies.length === 0 && this.spawnQueue.length === 0) {
-      if (this.wave >= this.maxWave) {
-        this.waveInProgress = false;
-        this.updateUI();
-        this.gameOver(true);
-      } else {
-        // 重置波次进行状态，允许开始下一波
-        this.waveInProgress = false;
-        if (window.InkAudio) window.InkAudio.play('waveClear');
-        // 自动开始下一波（间隔5秒）
-        setTimeout(() => this.startWave(), 5000);
-      }
-    }
-  
+ConquestGame.prototype.resetBattleState = function(level) {
+    this.battleActive = false;
+    this.density = null;
+    this.spawnAcc = 0;
+    this.giantTimer = 0;
+    this.holdTotal = (level && level.holdSeconds) || CONFIG.HOLD_SECONDS;
+    this.holdLeft = this.holdTotal;
+    this.kills = 0;
+    this.leaks = 0;
+    // 字形弹道、特效与全局大招间隔
+    if (typeof GlyphSystem !== 'undefined') GlyphSystem.reset(this);
+};
+ConquestGame.prototype.updateSpawner = function(dt) {
+    BattleDirector.update(this, dt);
+};
+ConquestGame.prototype.beginBattle = function(densityKey) {
+    BattleDirector.begin(this, densityKey);
+    this.updateUI();
+    if (window.InkAudio) window.InkAudio.play('wave');
+};
+// 开局前弹出敌潮选择；暂停和继续不会再次弹出
+ConquestGame.prototype.promptDensity = function() {
+    this.battleActive = false;
+    DensityPicker.open(
+      (key) => this.beginBattle(key),
+      () => this.returnToLevelSelect()
+    );
 };
 ConquestGame.prototype.gameOver = function(victory) {
     this.gameEnded = true;
     this.victory = victory;
+    this.battleActive = false;
     // 胜负弹窗必须位于当前操作上下文之上，先关闭可能仍打开的炮塔信息面板。
     this.hideTowerInfo();
 
@@ -175,7 +132,7 @@ ConquestGame.prototype.showVictoryModalWithNextLevel = function(nextLevelId) {
 
     InkUI.setModalScene('victory');
     titleEl.textContent = "胜";
-    textEl.textContent = `关卡 ${this.currentLevelId} 完成! 所有波次已清除!`;
+    textEl.textContent = `关卡 ${this.currentLevelId} 完成! 坚守已成!`;
     btnEl.textContent = "下一关";
     btnEl.disabled = false;
     modal.classList.remove("hidden");
@@ -225,27 +182,15 @@ ConquestGame.prototype.showModal = function(title, text, buttonText, onClick) {
 };
 ConquestGame.prototype.updateUI = function() {
     document.getElementById("conquest-ink").textContent = this.ink;
-    document.getElementById("conquest-wave").textContent = `${this.wave}/${this.maxWave}`;
+    document.getElementById("conquest-hold").textContent = BattleDirector.formatHold(this.holdLeft);
 
-    const aliveCount = this.enemies.filter((e) => !e.dead).length;
-    document.getElementById("conquest-enemies").textContent = aliveCount;
+    const aliveCount = this.aliveEnemyCount();
+    document.getElementById("conquest-danger").textContent = `${aliveCount} / ${this.dangerLimit}`;
 
     const coreHpEl = document.getElementById("conquest-core-hp");
     if (coreHpEl) coreHpEl.textContent = this.coreHp;
 
     const summonBtn = document.getElementById("conquest-summon-btn");
     if (summonBtn) summonBtn.disabled = this.ink < this.getSummonCost() || this.gameEnded;
-
-    const waveBtn = document.getElementById("conquest-wave-btn");
-    if (waveBtn) {
-      waveBtn.disabled = this.waveInProgress || this.wave >= this.maxWave || this.gameEnded || this._autoWaveStarted;
-      if (this.wave >= this.maxWave) {
-        waveBtn.textContent = "通关";
-      } else if (this._autoWaveStarted) {
-        waveBtn.textContent = "进行中";
-      } else {
-        waveBtn.textContent = "开始波次";
-      }
-    }
   
 };

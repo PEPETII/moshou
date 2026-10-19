@@ -1,6 +1,6 @@
 /**
- * 帧率无关回归测试：加载真实配置与真实 Tower/Enemy。
- * 覆盖：A2 路径阻挡塔拆除时间；A4 阵光环 dot 伤害与击杀。
+ * 帧率无关回归测试（路程制敌人）：30 / 60 / 144 fps 下模拟 10 秒，结果误差 < 1%。
+ * 覆盖：匀速前进的路程 s；湿身减速下的 s；眩晕后恢复前进；灼烧叠层的总伤害。
  */
 const vm = require('vm');
 const fs = require('fs');
@@ -8,100 +8,84 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const vt = { t: 1e6 };
-const ctx = { console, Math, Set, Map, Array, Object, JSON, setTimeout, clearTimeout };
+const ctx = { console, Math, Set, Map, WeakMap, Array, Object, JSON, setTimeout, clearTimeout };
 ctx.Date = { now: () => vt.t };
 ctx.performance = { now: () => vt.t };
 ctx.window = ctx;
 ctx.globalThis = ctx;
-ctx.document = { getElementById: () => null, createElement: () => ({ getContext: () => ({}) }) };
 vm.createContext(ctx);
 
 const files = [
-  'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js',
-  'js/config/fusion.js', 'js/utils.js', 'js/runtime.js',
-  'js/tower.js', 'js/entities/towers/combat.js', 'js/entities/towers/effects.js',
-  'js/entities/towers/misc.js', 'js/entities/towers/projectiles.js',
-  'js/enemy.js', 'js/entities/enemy/combat.js', 'js/entities/enemy/lifecycle.js', 'js/entities/enemy/misc.js',
+  'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/glyph-battle.js',
+  'js/utils.js', 'js/core/path-track.js', 'js/enemy.js',
+  'js/entities/enemy/combat.js', 'js/entities/enemy/lifecycle.js', 'js/entities/enemy/misc.js', 'js/entities/enemy/motion.js',
 ];
 const src = files.map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n;\n')
-  + '\nglobalThis.__X = { Tower, Enemy, RuntimeIndexes, CONFIG };';
+  + '\nglobalThis.__X = { Enemy, CONFIG };';
 vm.runInContext(src, ctx);
-const { Tower, Enemy, RuntimeIndexes, CONFIG } = ctx.__X;
+const { Enemy, CONFIG } = ctx.__X;
 
-const pathPts = [];
-for (let x = 0; x < 20; x++) pathPts.push({ x, y: 5 });
-
-function makeGame() {
-  const game = { ink: 0, coreHp: 20, towers: [], enemies: [], updateUI() {}, particleSystem: { createExplosion() {} } };
-  game.runtimeIndexes = new RuntimeIndexes(game);
-  game.removeTower = (t) => {
-    game.towers.splice(game.towers.indexOf(t), 1);
-    game.runtimeIndexes.rebuildTowers();
-  };
-  return game;
-}
+// 足够长的直线路径（26 格），10 秒内不会走到终点
+const cells = [];
+for (let x = 0; x < 26; x++) cells.push({ x, y: 2 });
+const game = {
+  ink: 0, coreHp: 20, updateUI() {}, enemies: [], towers: [],
+  particleSystem: { createExplosion() {} },
+  runtimeIndexes: { aliveEnemies: [], getBlockingTowerAt: () => null },
+  triggerExplosion() {}, spawnSplitEnemy() {},
+};
 
 let failed = 0;
 function check(name, ok, detail) {
   if (!ok) failed++;
   console.log(`${ok ? '✓' : '✗'} ${name}${detail ? ' — ' + detail : ''}`);
 }
+const FPS = [30, 60, 144];
+const spread = (arr) => (Math.max(...arr) - Math.min(...arr)) / Math.max(1e-9, Math.abs(Math.min(...arr)));
 
-function breakTime(towerType, enemyType, fps) {
+function run(fps, seconds, setup) {
   vt.t = 1e6;
-  const g = makeGame();
-  const tw = new Tower(towerType, 5, 5, g);
-  g.towers.push(tw);
-  g.runtimeIndexes.rebuildTowers();
-  const e = new Enemy(enemyType, pathPts, g);
-  g.enemies.push(e);
-  e.pathIndex = 4; e.x = 4 * 48 + 34; e.y = 5 * 48 + 24;
+  const e = new Enemy('giant', cells, game);
+  e.lane = 0; e.s = 0; e.baseSpeed = e.speed = 1; e.syncPosition();
+  if (setup) setup(e);
   const dt = 1000 / fps;
-  let t = 0;
-  while (g.towers.length && t < 120000) { vt.t += dt; t += dt; e.update(vt.t, dt); }
-  return t;
+  const steps = Math.round(seconds * fps);
+  for (let i = 0; i < steps; i++) { vt.t += dt; e.update(vt.t, dt); }
+  return e;
 }
 
-function dotDamage(fps, seconds) {
-  vt.t = 1e6;
-  const g = makeGame();
-  const f = new Tower('formation', 5, 4, g);
-  g.towers.push(f);
-  const e = new Enemy('overlord', pathPts, g);
-  e.x = 5 * 48 + 24; e.y = 5 * 48 + 24; e.pathIndex = 5; e.baseSpeed = e.speed = 0;
-  g.enemies.push(e); g.runtimeIndexes.rebuildEnemies();
-  const dt = 1000 / fps;
-  for (let t = 0; t < seconds * 1000; t += dt) { vt.t += dt; f.update(vt.t, dt, g.runtimeIndexes.aliveEnemies); }
-  return e.maxHp - e.hp;
-}
-
-// A2
+// 匀速前进
 {
-  const times = [30, 60, 144].map((fps) => breakTime('wall', 'corpse', fps));
-  const spread = (Math.max(...times) - Math.min(...times)) / Math.min(...times);
-  const expected = CONFIG.TOWERS.wall.hp * CONFIG.GAMEPLAY.blockAttackInterval / CONFIG.ENEMIES.corpse.damage;
-  check('壁被 corpse 拆除时间与帧率无关(<5%)', spread < 0.05, `30/60/144fps = ${times.map(Math.round).join('/')}ms`);
-  check('拆除时间≈ hp×间隔/伤害', Math.abs(times[1] - expected) / expected < 0.05, `预期 ${expected}ms`);
+  const s = FPS.map((f) => run(f, 10).s);
+  check('匀速前进：10 秒后 s 误差 < 1%', spread(s) < 0.01, s.map((x) => x.toFixed(1)).join('/'));
+  check('匀速前进：s ≈ 速度×格长×秒', Math.abs(s[1] - 10 * CONFIG.CELL_SIZE) / (10 * CONFIG.CELL_SIZE) < 0.01, `s=${s[1]}`);
 }
 
-// A4
+// 湿身减速（持续 > 10 秒）
 {
-  const d = [30, 60, 144].map((fps) => dotDamage(fps, 10));
-  const spread = (Math.max(...d) - Math.min(...d)) / Math.min(...d);
-  check('阵光环 10 秒 dot 伤害与帧率无关(<5%)', spread < 0.05, `30/60/144fps = ${d.map((x) => x.toFixed(2)).join('/')}`);
-  check('阵光环伤害≈ auraValue×秒数', Math.abs(d[1] - CONFIG.TOWERS.formation.auraValue * 10) < 0.5, `期望 ${CONFIG.TOWERS.formation.auraValue * 10}`);
+  const s = FPS.map((f) => run(f, 10, (e) => e.makeWet(20)).s);
+  const expected = 10 * CONFIG.CELL_SIZE * (1 - CONFIG.GLYPH_STATUS.wetSlow);
+  check('湿身减速：10 秒后 s 误差 < 1%', spread(s) < 0.01, s.map((x) => x.toFixed(1)).join('/'));
+  check('湿身减速：s ≈ (1 − wetSlow) × 匀速', Math.abs(s[1] - expected) / expected < 0.01, `s=${s[1].toFixed(1)} 期望 ${expected.toFixed(1)}`);
+}
 
-  vt.t = 1e6;
-  const g = makeGame();
-  const f = new Tower('formation', 5, 4, g);
-  g.towers.push(f);
-  const e = new Enemy('corpse', pathPts, g);
-  e.x = 5 * 48 + 24; e.y = 5 * 48 + 24; e.pathIndex = 5; e.baseSpeed = e.speed = 0;
-  g.enemies.push(e); g.runtimeIndexes.rebuildEnemies();
-  for (let t = 0; t < 20000 && !e.dead; t += 16.67) {
-    vt.t += 16.67; f.update(vt.t, 16.67, g.runtimeIndexes.aliveEnemies); g.runtimeIndexes.rebuildEnemies();
-  }
-  check('阵光环 dot 致死走 die()：dead 且获得奖励', e.dead && g.ink === CONFIG.ENEMIES.corpse.reward, `dead=${e.dead} ink=${g.ink}`);
+// 眩晕 2 秒后继续前进
+{
+  const s = FPS.map((f) => run(f, 10, (e) => e.glyphStun(2)).s);
+  const expected = 8 * CONFIG.CELL_SIZE;
+  check('眩晕 2 秒：10 秒后 s 误差 < 1%', spread(s) < 0.01, s.map((x) => x.toFixed(1)).join('/'));
+  check('眩晕 2 秒：s ≈ 8 秒的路程', Math.abs(s[1] - expected) / expected < 0.01, `s=${s[1].toFixed(1)} 期望 ${expected.toFixed(1)}`);
+}
+
+// 灼烧叠层：封顶层数、持续 10 秒，总伤害 ≈ dps × 层数 × 秒
+{
+  const dmg = FPS.map((f) => {
+    const e = run(f, 10, (x) => { x.baseSpeed = x.speed = 0; x.hp = x.maxHp = 1e6; x.ignite(CONFIG.GLYPH_STATUS.burnMaxStacks + 3, 10); });
+    return e.maxHp - e.hp;
+  });
+  const expected = CONFIG.GLYPH_STATUS.burnDps * CONFIG.GLYPH_STATUS.burnMaxStacks * 10;
+  check('灼烧叠层：10 秒总伤害误差 < 3%（按 0.45 秒合并显示的粒度）', spread(dmg) < 0.03, dmg.map((x) => x.toFixed(1)).join('/'));
+  check('灼烧叠层：总伤害 ≈ dps×封顶层数×秒', Math.abs(dmg[1] - expected) / expected < 0.02, `dmg=${dmg[1].toFixed(1)} 期望 ${expected}`);
 }
 
 if (failed) {

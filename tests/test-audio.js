@@ -115,13 +115,12 @@ function advance(world, seconds) {
   // 1. 注册的音效、系别与体型映射
   {
     const { audio } = createWorld();
-    const expected = ['attack', 'death', 'place', 'fusion', 'wave', 'core',
-      'uiTap', 'upgrade', 'sell', 'deny', 'waveClear', 'victory', 'defeat'];
+    const expected = ['attack', 'death', 'place', 'wave', 'core',
+      'uiTap', 'sell', 'deny', 'waveClear', 'victory', 'defeat'];
     for (const name of expected) assert.ok(audio.cues[name], `缺少音效 ${name}`);
     assert.strictEqual(audio.familyOf({ type: 'fire' }), 'fire');
     assert.strictEqual(audio.familyOf({ type: 'ice' }), 'water');
     assert.strictEqual(audio.familyOf({ type: 'thunder' }), 'zap');
-    assert.strictEqual(audio.familyOf({ type: 'x+y', components: ['wood', 'fire'] }), 'wind');
     assert.strictEqual(audio.familyOf({ type: 'unknown' }), 'metal');
     assert.strictEqual(audio.deathVariantOf({ type: 'overlord', maxHp: 10 }), 'boss');
     assert.strictEqual(audio.deathVariantOf({ type: 'giant', maxHp: 80 }), 'large');
@@ -231,16 +230,16 @@ function advance(world, seconds) {
     const game = {
       currentLevelData: { theme: 4 },
       gameEnded: false,
-      waveInProgress: false,
-      wave: 1,
-      maxWave: 4,
+      battleActive: false,
+      holdTotal: 150,
+      holdLeft: 100,
       enemies: []
     };
     tower.sandbox.gameInstance = game;
     const prep = tower.audio.director.readState();
     assert.strictEqual(prep.scene, 'prep');
     assert.strictEqual(prep.theme, 4);
-    game.waveInProgress = true;
+    game.battleActive = true;
     game.enemies = Array.from({ length: 9 }, () => ({ dead: false }));
     const battle = tower.audio.director.readState();
     assert.strictEqual(battle.scene, 'battle');
@@ -253,7 +252,7 @@ function advance(world, seconds) {
       hidden: { 'main-menu': true, 'main-container': true, 'conquest-container': false }
     });
     conquest.sandbox.conquestGame = {
-      currentLevelId: '3-2', gameEnded: false, waveInProgress: true, wave: 2, maxWave: 5, enemies: []
+      currentLevelId: '3-2', gameEnded: false, battleActive: true, holdTotal: 150, holdLeft: 90, enemies: []
     };
     const state = conquest.audio.director.readState();
     assert.strictEqual(state.scene, 'battle');

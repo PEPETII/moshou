@@ -83,16 +83,17 @@ const cardPos = (page, t) => page.evaluate((t) => { const r = document.querySele
       await tapSel(page, '.theme-card'); await page.waitForTimeout(900);
       await shot(page, '3-levels'); await audit(page, '关卡列表', findings, dev);
       await tapSel(page, '#enter-level');
+      await tapSel(page, '#density-picker-ok', 600);   // 字形弹道：开局前的敌潮选择，默认「潮」
       await page.waitForFunction(() => { const g = window.gameInstance; return g && g.gameStarted && g.inkTrailAnimation && !g.inkTrailAnimation.active; }, null, { timeout: 30000 });
       await page.waitForTimeout(800);
       await shot(page, '4-battle'); const a = await audit(page, '战斗(开局)', findings, dev);
       const cv = await page.evaluate(() => { const r = document.getElementById('game-canvas').getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom].map(Math.round); });
-      console.log(`${dev.name} scale=${a.scale.toFixed(3)} canvas=${cv.join(',')} viewport=${a.iw}x${a.ih} 格子≈${((cv[2] - cv[0]) / 20).toFixed(1)}px`);
+      console.log(`${dev.name} scale=${a.scale.toFixed(3)} canvas=${cv.join(',')} viewport=${a.iw}x${a.ih} 格子≈${((cv[2] - cv[0]) / (960 / 72)).toFixed(1)}px`);
 
       // 触摸拖拽放置炮塔：火 → (5,3)、水 → (7,3)
       await page.evaluate(() => { window.gameInstance.ink = 900; window.gameInstance.updateUI(); });
       for (const [t, gx, gy] of [['fire', 5, 3], ['fire', 6, 3], ['water', 8, 3]]) {
-        await touchDrag(page, await cardPos(page, t), await cellPos(page, 'game-canvas', 20, gx, gy));
+        await touchDrag(page, await cardPos(page, t), await cellPos(page, 'game-canvas', 960 / 72, gx, gy));
         await page.waitForTimeout(300);
       }
       const placed = await page.evaluate(() => window.gameInstance.towers.length);
@@ -100,29 +101,23 @@ const cardPos = (page, t) => page.evaluate((t) => { const r = document.querySele
       await shot(page, '5-placed');
 
       // 点选炮塔看信息面板
-      const tp = await cellPos(page, 'game-canvas', 20, 8, 3);
+      const tp = await cellPos(page, 'game-canvas', 960 / 72, 8, 3);
       await page.touchscreen.tap(tp.x, tp.y); await page.waitForTimeout(500);
       await shot(page, '6-towerinfo'); await audit(page, '炮塔信息面板', findings, dev);
       await page.touchscreen.tap(tp.x, 5); await page.waitForTimeout(300);
 
-      // 触摸拖拽融合
-      await touchDrag(page, await cellPos(page, 'game-canvas', 20, 5, 3), await cellPos(page, 'game-canvas', 20, 6, 3));
+      // 触摸拖拽到另一座塔上：应被拒绝（不弹任何确认框，塔留在原位）
+      await touchDrag(page, await cellPos(page, 'game-canvas', 960 / 72, 5, 3), await cellPos(page, 'game-canvas', 960 / 72, 6, 3));
       await page.waitForTimeout(900);
       const modalOpen = await page.evaluate(() => !document.getElementById('modal').classList.contains('hidden'));
-      if (!modalOpen) findings.push(`[${dev.name}] 触摸拖拽融合未弹出合字弹窗`);
-      await shot(page, '7-fusion-modal'); await audit(page, '合字弹窗', findings, dev);
-      if (modalOpen) { await tapSel(page, '#modal-btn'); await page.waitForTimeout(800); }
+      if (modalOpen) findings.push(`[${dev.name}] 触摸拖塔叠放不应弹出弹窗`);
+      await shot(page, '7-drag-reject');
 
-      // 开波次
-      await tapSel(page, '#start-wave');
+      // 连续刷怪：开局后应有敌人在路上、坚守倒计时在走（旧的「开始波次」按钮已删除）
       await page.waitForTimeout(7000);
-      await shot(page, '8-wave'); await audit(page, '战斗(波次中)', findings, dev);
-      const wip = await page.evaluate(() => window.gameInstance.waveInProgress || window.gameInstance.wave > 0);
-      if (!wip) findings.push(`[${dev.name}] 点击开始波次无反应`);
-
-      // 合字谱面板
-      await tapSel(page, '#fusion-encyclopedia-btn'); await page.waitForTimeout(900);
-      await shot(page, '9-fusiondex'); await audit(page, '合字谱面板', findings, dev);
+      await shot(page, '8-wave'); await audit(page, '战斗(连续刷怪中)', findings, dev);
+      const active = await page.evaluate(() => { const g = window.gameInstance; return g.battleActive && g.enemies.length > 0 && g.holdLeft < g.holdTotal; });
+      if (!active) findings.push(`[${dev.name}] 开局后未见连续刷怪或坚守计时`);
     } catch (e) {
       findings.push(`[${dev.name}] 流程中断: ${e.message.split('\n')[0]}`);
       await shot(page, 'zz-error').catch(() => {});

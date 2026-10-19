@@ -1,5 +1,5 @@
 // 征服模式关卡数据
-// 征服模式 - 5个主题，每个主题5个关卡
+// 征服模式 - 实验阶段仅保留 1 个主题、2 个关卡（其余主题的生成参数保留在 generateLevel 内）
 
 // 主题配置
 const CONQUEST_THEMES = [
@@ -10,83 +10,8 @@ const CONQUEST_THEMES = [
     color: "#8B4513",
     desc: "初入墨境，以基础敌人磨练技艺",
     unlockRequirement: null
-  },
-  {
-    id: 2,
-    name: "疾风",
-    icon: "风",
-    color: "#2E8B57",
-    desc: "迅捷如风的敌人考验你的反应",
-    unlockRequirement: { themeId: 1, levelIndex: 4 }
-  },
-  {
-    id: 3,
-    name: "熔岩",
-    icon: "熔",
-    color: "#B22222",
-    desc: "面对高血量敌人的持久战",
-    unlockRequirement: { themeId: 2, levelIndex: 4 }
-  },
-  {
-    id: 4,
-    name: "寒冰",
-    icon: "冰",
-    color: "#4682B4",
-    desc: "混合敌群的复杂战场",
-    unlockRequirement: { themeId: 3, levelIndex: 4 }
-  },
-  {
-    id: 5,
-    name: "无尽",
-    icon: "无",
-    color: "#4B0082",
-    desc: "所有敌类型的终极挑战",
-    unlockRequirement: { themeId: 4, levelIndex: 4 }
   }
 ];
-
-// 生成波次配置的辅助函数
-function generateWaves(themeId, levelIndex, maxWave) {
-  const waves = [];
-  const difficultyMultiplier = (themeId - 1) * 5 + levelIndex + 1;
-  
-  // 主题对应的敌人类型
-  const enemyTypesByTheme = {
-    1: ['corpse', 'ghost', 'armor', 'split'],           // 试炼：基础敌人
-    2: ['swiftGhost', 'ghost', 'corpse', 'split'],      // 疾风：迅捷幽灵为主
-    3: ['giant', 'superGiant', 'armor', 'ironArmor'],   // 熔岩：高血量敌人
-    4: ['corpse', 'ghost', 'armor', 'split', 'giant', 'shadow'], // 寒冰：混合
-    5: ['corpse', 'ghost', 'armor', 'split', 'superGiant', 'overlord', 'giant', 'shadow', 'ironArmor', 'swiftGhost'] // 无尽：全部，末波为始终霸王
-  };
-  
-  const availableTypes = enemyTypesByTheme[themeId];
-  
-  for (let waveIndex = 0; waveIndex < maxWave; waveIndex++) {
-    const waveDifficulty = difficultyMultiplier + waveIndex * 2;
-    const delay = Math.max(800 - waveIndex * 100 - difficultyMultiplier * 10, 300);
-    
-    // 根据波次选择敌人类型
-    let typeIndex = Math.min(waveIndex, availableTypes.length - 1);
-    // 后期波次可能混合更强敌人类型
-    if (waveIndex >= 2 && themeId >= 3) {
-      typeIndex = Math.min(waveIndex + 1, availableTypes.length - 1);
-    }
-    const enemyType = availableTypes[typeIndex] || availableTypes[0];
-    // 数量随关卡难度、波次递增；高生命敌人按 sqrt(40/hp) 折算，避免单波总生命失控
-    const enemyHp = (CONFIG.ENEMIES[enemyType] && CONFIG.ENEMIES[enemyType].hp) || 10;
-    const tierFactor = Math.min(1, Math.sqrt(40 / enemyHp));
-    const rawCount = 20 + 1.4 * (difficultyMultiplier - 1) + 5 * waveIndex;
-    const enemyCount = Math.max(3, Math.min(50, Math.round(rawCount * tierFactor)));
-    
-    waves.push({
-      type: enemyType,
-      count: enemyCount,
-      delay: delay
-    });
-  }
-  
-  return waves;
-}
 
 // 生成单个关卡配置
 function generateLevel(themeId, levelIndex) {
@@ -108,19 +33,6 @@ function generateLevel(themeId, levelIndex) {
   const baseSummonCost = 50;
   const summonCost = baseSummonCost + (themeId - 1) * 10 + levelIndex * 5;
   
-  // 波次数配置
-  const maxWaveByTheme = {
-    1: 3,
-    2: 3,
-    3: 4,
-    4: 4,
-    5: 5
-  };
-  const maxWave = maxWaveByTheme[themeId];
-  
-  // 生成波次
-  const waves = generateWaves(themeId, levelIndex, maxWave);
-  
   return {
     id: levelId,
     theme: themeId,
@@ -128,17 +40,17 @@ function generateLevel(themeId, levelIndex) {
     startInk: startInk,
     summonCost: summonCost,
     summonCostGrowth: 0.04, // 每已召唤 1 座，下次召唤费用 +4%
-    maxWave: maxWave,
-    waves: waves,
-    maxAliveEnemies: 50
+    // 连续刷怪（工单 04）：不再有固定波次；坚守时长默认 CONFIG.HOLD_SECONDS，
+    // 失败线默认 CONFIG.CONQUEST_DANGER_LIMIT，需要时可在此用 holdSeconds / dangerLimit 覆盖
   };
 }
 
-// 生成所有25个关卡
+// 实验阶段（工单 02）：仅主题 1，共 2 关
+const CONQUEST_LEVELS_PER_THEME = 2;
 const CONQUEST_LEVELS_DATA = {};
 
-for (let themeId = 1; themeId <= 5; themeId++) {
-  for (let levelIndex = 0; levelIndex < 5; levelIndex++) {
+for (let themeId = 1; themeId <= CONQUEST_THEMES.length; themeId++) {
+  for (let levelIndex = 0; levelIndex < CONQUEST_LEVELS_PER_THEME; levelIndex++) {
     const level = generateLevel(themeId, levelIndex);
     CONQUEST_LEVELS_DATA[level.id] = level;
   }

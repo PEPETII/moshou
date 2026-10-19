@@ -114,7 +114,11 @@ Game.prototype._loadCompletedLevels = function() {
     try {
       const saved = localStorage.getItem('moshou_completed_levels');
       if (saved) {
-        this.completedLevels = JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // 丢弃已不存在的关卡 ID（旧存档兼容，不改写存档）
+        this.completedLevels = Array.isArray(parsed)
+          ? parsed.filter((id) => typeof levelManager === 'undefined' || levelManager.get(id))
+          : [];
       }
     } catch (e) {
       console.warn('无法加载已完成的关卡:', e);
@@ -152,8 +156,7 @@ Game.prototype.loadLevel = function(levelId) {
     this.ink = level.startInk;
     this.coreHp = level.coreHp;
     this.maxCoreHp = level.coreHp;
-    this.wave = 0;
-    this.maxWave = level.waves.length;
+    this.resetBattleState(level);
     this.towers = [];
     this.enemies = [];
     this.gameEnded = false;

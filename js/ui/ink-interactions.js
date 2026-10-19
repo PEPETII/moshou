@@ -1,4 +1,4 @@
-// 共用的题字反馈；动画只作用于 UI，不改变融合或胜负结算顺序。
+// 共用的题字反馈；动画只作用于 UI，不改变胜负结算顺序。
 (function() {
   const motionKey = 'moshou-ink-motion';
   const menu = document.querySelector('.menu-buttons');
@@ -28,21 +28,17 @@
     applyMotion();
   });
 
-  let feedbackTimer;
   window.InkUI = {
     motionReduced() {
       return document.documentElement.dataset.inkMotion === 'reduced' ||
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     },
-    setModalScene(scene, letters = {}) {
+    setModalScene(scene) {
       const modal = document.getElementById('modal');
       modal.dataset.scene = scene;
       if (window.InkAudio && (scene === 'victory' || scene === 'defeat')) window.InkAudio.play(scene);
-      document.getElementById('ritual-left').textContent = letters.left || '';
-      document.getElementById('ritual-right').textContent = letters.right || '';
-      document.getElementById('ritual-result').textContent = letters.result || '';
       document.getElementById('modal-seal').textContent =
-        scene === 'fusion' ? '合' : scene === 'victory' ? '成' : scene === 'defeat' ? '破' : '印';
+        scene === 'victory' ? '成' : scene === 'defeat' ? '破' : '印';
     },
     ensureReturnButton() {
       let button = document.getElementById('modal-return-btn');
@@ -60,16 +56,6 @@
         button.style.display = 'none';
         button.onclick = null;
       }
-    },
-    showFusionFeedback(char) {
-      const feedback = document.getElementById('fusion-ink-feedback');
-      clearTimeout(feedbackTimer);
-      feedback.querySelector('.fusion-feedback-word').textContent = char;
-      feedback.classList.remove('hidden');
-      feedback.classList.remove('play');
-      void feedback.offsetWidth;
-      feedback.classList.add('play');
-      feedbackTimer = setTimeout(() => feedback.classList.add('hidden'), 950);
     }
   };
 })();

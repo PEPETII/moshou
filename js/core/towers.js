@@ -1,7 +1,7 @@
-// Game：炮塔放置与融合
+// Game：炮塔放置
 Game.prototype.getUnlockedTowers = function() {
-    // 所有炮塔默认解锁
-    return Object.keys(CONFIG.TOWERS).filter(type => type !== 'fusion');
+    // 实验阶段：只开放 CONFIG.ACTIVE_TOWERS（火、水）；其余单字塔下架但配置保留
+    return CONFIG.ACTIVE_TOWERS.filter((type) => CONFIG.TOWERS[type]);
   
 };
 // 配置了 maxCount 的塔（财、医）达到数量上限后不可再放置
@@ -104,68 +104,5 @@ Game.prototype.sellTower = function(tower) {
     this.removeTower(tower);
     this.updateUI();
     if (window.InkAudio) window.InkAudio.play('sell');
-  
-};
-Game.prototype.getFusionType = function(type1, type2) {
-    return fusionSystem.getFusionType(type1, type2);
-  
-};
-Game.prototype.canFuse = function(tower1, tower2) {
-    const result = fusionSystem.canFuse(tower1.type, tower2.type, {
-      tower1,
-      tower2,
-      ink: this.ink,
-      path: this.path
-    });
-    return result.canFuse;
-  
-};
-Game.prototype.fuseTowers = function(tower1, tower2) {
-    try {
-      const result = fusionSystem.canFuse(tower1.type, tower2.type, {
-        tower1,
-        tower2,
-        ink: this.ink,
-        path: this.path
-      });
-      if (!result.canFuse) return false;
-
-      const fusionType = result.key;
-    const fusionConfig = result.recipe;
-    if (this.ink < fusionConfig.cost) return false;
-    this.ink -= fusionConfig.cost;
-    if (this.ink < 0) this.ink = 0;
-
-      let gx, gy;
-      if (fusionConfig.onPath) {
-        const anchorTower = tower1.onPath ? tower1 : (tower2.onPath ? tower2 : tower1);
-        gx = anchorTower.gx;
-        gy = anchorTower.gy;
-      } else {
-        gx = tower1.gx;
-        gy = tower1.gy;
-      }
-
-      this.removeTower(tower1);
-      this.removeTower(tower2);
-
-      const fusionTower = new FusionTower(fusionType, gx, gy, this);
-      this.towers.push(fusionTower);
-      this.runtimeIndexes.rebuildTowers();
-
-      const pos = gridToPixel(gx, gy);
-      this.particleSystem.createExplosion(pos.x, pos.y, 20, fusionConfig.color);
-
-      this.updateUI();
-      if (window.InkAudio) window.InkAudio.play('fusion');
-      return true;
-    } finally {
-      // 确保无论融合成功与否，缓存都会被清理
-      fusionSystem.clearCache();
-    }
-  
-};
-Game.prototype.getFusionPreview = function(tower1, tower2) {
-    return fusionSystem.getPreview(tower1.type, tower2.type, this.ink);
   
 };

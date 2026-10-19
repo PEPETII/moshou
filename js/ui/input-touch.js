@@ -1,6 +1,6 @@
 // UI：触摸输入（移动端主路径）
 //
-// Canvas 触摸只负责查看炮塔与拖动已有炮塔融合。
+// Canvas 触摸只负责查看炮塔与拖动已有炮塔（只显示预览，不可叠放，松手后弹回）。
 // 新炮塔放置由卡片 Pointer Events 处理，避免这里再出现第二套建造入口。
 (function initTouchInteraction() {
   'use strict';
@@ -106,8 +106,8 @@
       // 用鼠标的 5px 阈值会把"轻点"误判成"拖拽"，实测会导致放置直接失败
       if (dist > profile().slop) st.moved = true;
 
-      // 拖拽融合：只有真正移动了才进入拖拽态
-      if (st.moved && st.tower && !st.tower.isFusion) {
+      // 拖拽：只有真正移动了才进入拖拽态
+      if (st.moved && st.tower) {
         st.dragging = true;
         this.draggingTower = st.tower;
         this.dragStartPos = { x: st.origin.x, y: st.origin.y };
@@ -129,7 +129,7 @@
         return;
       }
 
-      // ① 拖拽融合：用抬起点的位置找目标塔（带容差）
+      // ① 拖拽：用抬起点的位置找目标塔（带容差）
       if (st.dragging) {
         const touch = e.changedTouches[0];
         if (touch) {
@@ -137,7 +137,7 @@
             exclude: st.tower,
             tolerance: 0.5
           });
-          if (target) this.attemptFusion(st.tower, target);
+          if (target) this.rejectTowerDrop();
         }
         this._resetDragState();
         clearPreviewSoon();
