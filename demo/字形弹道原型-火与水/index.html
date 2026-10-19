@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>字形弹道 · 火与水</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600&display=swap">
+<style>
+/* 版式：一卷宣纸——上为战场，下为「字 → 招」拆解与评估；整页只用宣纸一种底色 */
+:root {
+  --paper: #f2ecdf;
+  --paper-deep: #e8e0cf;
+  --ink: #1d1b18;
+  --ink-soft: #6b6458;
+  --rule: #d4c9b4;
+  --seal: #b4473a;
+  --fire: #c2412b;
+  --water: #2e5f80;
+  --font-brush: 'Ma Shan Zheng', 'KaiTi', 'STKaiti', serif;
+  --font-text: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--paper); color: var(--ink); }
+body {
+  font-family: var(--font-text);
+  font-size: 15px;
+  line-height: 1.75;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; display: grid; gap: 28px; }
+
+header { display: flex; align-items: center; gap: 14px; }
+.seal {
+  flex: none; width: 46px; height: 46px; border: 3px solid var(--seal); color: var(--seal);
+  font-family: var(--font-brush); font-size: 30px; line-height: 40px; text-align: center; transform: rotate(-4deg);
+}
+h1 { font-family: var(--font-brush); font-weight: 400; font-size: clamp(28px, 5vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.sub { margin: 2px 0 0; color: var(--ink-soft); font-size: 13px; letter-spacing: 0.08em; }
+
+.stage-box { display: grid; gap: 12px; }
+canvas#stage {
+  display: block; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; height: auto;
+  border: 1px solid var(--rule); box-shadow: 0 1px 0 var(--paper-deep), 0 10px 30px -18px rgba(60,45,30,0.45);
+  touch-action: manipulation; background: var(--paper);
+}
+.stats { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.stats b { font-family: var(--font-brush); font-weight: 400; font-size: 20px; color: var(--ink); margin-left: 4px; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.ctl { display: flex; align-items: center; gap: 8px; }
+.ctl > span { font-size: 12px; color: var(--ink-soft); letter-spacing: 0.1em; }
+.seg { display: inline-flex; border: 1px solid var(--ink); }
+.seg button, .btn {
+  font: inherit; font-size: 13px; padding: 4px 11px; background: transparent; color: var(--ink);
+  border: 0; cursor: pointer; line-height: 1.6;
+}
+.seg button + button { border-left: 1px solid var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.btn { border: 1px solid var(--ink); }
+.btn.primary { background: var(--seal); border-color: var(--seal); color: var(--paper); }
+button:focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
+.hint { margin: 0; font-size: 13px; color: var(--ink-soft); }
+.hint kbd { font-family: inherit; border: 1px solid var(--rule); padding: 0 5px; background: var(--paper-deep); }
+
+h2 { font-family: var(--font-brush); font-weight: 400; font-size: 28px; margin: 0 0 4px; }
+.lede { margin: 0; color: var(--ink-soft); max-width: 62ch; }
+
+.glyphs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.glyph-card { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; align-items: start; padding-top: 16px; border-top: 2px solid var(--ink); }
+.glyph-card canvas { width: 150px; height: 150px; background: #f7f2e7; border: 1px solid var(--rule); }
+.glyph-card h3 { margin: 0 0 6px; font-family: var(--font-brush); font-weight: 400; font-size: 24px; }
+.glyph-card.fire h3 { color: var(--fire); }
+.glyph-card.water h3 { color: var(--water); }
+dl.moves { margin: 0; display: grid; gap: 10px; }
+dl.moves dt { font-weight: 600; font-size: 14px; }
+dl.moves dt .arrow { color: var(--ink-soft); font-weight: 400; margin: 0 4px; }
+dl.moves dd { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+.key-fire { color: var(--fire); }
+.key-water { color: var(--water); }
+
+.verdict { border-left: 4px solid var(--seal); padding: 4px 0 4px 16px; margin: 12px 0 0; max-width: 70ch; }
+.verdict p { margin: 0; }
+.cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; margin-top: 18px; }
+.cols h3 { margin: 0 0 6px; font-size: 14px; letter-spacing: 0.12em; color: var(--seal); font-weight: 600; }
+.cols ul { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; font-size: 13.5px; }
+footer { font-size: 12px; color: var(--ink-soft); border-top: 1px solid var(--rule); padding-top: 12px; }
+code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; background: var(--paper-deep); padding: 0 4px; }
+
+@media (max-width: 760px) {
+  .glyphs, .cols { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 420px) {
+  .glyph-card { grid-template-columns: 110px minmax(0, 1fr); }
+  .glyph-card canvas { width: 110px; height: 110px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="seal" aria-hidden="true">守</div>
+    <div>
+      <h1>字形弹道 · 火与水</h1>
+      <p class="sub">墨守成规 · 玩法原型 v2 · 字的笔画就是招式</p>
+    </div>
+  </header>
+
+  <section class="stage-box" aria-label="战场">
+    <canvas id="stage" aria-label="火塔与水塔抵御敌潮的实时演示"></canvas>
+    <div class="stats" aria-live="off">
+      <span>击杀<b id="stat-kills">0</b></span>
+      <span>最高连斩<b id="stat-best">0</b></span>
+      <span>场上敌人<b id="stat-field">0</b></span>
+      <span>漏过<b id="stat-leaks">0</b></span>
+    </div>
+    <div class="controls">
+      <div class="ctl"><span>表现</span>
+        <div class="seg" data-group="mode"><button type="button" id="mode-glyph" data-value="glyph" aria-pressed="true">字形弹道</button><button type="button" id="mode-plain" data-value="plain" aria-pressed="false">普通弹道</button></div>
+      </div>
+      <div class="ctl"><span>打击反馈</span>
+        <div class="seg" data-group="feedback"><button type="button" id="fb-on" data-value="on" aria-pressed="true">开</button><button type="button" id="fb-off" data-value="off" aria-pressed="false">关</button></div>
+      </div>
+      <div class="ctl"><span>敌潮</span>
+        <div class="seg" data-group="density"><button type="button" id="den-sparse" data-value="sparse" aria-pressed="false">稀</button><button type="button" id="den-normal" data-value="normal" aria-pressed="true">常</button><button type="button" id="den-flood" data-value="flood" aria-pressed="false">潮</button></div>
+      </div>
+      <div class="ctl"><span>速度</span>
+        <div class="seg" data-group="speed"><button type="button" id="spd-1" data-value="1" aria-pressed="true">1×</button><button type="button" id="spd-2" data-value="2" aria-pressed="false">2×</button></div>
+      </div>
+      <div class="ctl"><span>大招</span>
+        <div class="seg" data-group="cast"><button type="button" id="cast-manual" data-value="manual" aria-pressed="true">手动</button><button type="button" id="cast-auto" data-value="auto" aria-pressed="false">自动</button></div>
+      </div>
+      <div class="ctl"><span>出场</span>
+        <div class="seg" data-group="roster"><button type="button" id="ros-both" data-value="both" aria-pressed="true">火 + 水</button><button type="button" id="ros-fire" data-value="fire" aria-pressed="false">火</button><button type="button" id="ros-water" data-value="water" aria-pressed="false">水</button></div>
+      </div>
+      <div class="ctl">
+        <button type="button" class="btn" id="btn-pause" aria-pressed="false">暂停</button>
+        <button type="button" class="btn primary" id="btn-reset">重来</button>
+      </div>
+    </div>
+    <p class="hint">塔外的墨圈是蓄力，写满一圈后点塔放大招。键盘：<kbd>Q</kbd> 焚，<kbd>W</kbd> 潮，<kbd>空格</kbd> 暂停。</p>
+  </section>
+
+  <section aria-labelledby="h-moves">
+    <h2 id="h-moves">字 → 招</h2>
+    <p class="lede">彩色笔画是普攻，墨色笔画参与大招。用掉的笔画会从塔身消失，再按笔顺写回来，写回的过程就是冷却。</p>
+    <div class="glyphs" style="margin-top:16px">
+      <article class="glyph-card fire">
+        <canvas data-glyph="fire" aria-label="火字笔顺拆解"></canvas>
+        <div>
+          <h3>火</h3>
+          <dl class="moves">
+            <dt><span class="key-fire">左点 · 右点</span><span class="arrow">→</span>火星</dt>
+            <dd>两点轮流脱离塔身，带着火尾追踪敌人，每次命中叠一层灼烧。点一离开就立刻补写。</dd>
+            <dt>整字<span class="arrow">→</span>焚</dt>
+            <dd>整个火字被掷出，越飞越大，砸进敌群最密处炸开，地上留下一个烧三秒的火字。塔身随后一笔一笔重写。</dd>
+          </dl>
+        </div>
+      </article>
+      <article class="glyph-card water">
+        <canvas data-glyph="water" aria-label="水字笔顺拆解"></canvas>
+        <div>
+          <h3>水</h3>
+          <dl class="moves">
+            <dt><span class="key-water">竖钩</span><span class="arrow">→</span>水箭</dt>
+            <dd>竖被拉长成一道水柱，贯穿整排敌人，打湿并推退它们；钩在末端甩成水花。</dd>
+            <dt>横撇 · 撇 · 捺<span class="arrow">→</span>潮</dt>
+            <dd>三笔离开塔身化作浪头，沿路倒卷，把卷进来的敌人一路推回去，浪尽时砸下并眩晕。浪在外面时，塔身只剩一竖。</dd>
+          </dl>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-verdict">
+    <h2 id="h-verdict">这个概念怎么样</h2>
+    <div class="verdict">
+      <p>值得做，而且适合作为《墨守成规》的招牌。它最强的地方是玩家不用读说明就知道每座塔在干什么：塔身既是技能图标，也是冷却条。爽感主要来自敌人规模、打击反馈和大招节奏，字形负责把这些放大。用上面「表现」和「打击反馈」两个开关，可以分别感受它们各自贡献了多少。</p>
+    </div>
+    <div class="cols">
+      <div>
+        <h3>优势</h3>
+        <ul>
+          <li>招式可读：看到飞出去的是那一点、那一竖，就知道是谁打的。</li>
+          <li>冷却可见：笔画缺了就是没准备好，不需要额外的进度条。</li>
+          <li>其他塔防做不出来，宣传素材天然好看。</li>
+        </ul>
+      </div>
+      <div>
+        <h3>风险</h3>
+        <ul>
+          <li>正式游戏格子只有 48px，塔身要 72px 以上笔画才看得清。需要放大塔身，或让核心塔占 2×2 格。</li>
+          <li>每个字的笔画要手绘调校，约半天一个字。</li>
+          <li>七八座塔同时开火会乱，普攻要克制，张扬的表现留给大招。</li>
+        </ul>
+      </div>
+      <div>
+        <h3>推广建议</h3>
+        <ul>
+          <li>只给 6～8 个单字核心塔做，统一规则：一笔做普攻，其余笔画做大招。</li>
+          <li>「心中炎」「如风似真」这类多字塔不逐笔拆，改成几个字依次出手的连招。</li>
+          <li>控场招要把敌人送进输出区。调参时发现：潮把敌人卷回火海很爽，卷到没塔的空地只会拖节奏，所以摆位本身也是玩法。</li>
+          <li>先用这两座塔跑 30 秒测试：关掉说明，旁人能否说出火和水各做了什么。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>原型位于 <code>prototypes/glyph-v2/</code>，不改动正式游戏代码。参数集中在 <code>js/data.js</code>。</footer>
+</div>
+<script src="js/data.js"></script>
+<script src="js/brush.js"></script>
+<script src="js/fx.js"></script>
+<script src="js/world.js"></script>
+<script src="js/towers.js"></script>
+<script src="js/fire.js"></script>
+<script src="js/water.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
