@@ -40,7 +40,7 @@
 - 放置炮塔
 - 移除炮塔
 - 出售炮塔
-- （融合炮塔：融合系统已于 2026-10-19 删除，此项不再适用）
+- 融合炮塔（`Fusion.perform`：移除两座素材塔后重建索引；征服模式同步 `_towerIndex`）
 - 阻挡塔被摧毁
 
 敌人缓存由主循环刷新；手动生成敌人或分裂敌人后也要立即刷新，避免 UI 或即时效果读取到旧数据。
@@ -49,13 +49,7 @@
 
 粒子系统使用固定数组池，`acquireParticle()` 只返回空闲粒子，不扩容。
 
-炮塔弹道通过 `ProjectilePool` 复用对象：
-
-- 创建弹道使用 `Tower.addProjectile(data)`。
-- 移除弹道使用 `Tower.releaseProjectile(index)`。
-- 弹道回收时会清空 `target` 和拖尾数组，避免旧状态污染下一次发射。
-
-新增炮塔类型时不要直接 `this.projectiles.push({ ... })`，否则会绕过对象池。
+字形塔的弹道与地面效果不走对象池：统一放在 `game.glyphShots`，由 `GlyphSystem.update` 按 `tower.type` 分派给各塔招式的 `updateShot`，`done` 置真后在同帧压缩移除。塔被出售或参与融合后，已发出的弹道照常收尾。新增字形塔时用 `GlyphSystem.push(game, shot)` 发弹道，不要自建列表。
 
 ## 调试开关
 
