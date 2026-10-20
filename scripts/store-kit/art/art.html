@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>store-kit art</title>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=block" rel="stylesheet">
+<style>html,body{margin:0;background:#888}canvas{display:block}</style>
+<!-- 游戏运行时配置与笔刷：塔字笔画、配色与实机完全同源 -->
+<script src="/js/config.js"></script>
+<script src="/js/config/domain-01.js"></script>
+<script src="/js/config/domain-02.js"></script>
+<script src="/js/config/domain-03.js"></script>
+<script src="/js/config/enemies-single.js"></script>
+<script src="/js/config/enemies-multi.js"></script>
+<script src="/js/config/enemies-boss.js"></script>
+<script src="/js/config/glyph-battle.js"></script>
+<script src="/js/config/control-rules.js"></script>
+<script src="/js/config/boss-battle.js"></script>
+<script src="/js/config/glyphs.js"></script>
+<script src="/js/config/glyphs-ext.js"></script>
+<script src="/js/config/glyphs-fusion.js"></script>
+<script src="/js/glyph/brush.js"></script>
+<script src="inkkit.js"></script>
+<script src="tableau.js"></script>
+<script src="layouts.js"></script>
+<script src="extras.js"></script>
+</head><body>
+<script>
+// 用法：art.html?scene=promo —— 渲染完成后 window.ART = { dataUrl }，标题置为 ready
+(async () => {
+  const q = new URLSearchParams(location.search), name = q.get('scene') || 'promo';
+  await document.fonts.load('100px "Ma Shan Zheng"', '墨守成规百鬼夜行');
+  await document.fonts.load('100px "ZCOOL XiaoWei"', '墨');
+  await document.fonts.ready;
+  const L = LAYOUTS[name];
+  const cv = document.createElement('canvas'); cv.width = L.w; cv.height = L.h;
+  document.body.appendChild(cv);
+  const ctx = cv.getContext('2d');
+  // 逐帧场景：由外部按时间 t（秒）逐帧调用
+  if (L.animated) {
+    window.renderFrame = (t) => { ctx.clearRect(0, 0, L.w, L.h); L.render(ctx, L.w, L.h, L, t); return cv.toDataURL('image/jpeg', 0.94); };
+    window.ART = { animated: true, duration: L.duration, w: L.w, h: L.h };
+    document.title = 'ready';
+    return;
+  }
+  if (L.render) L.render(ctx, L.w, L.h, L); else Tableau.draw(ctx, L.w, L.h, L);
+  const fmt = q.get('fmt') || L.fmt || 'png';
+  window.ART = { dataUrl: cv.toDataURL(fmt === 'jpg' ? 'image/jpeg' : 'image/png', 0.93), w: cv.width, h: cv.height };
+  document.title = 'ready';
+})().catch((e) => { document.title = 'error: ' + e.message; console.error(e); });
+</script>
+</body></html>
