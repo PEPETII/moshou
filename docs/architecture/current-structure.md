@@ -26,7 +26,7 @@
 | `js/config/` | 炮塔/敌人/视觉/玩法配置，字形弹道集中配置与笔画数据 |
 | `js/glyph/` | 字形弹道：笔刷、特效与打击反馈、火/水/土/木招式、调度 |
 | `js/core/` | Game 的塔操作、波次、场景流程、绘制和运行控制 |
-| `js/entities/towers/` | Tower 的攻击、效果、投射物、绘制 |
+| `js/entities/towers/` | Tower 的重置、出售、更新入口与受击震动（攻击、投射物与旧塔体绘制已于 2026-10-20 随 32 座下架塔删除） |
 | `js/entities/enemy/` | Enemy 的状态、死亡、召唤和绘制 |
 | `js/data/levels/` | 普通模式关卡数据注册 |
 | `js/modes/conquest/` | 征服模式刷怪、流程和绘制 |

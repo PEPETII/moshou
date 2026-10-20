@@ -7,7 +7,7 @@
 - **纯静态前端**：这是一个基于 HTML5 Canvas + JavaScript 的纯前端项目。**严禁引入任何构建工具（如 Webpack/Vite）或 TypeScript**，除非用户明确要求。
 - **水墨风格塔防**：游戏采用中国水墨风格（浓墨、淡墨、朱砂红），通过代码实现墨晕、拖影等特效。
 - **单文件入口**：游戏唯一入口是 [index.html](index.html) (Canvas 视口固定为 960x432；地图比视口宽，靠镜头横向滚动：每格 72px，塔防 26 列 × 6 行，征服 22 列 × 6 行)。
-- **当前玩法：字形弹道（2026-10-19 起）**：启用「火」「水」「土」「木」四座塔，表现为笔画写出的字形弹道；敌人只有尸、鬼、巨，连续刷怪（开局前选敌潮「稀/常/潮」，默认「潮」），限时坚守 `HOLD_SECONDS` 秒获胜；塔防、征服各 2 关；已删除融合系统与升级系统；大招只自动释放。其余单字塔已下架（配置与代码保留，但不出现在关卡、商店、征服召唤池和图鉴里，也未维护，随时可能失效）。
+- **当前玩法：字形弹道（2026-10-19 起）**：启用「火」「水」「土」「木」四座塔，表现为笔画写出的字形弹道；敌人只有尸、鬼、巨，连续刷怪（开局前选敌潮「稀/常/潮」，默认「潮」），限时坚守 `HOLD_SECONDS` 秒获胜；塔防、征服各 2 关；已删除融合系统与升级系统；大招只自动释放。其余 32 座单字塔已于 2026-10-20 连同旧攻击链（`combat.js` / `projectiles.js` / `rendering-advanced.js`）一并删除，只留档在 [已删除的下架炮塔存档](docs/legacy-towers.md)，需要时从 git 历史取回）。
 - **现行实现优先**：带日期的工单、测试报告和设计提案描述的是当时状态，不自动代表当前功能或当前缺陷；先核对代码与现行架构文档。
 
 ## 强制规则（必须遵守）
@@ -88,7 +88,7 @@ npm run test:balance
 - **全局配置**：[js/config.js](js/config.js)、[js/config/domain-01.js](js/config/domain-01.js)、[js/config/domain-02.js](js/config/domain-02.js)、[js/config/domain-03.js](js/config/domain-03.js)、[js/config/glyph-battle.js](js/config/glyph-battle.js)（连续刷怪、敌潮三档、坚守、打击反馈等字形弹道集中配置）和 [js/config/glyphs.js](js/config/glyphs.js)（火、水、土、木笔画数据与招式参数）共同建立运行时 `CONFIG`，包含炮塔、敌人、颜色等配置。游戏数值应集中在配置中，禁止在散落的模块中写死常量。
 - **主控制器**：[js/game.js](js/game.js) 及 js/core/。管理游戏主循环、状态机以及所有实体列表。
 - **核心实体**：
-  - 炮塔：[js/tower.js](js/tower.js) 及 js/entities/towers/。处理塔的攻击、出售等（无升级）；`Tower` 的方法统一定义在 js/entities/towers/misc.js。
+  - 炮塔：[js/tower.js](js/tower.js) 及 js/entities/towers/（`misc.js` 重置/更新/出售、`effects.js` 受击、`rendering-basic.js` 绘制入口）。塔的攻击由 `js/glyph/` 的字形组件接管（无升级）；`Tower` 的方法统一定义在 js/entities/towers/misc.js。
   - 敌人：[js/enemy.js](js/enemy.js) 及 js/entities/enemy/。处理移动、寻路、扣血和死亡分裂。
 - **系统模块**：
   - **字形弹道**：`js/glyph/`（brush 笔刷、fx 特效与打击反馈、adapter 接入正式 `Tower`/`Enemy`、glyph-tower 通用笔画消耗/蓄力、fire/water/earth/wood 招式、system 调度）。
