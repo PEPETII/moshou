@@ -7,7 +7,7 @@
 - **纯静态前端**：这是一个基于 HTML5 Canvas + JavaScript 的纯前端项目。**严禁引入任何构建工具（如 Webpack/Vite）或 TypeScript**，除非用户明确要求。
 - **水墨风格塔防**：游戏采用中国水墨风格（浓墨、淡墨、朱砂红），通过代码实现墨晕、拖影等特效。
 - **单文件入口**：游戏唯一入口是 [index.html](index.html) (Canvas 视口固定为 960x432；地图比视口宽，靠镜头横向滚动：每格 72px，塔防 26 列 × 6 行，征服 22 列 × 6 行)。
-- **当前玩法：字形弹道（2026-10-19 起）**：只启用「火」「水」两座塔，表现为笔画写出的字形弹道；敌人只有尸、鬼、巨，连续刷怪（开局前选敌潮「稀/常/潮」，默认「潮」），限时坚守 `HOLD_SECONDS` 秒获胜；塔防、征服各 2 关；已删除融合系统与升级系统；大招只自动释放。其余单字塔已下架（配置与代码保留，但不出现在关卡、商店、征服召唤池和图鉴里，也未维护，随时可能失效）。
+- **当前玩法：字形弹道（2026-10-19 起）**：启用「火」「水」「土」「木」四座塔，表现为笔画写出的字形弹道；敌人只有尸、鬼、巨，连续刷怪（开局前选敌潮「稀/常/潮」，默认「潮」），限时坚守 `HOLD_SECONDS` 秒获胜；塔防、征服各 2 关；已删除融合系统与升级系统；大招只自动释放。其余单字塔已下架（配置与代码保留，但不出现在关卡、商店、征服召唤池和图鉴里，也未维护，随时可能失效）。
 - **现行实现优先**：带日期的工单、测试报告和设计提案描述的是当时状态，不自动代表当前功能或当前缺陷；先核对代码与现行架构文档。
 
 ## 强制规则（必须遵守）
@@ -77,7 +77,7 @@ npm run test:balance
 ```
 涉及平衡性调整时，数值与行为以实际加载的配置和代码为准。若任务要求同步维护数值文档，使用 [全塔全敌数值平衡规格](docs/full-balance-spec.md) 时须先核对其历史基线数据，不得把其中的旧测试结论当作当前结果。
 
-`test:balance` 现为「实验护栏」，只断言结构（火水配置齐全、三档密度单调、集中常量存在），不再断言平衡数值（决策 D12：本阶段不做数值平衡）。
+`test:balance` 现为「实验护栏」，只断言结构（火、水、土、木配置齐全、三档密度单调、集中常量存在），不再断言平衡数值（决策 D12：本阶段不做数值平衡）。
 
 统一测试命令：`npm test`（含 `check:line-count`）、`npm run test:balance`、`test:damage`、`test:frame`、`test:pool`、`test:levels`、`test:camera`、`test:path`、`test:glyph` 等，完整清单见 `package.json`。
 
@@ -85,13 +85,13 @@ npm run test:balance
 
 在修改代码前，请先查阅真实实现，文档可能滞后。数值与行为始终以**代码为准**。
 
-- **全局配置**：[js/config.js](js/config.js)、[js/config/domain-01.js](js/config/domain-01.js)、[js/config/domain-02.js](js/config/domain-02.js)、[js/config/domain-03.js](js/config/domain-03.js)、[js/config/glyph-battle.js](js/config/glyph-battle.js)（连续刷怪、敌潮三档、坚守、打击反馈等字形弹道集中配置）和 [js/config/glyphs.js](js/config/glyphs.js)（火、水笔画数据）共同建立运行时 `CONFIG`，包含炮塔、敌人、颜色等配置。游戏数值应集中在配置中，禁止在散落的模块中写死常量。
+- **全局配置**：[js/config.js](js/config.js)、[js/config/domain-01.js](js/config/domain-01.js)、[js/config/domain-02.js](js/config/domain-02.js)、[js/config/domain-03.js](js/config/domain-03.js)、[js/config/glyph-battle.js](js/config/glyph-battle.js)（连续刷怪、敌潮三档、坚守、打击反馈等字形弹道集中配置）和 [js/config/glyphs.js](js/config/glyphs.js)（火、水、土、木笔画数据与招式参数）共同建立运行时 `CONFIG`，包含炮塔、敌人、颜色等配置。游戏数值应集中在配置中，禁止在散落的模块中写死常量。
 - **主控制器**：[js/game.js](js/game.js) 及 js/core/。管理游戏主循环、状态机以及所有实体列表。
 - **核心实体**：
   - 炮塔：[js/tower.js](js/tower.js) 及 js/entities/towers/。处理塔的攻击、出售等（无升级）；`Tower` 的方法统一定义在 js/entities/towers/misc.js。
   - 敌人：[js/enemy.js](js/enemy.js) 及 js/entities/enemy/。处理移动、寻路、扣血和死亡分裂。
 - **系统模块**：
-  - **字形弹道**：`js/glyph/`（brush 笔刷、fx 特效与打击反馈、adapter 接入正式 `Tower`/`Enemy`、glyph-tower 通用笔画消耗/蓄力、fire/water 招式、system 调度）。
+  - **字形弹道**：`js/glyph/`（brush 笔刷、fx 特效与打击反馈、adapter 接入正式 `Tower`/`Enemy`、glyph-tower 通用笔画消耗/蓄力、fire/water/earth/wood 招式、system 调度）。
   - **路程与刷怪**：[js/core/path-track.js](js/core/path-track.js)（敌人沿里程 `s` 移动）、[js/core/spawner.js](js/core/spawner.js)（连续刷怪、敌潮、坚守计时）。
   - **镜头**：[js/core/camera.js](js/core/camera.js)（横向滚动、屏幕/世界坐标换算；滚轮、键盘、拖拽、边缘滚动）。
   - **关卡系统**：[js/levelManager.js](js/levelManager.js) 和 js/data/levels/。
