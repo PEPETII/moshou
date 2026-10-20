@@ -10,6 +10,6 @@ class Tower {
   
   }
 
-  // reset / getSellValue / update / updateShake / triggerShake / findTarget
+  // reset / getSellValue / update / updateShake / triggerShake
   // 统一定义在 js/entities/towers/misc.js（Tower.prototype），本文件只保留构造器，避免两处重复
 }

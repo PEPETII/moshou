@@ -50,12 +50,7 @@ Game.prototype.update = function(now) {
 
     for (const tower of this.towers) {
       tower.update(now, deltaTime, this.runtimeIndexes.aliveEnemies);
-      tower.updateProjectiles(deltaTime);
     }
-
-    this.updateAuras();
-    this.updateGlobalSlow();
-    this.updateSpecialTowers();
 
     for (const enemy of this.enemies) {
       enemy.update(now, deltaTime);

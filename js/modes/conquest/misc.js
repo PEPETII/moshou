@@ -302,8 +302,6 @@ ConquestGame.prototype.showTowerInfo = function(tower, x, y) {
     if (tower.cooldown) stats += `攻速: ${(tower.cooldown / 1000).toFixed(1)}秒<br>`;
     if (tower.slow) stats += `减速: ${Math.round(tower.slow * 100)}%<br>`;
     if (tower.hp) stats += `生命: ${tower.hp}/${tower.maxHp}<br>`;
-    if (tower.burn) stats += `灼烧: 是<br>`;
-    if (tower.pierce) stats += `穿透: 是<br>`;
     info.querySelector(".info-stats").innerHTML = stats;
 
     const sellBtn = info.querySelector(".sell-btn");

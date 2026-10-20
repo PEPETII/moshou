@@ -20,8 +20,8 @@ const conquestSrc = read('js/conquestGame.js');
 const files = [
   'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/glyph-battle.js',
   'js/utils.js', 'js/runtime.js', 'js/core/path-track.js', 'js/core/spawner.js',
-  'js/tower.js', 'js/entities/towers/combat.js', 'js/entities/towers/effects.js',
-  'js/entities/towers/misc.js', 'js/entities/towers/projectiles.js',
+  'js/tower.js', 'js/entities/towers/effects.js',
+  'js/entities/towers/misc.js', 'js/entities/towers/rendering-basic.js',
   'js/enemy.js', 'js/entities/enemy/combat.js', 'js/entities/enemy/lifecycle.js', 'js/entities/enemy/misc.js', 'js/entities/enemy/motion.js',
 ];
 const src = files.map(read).join('\n;\n')

@@ -25,8 +25,8 @@ const files = [
   'js/utils.js', 'js/runtime.js', 'js/core/path-track.js', 'js/core/spawner.js',
   'js/glyph/brush.js', 'js/glyph/fx.js', 'js/glyph/adapter.js', 'js/glyph/glyph-tower.js',
   'js/glyph/fire.js', 'js/glyph/water.js', 'js/glyph/earth.js', 'js/glyph/wood.js', 'js/glyph/system.js',
-  'js/tower.js', 'js/entities/towers/combat.js', 'js/entities/towers/effects.js',
-  'js/entities/towers/misc.js', 'js/entities/towers/projectiles.js', 'js/entities/towers/rendering-basic.js',
+  'js/tower.js', 'js/entities/towers/effects.js',
+  'js/entities/towers/misc.js', 'js/entities/towers/rendering-basic.js',
   'js/enemy.js', 'js/entities/enemy/combat.js', 'js/entities/enemy/lifecycle.js', 'js/entities/enemy/misc.js', 'js/entities/enemy/motion.js',
 ];
 const src = files.map(read).join('\n;\n')
@@ -153,7 +153,10 @@ check('木已进入塔池与图鉴文案', CONFIG.ACTIVE_TOWERS.includes('wood')
   run(g, 1.5);
   check('空场 1.5 秒后整字写完', f1.gl.strokes.every((s) => s.prog >= 1));
   check('没有敌人时不蓄力', f1.gl.charge === 0.9);
-  check('旧塔（非字形）不挂 gl', mk(g, 'mountain', 1, 3).gl === null);
+  // 非字形配置不挂 gl（旧单字塔已于 2026-10-20 删除，这里注入一个测试桩类型）
+  CONFIG.TOWERS.__probe = { char: '测', cost: 0, size: 68 };
+  check('旧塔（非字形）不挂 gl', new Tower('__probe', 1, 3, g).gl === null);
+  delete CONFIG.TOWERS.__probe;
 }
 
 // ---------- 火：普攻、灼烧、两点轮流与写回 ----------

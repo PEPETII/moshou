@@ -152,35 +152,7 @@ class TowerPool extends ObjectPool {
   _cleanup(tower) {
     // 清理炮塔特定的引用
     tower.game = null;
-    tower.projectiles = [];
     tower.selected = false;
-  }
-}
-
-/**
- * 抛射物对象池
- */
-// 防止重复声明检查
-if (window.ProjectilePool) {
-  console.warn('ProjectilePool already defined, skipping redefinition');
-}
-
-class ProjectilePool extends ObjectPool {
-  constructor(initialSize = 50) {
-    super(
-      () => ({}),
-      (proj, props) => {
-        Object.assign(proj, props);
-        proj.active = true;
-      },
-      initialSize
-    );
-  }
-
-  _cleanup(proj) {
-    proj.target = null;
-    proj.trail = null;
-    proj.active = false;
   }
 }
 
@@ -191,7 +163,6 @@ class PoolManager {
   constructor() {
     this.enemyPool = new EnemyPool(30);
     this.towerPool = new TowerPool(20);
-    this.projectilePool = new ProjectilePool(50);
   }
 
   /**
@@ -223,26 +194,11 @@ class PoolManager {
   }
 
   /**
-   * 获取抛射物
-   */
-  acquireProjectile(props) {
-    return this.projectilePool.acquire(props);
-  }
-
-  /**
-   * 释放抛射物
-   */
-  releaseProjectile(proj) {
-    return this.projectilePool.release(proj);
-  }
-
-  /**
    * 释放所有对象（关卡切换时调用）
    */
   releaseAll() {
     this.enemyPool.releaseAll();
     this.towerPool.releaseAll();
-    this.projectilePool.releaseAll();
   }
 
   /**
@@ -251,8 +207,7 @@ class PoolManager {
   getStats() {
     return {
       enemy: this.enemyPool.getStats(),
-      tower: this.towerPool.getStats(),
-      projectile: this.projectilePool.getStats()
+      tower: this.towerPool.getStats()
     };
   }
 
@@ -262,7 +217,6 @@ class PoolManager {
   clear() {
     this.enemyPool.clear();
     this.towerPool.clear();
-    this.projectilePool.clear();
   }
 }
 

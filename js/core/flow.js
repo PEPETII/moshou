@@ -200,8 +200,5 @@ Game.prototype.returnToMenu = function() {
     if (this.particleSystem) {
       this.particleSystem.clear();
     }
-    if (this.projectilePool) {
-      this.projectilePool.clear();
-    }
   
 };

@@ -119,8 +119,9 @@ function advance(world, seconds) {
       'uiTap', 'sell', 'deny', 'waveClear', 'victory', 'defeat'];
     for (const name of expected) assert.ok(audio.cues[name], `缺少音效 ${name}`);
     assert.strictEqual(audio.familyOf({ type: 'fire' }), 'fire');
-    assert.strictEqual(audio.familyOf({ type: 'ice' }), 'water');
-    assert.strictEqual(audio.familyOf({ type: 'thunder' }), 'zap');
+    assert.strictEqual(audio.familyOf({ type: 'water' }), 'water');
+    assert.strictEqual(audio.familyOf({ type: 'earth' }), 'thud');
+    assert.strictEqual(audio.familyOf({ type: 'wood' }), 'wind');
     assert.strictEqual(audio.familyOf({ type: 'unknown' }), 'metal');
     assert.strictEqual(audio.deathVariantOf({ type: 'overlord', maxHp: 10 }), 'boss');
     assert.strictEqual(audio.deathVariantOf({ type: 'giant', maxHp: 80 }), 'large');

@@ -49,7 +49,6 @@ ConquestGame.prototype.update = function(now) {
 
     for (const tower of this.towers) {
       tower.update(now, deltaTime, this.enemies);
-      tower.updateProjectiles(deltaTime);
     }
 
     for (const enemy of this.enemies) {

@@ -4,13 +4,12 @@
   if (!audio) return;
 
   // 炮塔 → 攻击音色系别。未列出的塔取默认系别 metal。
+  // 2026-10-20：32 座下架塔的音色条目随配置删除，只留现役四塔。
   const FAMILY_BY_TOWER = {
-    fire: 'fire', detonator: 'fire',
-    water: 'water', ice: 'water', frost: 'water', moat: 'water',
-    wood: 'wind', wind: 'wind', poison: 'wind', parasite: 'wind', arrow: 'wind',
-    gold: 'metal', mirror: 'metal', bell: 'metal', wheel: 'metal', talisman: 'metal',
-    thunder: 'zap', light: 'zap', star: 'zap',
-    earth: 'thud', mountain: 'thud', dark: 'thud', shadow: 'thud', bunker: 'thud', wall: 'thud'
+    fire: 'fire',
+    water: 'water',
+    wood: 'wind',
+    earth: 'thud'
   };
   // 首领级敌人：击杀时播放钟鸣。
   const BOSS_ENEMIES = new Set(['overlord', 'tyrant', 'matriarch', 'doomsday', 'juggernaut']);

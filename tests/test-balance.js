@@ -31,7 +31,8 @@ check('塔池为火、水、土、木', JSON.stringify(C.ACTIVE_TOWERS) === '["f
     const t = C.TOWERS[k];
     if (!t) { bad.push(`${k}:缺配置`); continue; }
     for (const f of ['char', 'desc']) if (typeof t[f] !== 'string' || !t[f]) bad.push(`${k}.${f}`);
-    for (const f of ['cost', 'range', 'cooldown', 'size']) if (!(t[f] > 0)) bad.push(`${k}.${f}`);
+    // cooldown 已不属于塔配置：攻击节奏改由字形组件接管（见 js/glyph/glyph-tower.js）
+    for (const f of ['cost', 'range', 'size']) if (!(t[f] > 0)) bad.push(`${k}.${f}`);
     if (!t.glyph || typeof t.glyph !== 'object') bad.push(`${k}.glyph`);
     else for (const f of ['range', 'chargePerSec', 'chargePerHit']) if (!(t.glyph[f] > 0)) bad.push(`${k}.glyph.${f}`);
     if (!C.GLYPHS || !C.GLYPHS[k]) bad.push(`${k}:缺字形笔画数据`);

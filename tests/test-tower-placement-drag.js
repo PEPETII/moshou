@@ -109,6 +109,8 @@ function createHarness() {
     "js/config/domain-02.js",
     "js/config/domain-03.js",
     "js/config/glyph-battle.js",
+    // 塔配置只留造价与文案，射程/字号由字形配置注入（与 index.html 加载顺序一致）
+    "js/config/glyphs.js",
     "js/utils.js",
     "js/ui.js",
     "js/ui/input.js",
@@ -174,8 +176,9 @@ function createHarness() {
   game.ui = ui;
 
   ui.setupEventListeners();
-  // 放置校验与塔池无关：这里临时把木、山放进塔池，以覆盖「不能建造」「只能放路径」两类校验
-  vm.runInContext('CONFIG.ACTIVE_TOWERS = ["fire", "water", "wood", "mountain"]', context);
+  // 放置校验与塔池无关：这里注入一座 onPath 桩塔，覆盖「不能建造」「只能放路径」两类校验
+  // （旧单字塔已于 2026-10-20 删除，不再拿 mountain 当夹具）
+  vm.runInContext('CONFIG.TOWERS.probe = { char: "桩", cost: 50, onPath: true, hp: 10 }; CONFIG.ACTIVE_TOWERS = ["fire", "water", "wood", "probe"]', context);
   ui.createTowerSelects();
 
   const ctx = {
@@ -283,12 +286,12 @@ function main() {
   assert.strictEqual(h.game.ink, inkBeforeInvalidDrop);
   assert(h.ui.events.some((item) => item.includes("这里不能建造")));
 
-  release = dragCard(h, "mountain", 9, "mouse", 3 * 72 + 36, 3 * 72 + 36);
+  release = dragCard(h, "probe", 9, "mouse", 3 * 72 + 36, 3 * 72 + 36);
   h.document.dispatch("pointerup", release);
   assert(h.ui.events.some((item) => item.includes("只能放在路径上")));
-  release = dragCard(h, "mountain", 10, "mouse", 4 * 72 + 36, 4 * 72 + 36);
+  release = dragCard(h, "probe", 10, "mouse", 4 * 72 + 36, 4 * 72 + 36);
   h.document.dispatch("pointerup", release);
-  assert.strictEqual(h.game.towers.length, 2, "the mountain tower remains placeable on a path cell");
+  assert.strictEqual(h.game.towers.length, 2, "the probe tower remains placeable on a path cell");
 
   release = dragCard(h, "water", 11, "touch", 5 * 72 + 36, 5 * 72 + 36);
   assert.strictEqual(h.ui.placementDrag.pointerType, "touch", "touch uses the same placement state");

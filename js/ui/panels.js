@@ -27,56 +27,8 @@ UI.prototype.showTowerInfo = function(tower, x, y, source) {
       stats += `攻速: ${(tower.cooldown / 1000).toFixed(1)}秒<br>`;
     if (tower.slow) stats += `减速: ${Math.round(tower.slow * 100)}%<br>`;
     if (tower.hp) stats += `生命: ${tower.hp}/${tower.maxHp}<br>`;
-    if (tower.burn) stats += `灼烧: 是<br>`;
-    if (tower.pierce) stats += `穿透: 是<br>`;
-
-    if (tower.aura) {
-      stats += `<div class="stat-field"><span class="stat-label">光环</span><span class="stat-value">${tower.auraRange}格</span></div>`;
-      if (tower.auraType === 'attackSpeed') {
-        stats += `<div class="stat-field"><span class="stat-label">攻速加成</span><span class="stat-value">${Math.round(tower.auraValue * 100)}%</span></div>`;
-      } else if (tower.auraType === 'range') {
-        stats += `<div class="stat-field"><span class="stat-label">射程加成</span><span class="stat-value">+${tower.auraValue}格</span></div>`;
-      } else if (tower.auraType === 'slow') {
-        stats += `<div class="stat-field"><span class="stat-label">减速</span><span class="stat-value">${Math.round(tower.auraValue * 100)}%</span></div>`;
-      } else if (tower.auraType === 'reflect') {
-        stats += `<div class="stat-field"><span class="stat-label">反射</span><span class="stat-value">${Math.round(tower.auraValue * 100)}%</span></div>`;
-      } else if (tower.auraType === 'dot') {
-        stats += `<div class="stat-field"><span class="stat-label">持续伤害</span><span class="stat-value">${tower.auraValue}/秒</span></div>`;
-      } else if (tower.auraType === 'reveal') {
-        stats += `<div class="stat-field"><span class="stat-label">照明</span><span class="stat-value">${tower.auraRange}格</span></div>`;
-      }
-    }
-    if (tower.inkPerWave) {
-      stats += `<div class="stat-field"><span class="stat-label">产墨</span><span class="stat-value">${tower.inkPerWave}墨/波</span></div>`;
-    }
-    if (tower.healPerWave) {
-      stats += `<div class="stat-field"><span class="stat-label">治疗</span><span class="stat-value">+${tower.healPerWave}HP/波</span></div>`;
-    }
-    if (tower.globalSlow) {
-      stats += `<div class="stat-field"><span class="stat-label">全局减速</span><span class="stat-value">${Math.round(tower.globalSlow * 100)}%</span></div>`;
-    }
-    if (tower.chainCount) {
-      stats += `<div class="stat-field"><span class="stat-label">弹射</span><span class="stat-value">${tower.chainCount}次</span></div>`;
-    }
-    if (tower.freezeDuration) {
-      stats += `<div class="stat-field"><span class="stat-label">冻结</span><span class="stat-value">${tower.freezeDuration / 1000}秒</span></div>`;
-    }
-    if (tower.knockback) {
-      stats += `<div class="stat-field"><span class="stat-label">击退</span><span class="stat-value">${tower.knockback}格</span></div>`;
-    }
-    if (tower.markBonus) {
-      stats += `<div class="stat-field"><span class="stat-label">增伤</span><span class="stat-value">+${Math.round(tower.markBonus * 100)}%</span></div>`;
-    }
-    if (tower.isDetonator) {
-      stats += `<div class="stat-field"><span class="stat-label">爆炸伤害</span><span class="stat-value">${tower.damage}</span></div>`;
-      stats += `<div class="stat-field"><span class="stat-label">爆炸范围</span><span class="stat-value">${tower.explodeRange}格</span></div>`;
-    }
 
     this.towerInfo.querySelector(".info-stats").innerHTML = stats;
-
-    const actionsDiv = this.towerInfo.querySelector(".info-actions");
-    const existingDetonate = actionsDiv.querySelector('.detonate-btn');
-    if (existingDetonate) existingDetonate.remove();
 
     const sellBtn = this.towerInfo.querySelector(".sell-btn");
 
@@ -94,29 +46,6 @@ UI.prototype.showTowerInfo = function(tower, x, y, source) {
       this.towerInfo.appendChild(cancelHint);
     }
     cancelHint.textContent = isTouchInput ? "点击空白处取消选中" : "右键取消选择";
-
-    if (tower.isDetonator) {
-      const detonateBtn = document.createElement('button');
-      detonateBtn.textContent = '引爆';
-      detonateBtn.className = 'detonate-btn';
-      detonateBtn.style.cssText = 'background:#f4efe4;border:1px solid #ff5722;color:#ff5722;padding:8px;flex:1;cursor:pointer;font-family:"Ma Shan Zheng",cursive;font-size:13px;';
-      const detonateHandler = () => {
-        const range = tower.explodeRange * CONFIG.CELL_SIZE;
-        for (const enemy of this.game.enemies) {
-          if (enemy.hp <= 0) continue;
-          const dist = distance(tower.x, tower.y, enemy.x, enemy.y);
-          if (dist <= range) {
-            enemy.takeDamage(tower.damage);
-            enemy.applyStun(tower.stunDuration || 1000);
-          }
-        }
-        const idx = this.game.towers.indexOf(tower);
-        if (idx >= 0) this.game.towers.splice(idx, 1);
-        this.hideTowerInfo();
-      };
-      this.addTrackedEventListener(detonateBtn, 'click', detonateHandler);
-      actionsDiv.appendChild(detonateBtn);
-    }
 
     // 先显示面板以获取实际尺寸
     this.towerInfo.classList.remove("hidden");

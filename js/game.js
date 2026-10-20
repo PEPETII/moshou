@@ -42,7 +42,6 @@ class Game {
     this.animationId = null;
 
     this.particleSystem = new ParticleSystem();
-    this.projectilePool = new ProjectilePool();
     this.runtimeIndexes = new RuntimeIndexes(this);
     this.staticLayer = new StaticCanvasLayer(this);
     this.debugStats = new DebugStatsOverlay(this);

@@ -102,8 +102,6 @@ class RuntimeIndexes {
   }
 }
 
-// 注意：ProjectilePool 定义在 objectPool.js 中，这里不再重复定义
-
 class StaticCanvasLayer {
   constructor(game) {
     this.game = game;
@@ -222,18 +220,13 @@ class DebugStatsOverlay {
     if (!this.enabled) return;
 
     const game = this.game;
-    let projectileCount = 0;
-    for (const tower of game.towers) {
-      projectileCount += tower.projectiles.length;
-    }
-
     const activeParticles = game.particleSystem.getActiveCount
       ? game.particleSystem.getActiveCount()
       : 0;
 
     ctx.save();
     ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
-    ctx.fillRect(8, 28, 150, 92);
+    ctx.fillRect(8, 28, 150, 76);
     ctx.fillStyle = '#d8d8d8';
     ctx.font = '12px Consolas, monospace';
     ctx.textAlign = 'left';
@@ -241,8 +234,7 @@ class DebugStatsOverlay {
     ctx.fillText(`FPS ${this.fps}`, 16, 36);
     ctx.fillText(`Towers ${game.towers.length}`, 16, 52);
     ctx.fillText(`Enemies ${game.runtimeIndexes.aliveEnemies.length}/${game.enemies.length}`, 16, 68);
-    ctx.fillText(`Projectiles ${projectileCount}`, 16, 84);
-    ctx.fillText(`Particles ${activeParticles}`, 16, 100);
+    ctx.fillText(`Particles ${activeParticles}`, 16, 84);
     ctx.restore();
   }
 }
