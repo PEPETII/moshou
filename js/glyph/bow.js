@@ -7,7 +7,7 @@ const GlyphBow = {
     const cfg = gl.cfg;
     gl.timer -= dt;
     if (gl.timer > 0 || !pool.length || !GlyphTower.ready(t, 1)) return;
-    const target = GlyphKit.best(pool, (e) => e.hp);
+    const target = GlyphKit.best(pool, (e) => e.visibleHp());
     if (!target) return;
     gl.timer = cfg.arrowInterval;
     const from = GlyphTower.strokeWorld(t, 1, 0.5);
@@ -49,9 +49,9 @@ const GlyphBow = {
     if (!e) return;
     s.done = true;
     const crit = Math.random() < cfg.critChance;
-    const dmg = GlyphFX.rnd(cfg.arrowDamage[0], cfg.arrowDamage[1]) * (e.weight > 1 ? cfg.heavyMul : 1) * (crit ? cfg.critMul : 1);
+    const dmg = GlyphFX.rnd(cfg.arrowDamage[0], cfg.arrowDamage[1]) * (e.tier === 'heavy' ? cfg.heavyMul : 1) * (crit ? cfg.critMul : 1);
     e.pushVx = s.vx * 0.15;
-    GlyphWorld.damage(e, Math.round(dmg), { crit, color: crit ? c.seal : c.bow, kind: 'bow' });
+    GlyphWorld.damage(e, Math.round(dmg), { crit, color: crit ? c.seal : c.bow, kind: 'bow', delivery: 'projectile' });
     GlyphTower.addCharge(s.tower, cfg.chargePerHit);
     GlyphFX.emit(6, e.x, e.y, { color: c.bowLight, speed: [60, 160], life: [0.15, 0.3], size: [1, 2.2], angle: Math.atan2(s.vy, s.vx), spread: 0.6 });
     if (crit) { GlyphFX.addShake(2); GlyphFX.addHitstop(0.02); }
@@ -77,7 +77,7 @@ const GlyphBow = {
       if (d.t < 0.2 || d.hit) continue;
       d.hit = true;
       const e = GlyphWorld.nearestEnemy(s.game, d.x, d.y, cfg.rainHitRadius);
-      if (e) GlyphWorld.damage(e, cfg.rainDamage, { color: c.bow, size: 14, kind: 'bow' });
+      if (e) GlyphWorld.damage(e, cfg.rainDamage, { color: c.bow, size: 14, kind: 'bow', delivery: 'ground', aoe: true });
       GlyphFX.emit(2, d.x, d.y, { color: c.bowLight, speed: [20, 70], life: [0.15, 0.3], size: [1, 2], grav: 200 });
     }
     s.drops = s.drops.filter((d) => d.t < 0.5);

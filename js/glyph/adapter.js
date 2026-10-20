@@ -20,10 +20,12 @@ const GlyphWorld = {
   },
 
   // 离 (x, y) 最近、且在 r 以内的存活敌人
-  nearestEnemy(game, x, y, r) {
+  // targetableOnly：只选能被单体锁定的（火星追踪）；范围落点不传
+  nearestEnemy(game, x, y, r, targetableOnly) {
     let best = null;
     let bestD = r;
     for (const e of this.enemiesInRange(game, x, y, r)) {
+      if (targetableOnly && !e.isTargetable()) continue;
       const d = Math.hypot(e.x - x, e.y - y);
       if (d < bestD) { bestD = d; best = e; }
     }

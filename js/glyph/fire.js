@@ -12,8 +12,10 @@ const GlyphFire = {
     if (!GlyphTower.ready(t, i)) return;
     gl.nextDot = 1 - i;
     gl.timer = cfg.sparkInterval;
-    pool.sort((a, b) => b.s - a.s);
-    const target = pool[Math.floor(Math.random() * Math.min(3, pool.length))];
+    const seen = GlyphKit.targetable(pool);
+    if (!seen.length) return;
+    seen.sort((a, b) => b.s - a.s);
+    const target = seen[Math.floor(Math.random() * Math.min(3, seen.length))];
     const from = GlyphTower.strokeWorld(t, i, 0.5);
     // 初速沿该点向外、略偏上，随后转向追踪
     let dx = from.x - t.x;
@@ -70,7 +72,7 @@ const GlyphFire = {
   updateSpark(s, dt) {
     const cfg = s.tower.gl.cfg;
     s.life -= dt;
-    if (!s.target || s.target.dead) s.target = GlyphWorld.nearestEnemy(s.game, s.x, s.y, cfg.sparkSeek);
+    if (!s.target || s.target.dead) s.target = GlyphWorld.nearestEnemy(s.game, s.x, s.y, cfg.sparkSeek, true);
     if (s.target) {
       const dx = s.target.x - s.x;
       const dy = s.target.y - s.y;
@@ -96,7 +98,7 @@ const GlyphFire = {
     const crit = Math.random() < cfg.critChance;
     const dmg = Math.round(GlyphFX.rnd(cfg.sparkDamage[0], cfg.sparkDamage[1]) * (crit ? cfg.critMul : 1));
     e.pushVx = s.vx * 0.3;
-    GlyphWorld.damage(e, dmg, { crit, color: crit ? c.fire : c.ink, kind: 'fire' });
+    GlyphWorld.damage(e, dmg, { crit, color: crit ? c.fire : c.ink, kind: 'fire', delivery: 'projectile' });
     e.ignite(1, cfg.burnDuration);
     GlyphTower.addCharge(s.tower, cfg.chargePerHit);
     GlyphFX.emit(crit ? 16 : 8, e.x, e.y, { color: c.fireHot, speed: [60, crit ? 280 : 180], life: [0.2, 0.45], size: [1.5, 3.5], kind: 'ember' });
@@ -127,11 +129,11 @@ const GlyphFire = {
       const crit = Math.random() < cfg.bombCrit;
       const dmg = cfg.bombDamage * (1 - cfg.bombEdgeFalloff * d / r) * (crit ? cfg.bombCritMul : 1);
       e.pushVx = (e.x - tx) * 4;
-      GlyphWorld.damage(e, dmg, { crit, color: c.fire, kind: 'fire' });
+      GlyphWorld.damage(e, dmg, { crit, color: c.fire, kind: 'fire', delivery: 'ground', aoe: true });
       e.ignite(cfg.bombIgnite, cfg.burnDuration + 1);
     }
     GlyphFX.addHitstop(0.09);
-    GlyphFX.addShake(15);
+    GlyphFX.addShake(15, true);
     // 特效半径在 GlyphFX.ring 内会再乘 GLYPH_SCALE，所以这里传回原型像素
     const S = CONFIG.GLYPH_SCALE;
     GlyphFX.ring(tx, ty, r / S * 1.25, c.fire, 0.5, 10);
@@ -152,7 +154,7 @@ const GlyphFire = {
     while (s.tick >= cfg.markTick) {
       s.tick -= cfg.markTick;
       for (const e of GlyphWorld.enemiesInRange(s.game, s.x, s.y, cfg.markRadius)) {
-        GlyphWorld.damage(e, cfg.markDps * cfg.markTick, { color: c.fire, size: 15, kind: 'fire' });
+        GlyphWorld.damage(e, cfg.markDps * cfg.markTick, { color: c.fire, size: 15, kind: 'fire', delivery: 'ground', aoe: true, dot: true });
         e.ignite(1, cfg.markIgniteTime);
       }
     }

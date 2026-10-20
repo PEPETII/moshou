@@ -77,11 +77,17 @@ const GlyphKit = {
     list.forEach((i, k) => GlyphTower.consume(t, i, delay + k * step, step));
   },
 
-  // 射程内满足 pick 评分最高的敌人；pick(e) 返回分数
+  // 能被单体攻击锁定的敌人（隐身的鲛、夜叉等除外；范围效果不走这里）
+  targetable(pool) {
+    return pool.filter((e) => e.isTargetable());
+  },
+
+  // 射程内满足 pick 评分最高的敌人（只选可锁定的）；pick(e) 返回分数
   best(pool, pick) {
     let out = null;
     let score = -Infinity;
     for (const e of pool) {
+      if (!e.isTargetable()) continue;
       const v = pick(e);
       if (v > score) { score = v; out = e; }
     }
@@ -114,6 +120,7 @@ const GlyphKit = {
   touch(s, r, skip) {
     for (const e of GlyphWorld.enemiesInRange(s.game, s.x, s.y, r + 40)) {
       if (skip && skip.has(e)) continue;
+      if (!e.isTargetable()) continue;
       if (Math.hypot(e.x - s.x, e.y - s.y) <= r + e.size * 0.4) return e;
     }
     return null;

@@ -49,12 +49,13 @@ check('配方查询：火可合炎、焚；林可合焚；水无配方',
   check('关卡结束后不可合成', !Fusion.check(g, a, recipe('yan')).ok);
 }
 {
-  // 占位：路径塔与非路径塔不能互占
+  // 占位：路径塔与非路径塔不能互占（现役塔都不是路径塔，用一座桩路径塔验证校验分支）
   const g = makeGame();
   g.ink = 999;
-  const m = mk(g, 'mountain', 3, 1);
+  const m = mk(g, 'earth', 3, 1);
+  m.onPath = true;
   mk(g, 'fire', 3, 2);
-  const probe = { result: 'yan', materials: ['mountain', 'fire'], cost: 1, formula: '' };
+  const probe = { result: 'yan', materials: ['earth', 'fire'], cost: 1, formula: '' };
   check('结果塔放不进被选塔所在格时拒绝', /放不下/.test(Fusion.check(g, m, probe).reason));
 }
 

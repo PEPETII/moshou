@@ -49,29 +49,47 @@ const GlyphTower = {
   },
 
   // 射程内「里程 s 最大」的敌人（塔防即最靠近终点；征服环形路径同样按 s）
-  frontTarget(pool) {
+  // any = true：范围类大招的落点参考，不过滤隐身敌人；默认只选能被单体锁定的
+  frontTarget(pool, any) {
     let best = null;
-    for (const e of pool) if (!best || e.s > best.s) best = e;
+    for (const e of pool) {
+      if (!any && !e.isTargetable()) continue;
+      if (!best || e.s > best.s) best = e;
+    }
     return best;
   },
 
-  addCharge(t, v) { t.gl.charge = Math.min(1, t.gl.charge + v); },
+  // 魇的梦魇光环（t.dreadT > 0）让蓄力速度打折；命中充能与每秒蓄力都经过这里
+  addCharge(t, v) { t.gl.charge = Math.min(1, t.gl.charge + v * (t.dreadT > 0 ? t.dreadMul : 1)); },
 
   // 每帧推进：笔画写回、蓄力、自动大招、普攻。dt 单位为秒
   update(t, dt) {
     const gl = t.gl;
     const game = t.game;
+    // 敌人施加的塔状态：封笔（天劫）整座塔停摆，缚丝（蛛）让写回变慢，梦魇（魇）让蓄力变慢
+    if (t.sealLockT > 0) t.sealLockT -= dt;
+    if (t.sealT > 0) {
+      t.sealT -= dt;
+      gl.recoil = Math.max(0, gl.recoil - dt * 30 * CONFIG.GLYPH_SCALE);
+      return;
+    }
+    if (t.dreadT > 0) t.dreadT -= dt;
+    if (t.webLockT > 0) t.webLockT -= dt;
+    let rewriteK = 1;
+    if (t.webT > 0) { t.webT -= dt; rewriteK = 1 / t.webMul; }
     for (const s of gl.strokes) {
       if (s.prog >= 1) continue;
-      if (s.delay > 0) s.delay -= dt;
-      else s.prog = Math.min(1, s.prog + s.rate * dt);
+      if (s.delay > 0) s.delay -= dt * rewriteK;
+      else s.prog = Math.min(1, s.prog + s.rate * dt * rewriteK);
     }
     gl.recoil = Math.max(0, gl.recoil - dt * 30 * CONFIG.GLYPH_SCALE);
 
-    const pool = GlyphWorld.enemiesInRange(game, t.x, t.y, gl.cfg.range);
+    // 夜幕（百鬼夜行）：全场塔射程缩短
+    const rangeMul = game.nightT > 0 ? game.nightRangeMul : 1;
+    const pool = GlyphWorld.enemiesInRange(game, t.x, t.y, gl.cfg.range * rangeMul);
     const engaged = pool.length > 0;
     const impl = this.impl(gl.type);
-    if (engaged) gl.charge = Math.min(1, gl.charge + gl.cfg.chargePerSec * dt);
+    if (engaged) this.addCharge(t, gl.cfg.chargePerSec * dt);
     if (gl.charge >= 1) {
       gl.readyPulse += dt;
       // 自动释放：射程内有敌人 + 全局间隔已过；cast 返回 false（没有合适落点）就等下一帧
@@ -119,6 +137,10 @@ const GlyphTower = {
       ctx.restore();
     }
 
+    // 被动光环底纹（山的「镇」）
+    const impl = this.impl(gl.type);
+    if (impl.drawAura) impl.drawAura(ctx, t);
+
     // 墨托
     const g = ctx.createRadialGradient(t.x, t.y + 5, 3, t.x, t.y + 5, size * 0.7);
     g.addColorStop(0, 'rgba(60,50,40,0.16)');
@@ -144,6 +166,31 @@ const GlyphTower = {
       };
     });
 
+    // 敌人施加的状态：缚丝（灰白蛛网）、封笔（朱砂雷纹）
+    if (t.webT > 0) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(190,188,180,0.7)';
+      ctx.lineWidth = 1;
+      const r = size * 0.55;
+      for (let k = 0; k < 6; k++) {
+        const a = k * Math.PI / 3;
+        ctx.beginPath(); ctx.moveTo(t.x, t.y); ctx.lineTo(t.x + Math.cos(a) * r, t.y + Math.sin(a) * r); ctx.stroke();
+      }
+      for (const f of [0.4, 0.75]) { ctx.beginPath(); ctx.arc(t.x, t.y, r * f, 0, Math.PI * 2); ctx.stroke(); }
+      ctx.restore();
+    }
+    if (t.sealT > 0) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(176,58,46,0.85)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(t.x - 8, t.y - size * 0.6);
+      ctx.lineTo(t.x + 3, t.y - size * 0.35);
+      ctx.lineTo(t.x - 4, t.y - size * 0.28);
+      ctx.lineTo(t.x + 7, t.y - size * 0.05);
+      ctx.stroke();
+      ctx.restore();
+    }
     // 路径塔（山）：受过伤才显示生命条
     if (t.maxHp > 0 && t.hp < t.maxHp) {
       const w = size * 0.8;

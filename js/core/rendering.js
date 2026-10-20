@@ -3,7 +3,7 @@ Game.prototype.updateUI = function() {
     document.getElementById("ink").textContent = this.ink;
     // 坚守剩余时间（开战前显示满时长）
     const holdEl = document.getElementById("hold-time");
-    if (holdEl) holdEl.textContent = BattleDirector.formatHold(this.holdLeft);
+    if (holdEl) holdEl.textContent = BattleDirector.holdLabel(this);
     this.runtimeIndexes.rebuildEnemies();
     document.getElementById("enemies").textContent = this.runtimeIndexes.aliveEnemies.length;
     document.getElementById("core-hp").textContent =
@@ -97,6 +97,7 @@ Game.prototype.draw = function() {
     for (const enemy of this.enemies) {
       enemy.draw(ctx, this.inkRenderer);
     }
+    BossBar.drawWorld(ctx, this);
 
     const timestamp = performance.now();
     for (const tower of this.towers) {
@@ -114,6 +115,8 @@ Game.prototype.draw = function() {
     // HUD 层：不随镜头平移
     this.drawLevelInfo();
     GlyphSystem.drawHud(ctx);
+    BossBar.attach(this);
+    BossBar.drawHud(ctx, this);
     this.inkTrailAnimation.draw(ctx);
     if (cam) cam.drawHints(ctx);
     this.debugStats.draw(ctx);

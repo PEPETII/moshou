@@ -215,6 +215,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 .scroll-shelf--few .scroll-theme { width: min(420px, 70%); height: 88%; max-height: 300px; }
+/* 四个主题卷轴一屏放下，不折行 */
+.scroll-shelf--many { flex-wrap: nowrap; gap: var(--sp-3); }
+.scroll-shelf--many .scroll-theme { flex: 1 1 0; width: auto; min-width: 0; height: 88%; max-height: 300px; padding: var(--sp-3) var(--sp-2); }
+.scroll-shelf--many .scroll-theme__desc { text-align: center; }
 .scroll-theme::after {
   content: '';
   position: absolute;
@@ -357,6 +361,30 @@
   letter-spacing: .06em;
 }
 .scroll-info__enter { min-width: 120px; }
+.scroll-info__desc {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--ink-zhong);
+  font-size: var(--fs-s);
+  letter-spacing: .08em;
+}
+.scroll-info__desc:empty { display: none; }
+/* 关底首领：节点右下角一枚朱砂「首」字印 */
+.scroll-node__seal { position: relative; }
+.scroll-node__boss {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  color: var(--paper-0);
+  font: var(--fs-xs) / 1 var(--font-brush);
+  font-style: normal;
+  background: var(--seal);
+  transform: rotate(8deg);
+}
 
 /* ── 矮横屏 ─────────────────────────────────────── */
 @media (max-height: 430px) and (orientation: landscape) {

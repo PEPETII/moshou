@@ -26,9 +26,9 @@ const GlyphWind = {
       da = Math.atan2(Math.sin(da), Math.cos(da));
       if (Math.abs(da) > cfg.gustAngle) continue;
       hits++;
-      e.knockback(cfg.gustKnock);
+      ControlRules.knock(e, cfg.gustKnock, 'wind');
       e.pushVx = Math.cos(aim) * 120 * CONFIG.GLYPH_SCALE;
-      GlyphWorld.damage(e, Math.round(GlyphFX.rnd(cfg.gustDamage[0], cfg.gustDamage[1])), { color: c.wind, kind: 'wind' });
+      GlyphWorld.damage(e, Math.round(GlyphFX.rnd(cfg.gustDamage[0], cfg.gustDamage[1])), { color: c.wind, kind: 'wind', delivery: 'instant', aoe: true });
     }
     GlyphTower.addCharge(t, cfg.chargePerHit * Math.min(cfg.gustChargeCap, hits));
     GlyphSystem.push(t.game, { tower: t, kind: 'gust', stroke: i, x: t.x, y: t.y, aim, t: 0, dur: 0.3 });
@@ -61,38 +61,66 @@ const GlyphWind = {
     s.done = true;
     const cfg = s.tower.gl.cfg;
     GlyphFX.ring(s.tx, s.ty, cfg.vortexRadius / CONFIG.GLYPH_SCALE, CONFIG.GLYPH_COLORS.wind, 0.4, 5);
-    GlyphFX.addShake(5);
+    GlyphFX.addShake(5, true);
     GlyphSystem.push(s.game, {
       tower: s.tower, kind: 'vortex', ground: true, x: s.tx, y: s.ty, track: s.track, s: s.s,
-      t: 0, dur: cfg.vortexDuration, tick: 0, rot: 0,
+      t: 0, dur: cfg.vortexDuration, tick: 0, rot: 0, pulling: new Set(),
     });
   },
 
-  // 旋风：同一路径上、半径内的敌人沿路被吸向中心里程；重敌吸力打折
+  // 旋风：同一路径上、半径内的敌人沿路被吸向中心里程（工单 12）：
+  // 每个旋风同时最多吸入 carryBudget.wind 点体量，先来后到；一只敌人同时只被一个旋风吸；
+  // 吸力按档位打折（三字、四字不吸入，只吃伤害）；离开后 pullImmune 秒内吸力打折
   updateVortex(s, dt) {
     const cfg = s.tower.gl.cfg;
     const c = CONFIG.GLYPH_COLORS;
+    const C = CONFIG.CONTROL;
+    if (!s.pulling) s.pulling = new Set();
     s.t += dt;
     s.rot += dt * 7;
     const near = GlyphWorld.enemiesInRange(s.game, s.x, s.y, cfg.vortexRadius);
+    const inside = new Set(near);
+    let used = 0;
+    for (const e of s.pulling) {
+      if (e.dead || !inside.has(e)) this.releasePull(s, e);
+      else used += ControlRules.carryCost(e);
+    }
     for (const e of near) {
-      if (e.carried || e.immuneKnockback || e.immuneControl || e.track !== s.track) continue;
+      // 瘴雾被旋风覆盖时全程消散
+      if (e.ab && e.ab.miasma) e.ab.miasma.vortexT = 0.3;
+      if (e.carried || e.track !== s.track) continue;
+      if (!s.pulling.has(e)) {
+        const cost = ControlRules.carryCost(e);
+        if (!ControlRules.canCarry(e, 'wind') || used + cost > C.carryBudget.wind) continue;
+        used += cost;
+        s.pulling.add(e);
+        e.pulledBy = s;
+      }
       const d = GlyphKit.pathDelta(s.track, e.s, s.s);
-      const pull = cfg.vortexPull * dt * (e.weight > 1 ? CONFIG.GLYPH_STATUS.giantKnockMul : 1);
+      const pull = cfg.vortexPull * dt * ControlRules.tier(e).pullMul * (e.pullImmuneT > 0 ? C.pullImmuneMul : 1);
       e.s = GlyphKit.wrapS(s.track, e.s + Math.sign(d) * Math.min(Math.abs(d), pull));
       e.syncPosition();
     }
     s.tick += dt;
     while (s.tick >= cfg.vortexTick) {
       s.tick -= cfg.vortexTick;
-      for (const e of near) if (!e.dead) GlyphWorld.damage(e, cfg.vortexDps * cfg.vortexTick, { color: c.wind, size: 14, kind: 'wind' });
+      for (const e of near) if (!e.dead) GlyphWorld.damage(e, cfg.vortexDps * cfg.vortexTick, { color: c.wind, size: 14, kind: 'wind', delivery: 'ground', aoe: true, dot: true });
     }
     const a = s.rot * 2 + Math.random() * Math.PI * 2;
     const r = cfg.vortexRadius * (0.4 + Math.random() * 0.6);
     GlyphFX.emit(1, s.x + Math.cos(a) * r, s.y + Math.sin(a) * r, {
       color: c.windLight, speed: [60, 120], life: [0.3, 0.5], size: [1.2, 2.5], angle: a + Math.PI * 0.6, spread: 0.2, kind: 'drop',
     });
-    if (s.t >= s.dur) s.done = true;
+    if (s.t >= s.dur) {
+      s.done = true;
+      for (const e of Array.from(s.pulling)) this.releasePull(s, e);
+    }
+  },
+
+  releasePull(s, e) {
+    s.pulling.delete(e);
+    if (e.pulledBy === s) e.pulledBy = null;
+    e.pullImmuneT = CONFIG.CONTROL.pullImmune;
   },
 
   drawShot(ctx, s) {

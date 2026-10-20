@@ -14,9 +14,9 @@ ctx.globalThis = ctx;
 vm.createContext(ctx);
 
 const files = [
-  'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/glyph-battle.js',
+  'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/enemies-single.js', 'js/config/enemies-multi.js', 'js/config/enemies-boss.js', 'js/config/glyph-battle.js', 'js/config/control-rules.js', 'js/config/boss-battle.js',
   'js/utils.js', 'js/core/path-track.js', 'js/enemy.js',
-  'js/entities/enemy/combat.js', 'js/entities/enemy/lifecycle.js', 'js/entities/enemy/misc.js', 'js/entities/enemy/motion.js',
+  'js/entities/enemy/combat.js', 'js/entities/enemy/lifecycle.js', 'js/entities/enemy/misc.js', 'js/entities/enemy/motion.js', 'js/glyph/control-rules.js', 'js/entities/enemy/segments.js', 'js/entities/enemy/abilities/registry.js', 'js/entities/enemy/abilities/minor-a.js', 'js/entities/enemy/abilities/minor-b.js', 'js/entities/enemy/abilities/elite.js', 'js/entities/enemy/abilities/boss.js',
 ];
 const src = files.map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n;\n')
   + '\nglobalThis.__X = { Enemy, CONFIG };';

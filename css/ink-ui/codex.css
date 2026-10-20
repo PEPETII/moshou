@@ -222,3 +222,20 @@ html[data-ink-motion="reduced"] .codex-glyph__order li { transition: none; }
 .codex-formula__op { color: var(--ink-faint); font: var(--fs-l) / 1 var(--font-brush); }
 .codex-formula__note { width: 100%; color: var(--ink-zhong); font-size: var(--fs-xs); }
 .codex-howto { margin-top: var(--sp-3); color: var(--ink-zhong); font-size: var(--fs-s); }
+
+/* 妖异录：字数徽记、多字并排、首领卡片朱砂边框（2026-10-21） */
+.codex-badge {
+  display: inline-block;
+  margin-left: var(--sp-2);
+  padding: 0 6px;
+  border: 1px solid var(--ink-line);
+  color: var(--ink-zhong);
+  font: var(--fs-xs) / 1.6 var(--font-text);
+  letter-spacing: .1em;
+  vertical-align: middle;
+}
+.codex-badge--boss { border-color: var(--seal); color: var(--seal); }
+.codex-glyph--multi { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 2px; width: 232px; }
+.codex-glyph__char--seg { width: 56px; height: 56px; font-size: calc(var(--fs-hero) * .8); }
+.codex-item--boss { box-shadow: inset 0 0 0 1px var(--seal); }
+.codex-item--boss .codex-item__tag { color: var(--seal); }

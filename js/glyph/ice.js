@@ -27,7 +27,7 @@ const GlyphIce = {
     const dur = cfg.range / cfg.frostSpeed;
     GlyphKit.consumeAll(t, dur, cfg.rewriteAll);
     GlyphSystem.push(t.game, { tower: t, kind: 'frost', ground: true, x: t.x, y: t.y, r: 0, t: 0, dur, hit: new Set() });
-    GlyphFX.addShake(5);
+    GlyphFX.addShake(5, true);
     GlyphFX.addHitstop(0.05);
     return true;
   },
@@ -45,7 +45,7 @@ const GlyphIce = {
     if (!e) return;
     s.done = true;
     e.chill(cfg.chillStacks, cfg.chillDuration, cfg.freezeTime);
-    GlyphWorld.damage(e, Math.round(GlyphFX.rnd(cfg.icicleDamage[0], cfg.icicleDamage[1])), { color: c.ice, kind: 'ice' });
+    GlyphWorld.damage(e, Math.round(GlyphFX.rnd(cfg.icicleDamage[0], cfg.icicleDamage[1])), { color: c.ice, kind: 'ice', delivery: 'projectile' });
     GlyphTower.addCharge(s.tower, cfg.chargePerHit);
     GlyphFX.emit(8, e.x, e.y, { color: c.iceLight, speed: [60, 180], life: [0.2, 0.45], size: [1.2, 2.6], kind: 'drop' });
     GlyphFX.ring(e.x, e.y, e.iceTime > 0 ? 36 : 18, c.ice, 0.22, 3);
@@ -60,8 +60,8 @@ const GlyphIce = {
     for (const e of GlyphWorld.enemiesInRange(s.game, s.x, s.y, s.r)) {
       if (s.hit.has(e)) continue;
       s.hit.add(e);
-      e.freeze(cfg.frostFreeze);
-      GlyphWorld.damage(e, cfg.frostDamage, { color: c.ice, kind: 'ice' });
+      ControlRules.freeze(e, cfg.frostFreeze, 'ground');
+      GlyphWorld.damage(e, cfg.frostDamage, { color: c.ice, kind: 'ice', delivery: 'ground', aoe: true });
       GlyphFX.emit(4, e.x, e.y, { color: c.iceLight, speed: [30, 100], life: [0.3, 0.6], size: [1.2, 2.5], kind: 'drop' });
     }
     const n = Math.ceil(dt * 50);

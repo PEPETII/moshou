@@ -181,6 +181,11 @@ class StaticCanvasLayer {
       ctx.fillStyle = CONFIG.COLORS.bg;
       ctx.fillRect(0, 0, worldW, gridHeight);
     }
+    // 岩石格（specialTerrain，不能建造）：浓墨山石画在地形之上、网格与路径之下
+    const level = game.currentLevelData;
+    if (level && level.specialTerrain && level.specialTerrain.length && window.MapRocks) {
+      MapRocks.draw(ctx, level.specialTerrain, CONFIG.CELL_SIZE);
+    }
     // 网格位置固定在原地形之上、路径墨廊之下，只在放置态出现
     if (this._gridVisible) game.drawGrid();
     game.drawPath();

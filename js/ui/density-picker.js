@@ -33,6 +33,12 @@ const DensityPicker = {
     hint.textContent = '选定来犯之敌的疏密，确认后开始计时';
     box.appendChild(hint);
 
+    // 本关敌人预览（工单 14 §2.4）：roster 里的敌人字、精英名、首领名，玩家可以提前准备阵容
+    const preview = document.createElement('div');
+    preview.id = 'density-picker-preview';
+    preview.className = 'hidden';
+    box.appendChild(preview);
+
     const row = document.createElement('div');
     row.id = 'density-picker-options';
     for (const key of Object.keys(CONFIG.DENSITY)) {
@@ -85,13 +91,36 @@ const DensityPicker = {
     }
   },
 
+  /** 本关敌人预览：没有 roster 的关卡（征服）不显示 */
+  setPreview(level) {
+    const el = this._el && this._el.querySelector('#density-picker-preview');
+    if (!el) return;
+    if (!level || !level.roster) { el.classList.add('hidden'); el.innerHTML = ''; return; }
+    const seen = new Set();
+    const chars = [];
+    for (const r of level.roster.concat(level.heavy || [])) {
+      const c = CONFIG.ENEMIES[r.type];
+      if (c && !seen.has(r.type)) { seen.add(r.type); chars.push(`<span class="density-enemy" title="${c.name || c.char}">${c.char}</span>`); }
+    }
+    const names = (list) => list.map((e) => (CONFIG.ENEMIES[e.type].name || CONFIG.ENEMIES[e.type].char));
+    const elites = [...new Set(names(level.elites || []))];
+    const boss = level.boss ? CONFIG.ENEMIES[level.boss.type].name : '';
+    el.innerHTML =
+      `<div class="density-row"><span class="density-row__label">来犯</span><span class="density-row__chars">${chars.join('')}</span></div>` +
+      (elites.length ? `<div class="density-row"><span class="density-row__label">精英</span><span class="density-row__text">${elites.join('、')}</span></div>` : '') +
+      (boss ? `<div class="density-row density-row--boss"><span class="density-row__label">首领</span><span class="density-row__text">${boss}</span></div>` : '');
+    el.classList.remove('hidden');
+  },
+
   /**
    * 打开弹窗。每次都重置为默认档位「潮」。
    * @param {(key:string)=>void} onConfirm 玩家点「开战」
    * @param {()=>void} [onCancel] 玩家点「返回」
+   * @param {object} [level] 本关数据（塔防），用于显示敌人预览
    */
-  open(onConfirm, onCancel) {
+  open(onConfirm, onCancel, level) {
     this._build();
+    this.setPreview(level);
     this._onConfirm = onConfirm;
     this._onCancel = onCancel || null;
     this.select(CONFIG.DENSITY_DEFAULT);

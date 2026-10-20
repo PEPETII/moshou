@@ -143,7 +143,7 @@ const GLYPH_MOVES_RAW = {
     waveCarryOff: [8, 48],   // [px]
     waveGlyph: 130,          // [px] 浪头字号
     waveTrail: 160,          // [px] 浪后水痕长度
-    waveCatchDamage: 6, waveEndDamage: 16, waveStun: 0.55,
+    waveCatchDamage: 10, waveEndDamage: 22, waveStun: 0.55,
     rewriteSides: 1.2,
   },
   // 土（2026-10-20 重做）：范围压制与减速。普攻不出弹道，下横砸地以塔为心震荡一圈；

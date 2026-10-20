@@ -91,10 +91,10 @@ const GlyphCannon = {
       const base = s.big ? cfg.barrageDamage : GlyphFX.rnd(cfg.shellDamage[0], cfg.shellDamage[1]);
       hits++;
       e.pushVx = (e.x - s.tx) * 3;
-      GlyphWorld.damage(e, Math.round(base * (1 - cfg.shellEdgeFalloff * d / r)), { color: c.cannon, kind: 'cannon' });
+      GlyphWorld.damage(e, Math.round(base * (1 - cfg.shellEdgeFalloff * d / r)), { color: c.cannon, kind: 'cannon', delivery: 'projectile', aoe: true });
     }
     if (!s.big && hits) GlyphTower.addCharge(s.tower, cfg.chargePerHit);
-    GlyphFX.addShake(s.big ? 7 : 3);
+    GlyphFX.addShake(s.big ? 7 : 3, !!s.big);
     if (s.big) GlyphFX.addHitstop(0.03);
     GlyphFX.ring(s.tx, s.ty, r / S, c.cannon, 0.35, s.big ? 7 : 4);
     GlyphFX.emit(s.big ? 34 : 18, s.tx, s.ty, { color: c.fireHot, speed: [80, 300], life: [0.2, 0.5], size: [1.5, 3.5], kind: 'ember', drag: 3 });

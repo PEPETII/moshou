@@ -25,13 +25,12 @@ for (const type of GLYPH_TYPES) {
   check(`${type}：射程（格）与招式射程同步`, near(tower.range * CELL, cfg.range));
   check(`${type}：已注册招式实现`, GlyphTower.impl(type) === GlyphSystem.IMPLS[type] && GlyphSystem.IMPLS[type] !== X.GlyphWater);
   check(`${type}：有主色与光晕`, !!(CONFIG.GLYPH_COLORS[type] && CONFIG.GLYPH_COLORS[type + 'Glow']));
-  check(`${type}：图鉴文案两招`, !!(CONFIG.CODEX.towers[type] && CONFIG.CODEX.towers[type].moves.length === 2));
+  check(`${type}：图鉴文案两招（山多一条被动）`, !!(CONFIG.CODEX.towers[type] && CONFIG.CODEX.towers[type].moves.length === (type === 'mountain' ? 3 : 2)));
 }
 check('商店塔池 12 座单字塔，不含合字', CONFIG.ACTIVE_TOWERS.length === 12
   && CONFIG.ACTIVE_TOWERS.every((t) => !CONFIG.TOWERS[t].fusion));
 check('合字塔标记 fusion', ['yan', 'lin', 'fen'].every((t) => CONFIG.TOWERS[t].fusion === true));
-check('山是唯一路径塔且有生命', Object.keys(CONFIG.TOWERS).filter((t) => CONFIG.TOWERS[t].onPath).join() === 'mountain'
-  && CONFIG.TOWERS.mountain.hp > 0);
+check('没有任何现役塔是路径塔，山没有生命', Object.keys(CONFIG.TOWERS).every((t) => !CONFIG.TOWERS[t].onPath && !(CONFIG.TOWERS[t].hp > 0)));
 check('炎＝两火 8 笔、林＝两木 8 笔、焚＝林 + 火 12 笔', CONFIG.GLYPHS.yan.strokes.length === 8
   && CONFIG.GLYPHS.lin.strokes.length === 8 && CONFIG.GLYPHS.fen.strokes.length === 12);
 check('合字笔画落在字身内', ['yan', 'lin', 'fen'].every((t) => CONFIG.GLYPHS[t].strokes
@@ -42,7 +41,7 @@ check('像素量乘 GLYPH_SCALE', near(CONFIG.TOWERS.cannon.glyph.range, 320 * S
 // ---------- 通用：普攻与自动大招 ----------
 for (const type of GLYPH_TYPES) {
   const g = makeGame();
-  const t = mk(g, type, 3, type === 'mountain' ? 1 : 2);
+  const t = mk(g, type, 3, 2);
   run(g, 1.5);
   const s0 = sNear(g, t);
   // 炮有近身盲区：把敌人放远一些
@@ -189,23 +188,33 @@ for (const type of GLYPH_TYPES) {
   check('穿云优先射血量最高者', !!arrow && arrow.target === big);
 }
 
-// ---------- 山：阻挡与回血 ----------
+// ---------- 山：非路径塔、「镇」光环、崩不回血 ----------
 {
   const g = makeGame();
   g._pathCellSet = new Set(env.cells.map((c) => `${c.x},${c.y}`));
-  const m = mk(g, 'mountain', 6, 1);
-  check('山有生命且在路上阻挡', m.hp === CONFIG.TOWERS.mountain.hp && g.runtimeIndexes.getBlockingTowerAt(6, 1) === m);
-  const e = spawnAt(g, 'giant', 2 * CELL, 100000);
-  e.baseSpeed = e.speed = CONFIG.ENEMIES.giant.speed * 3;
-  m.gl.charge = 0;
-  m.gl.cfg = Object.assign({}, m.gl.cfg, { chargePerSec: 0, chargePerHit: 0 });
-  run(g, 8);
-  check('敌人被山挡住并攻击山', e.blocked === true && m.hp < m.maxHp, `hp=${m.hp} s=${e.s.toFixed(0)}`);
+  g._placementGridSet = new Set();
+  for (let x = 0; x < 26; x++) for (let y = 0; y < 6; y++) if (!g._pathCellSet.has(`${x},${y}`)) g._placementGridSet.add(`${x},${y}`);
+  g.ink = 999;
+  check('山不能放在路径格上', !g.canPlaceTower('mountain', 5, 1) && g.getPlacementBlockReason('mountain', 5, 1) === '这里不能建造');
+  check('山可以放在可建造格上', g.canPlaceTower('mountain', 5, 3));
+  const m = mk(g, 'mountain', 3, 2);
+  check('山没有生命、不挡路', !(m.maxHp > 0) && !g.runtimeIndexes.getBlockingTowerAt(3, 2));
+  const near = spawnAt(g, 'corpse', sNear(g, m), 100000);
+  const far = spawnAt(g, 'corpse', 8 * CELL, 100000);
+  run(g, 0.1);
+  const r = CONFIG.TOWERS.mountain.glyph.suppressRate;
+  check('「镇」：射程内敌人的能力冷却流速压到 suppressRate', near.abilityTimeScale === Math.max(CONFIG.CONTROL.suppressFloor, r), `scale=${near.abilityTimeScale}`);
+  check('「镇」：射程外不受影响', far.abilityTimeScale === 1);
+  const m2 = mk(g, 'mountain', 4, 2);
+  run(g, 0.1);
+  check('「镇」：多座山不叠加', near.abilityTimeScale === Math.max(CONFIG.CONTROL.suppressFloor, r));
+  g.removeTower(m2);
   m.gl.charge = 1;
   m.gl.cfg = CONFIG.TOWERS.mountain.glyph;
   g.glyphUltCd = 0;
+  const hp0 = near.hp;
   run(g, 0.05);
-  check('崩：回满生命', m.hp === m.maxHp);
+  check('崩：蓄满自动释放、不回血', m.gl.charge < 1 && m.hp === 0);
 }
 
 // ---------- 剑：飞剑沿路 ----------

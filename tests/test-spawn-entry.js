@@ -14,8 +14,8 @@ const CONFIG_FILES = [
   "js/config.js",
   "js/config/domain-01.js",
   "js/config/domain-02.js",
-  "js/config/domain-03.js",
-  "js/config/glyph-battle.js",
+  "js/config/domain-03.js", "js/config/enemies-single.js", "js/config/enemies-multi.js", "js/config/enemies-boss.js",
+  "js/config/glyph-battle.js", "js/config/control-rules.js", "js/config/boss-battle.js",
   "js/config/glyphs.js",
   "js/config/glyphs-ext.js",
   "js/config/glyphs-fusion.js",
@@ -46,14 +46,14 @@ function createContext() {
 
 function createSpawnerEnv() {
   const context = createContext();
-  vm.runInContext(read("js/core/spawner.js"), context, { filename: "js/core/spawner.js" });
+  for (const f of ["js/core/spawn-schedule.js", "js/core/spawner.js", "js/core/boss.js"]) vm.runInContext(read(f), context, { filename: f });
   return { context, director: context.BattleDirector, CONFIG: context.CONFIG };
 }
 
 // 灌入 waves.js 的 Game 原型（只要 beginBattle）
 function createBattleEnv() {
   const context = createContext();
-  vm.runInContext(read("js/core/spawner.js"), context, { filename: "js/core/spawner.js" });
+  for (const f of ["js/core/spawn-schedule.js", "js/core/spawner.js", "js/core/boss.js"]) vm.runInContext(read(f), context, { filename: f });
   vm.runInContext("class Game {}\n" + read("js/core/waves.js"), context, { filename: "js/core/waves.js" });
   return { context, Game: vm.runInContext("Game", context), CONFIG: context.CONFIG };
 }

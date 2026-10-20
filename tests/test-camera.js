@@ -237,28 +237,29 @@ function testCameraInsets() {
 
 function testLevels() {
   const context = vm.createContext({ console, Math, Number, Map, Set, Array, Object, window: {}, document: {} });
-  for (const f of ['js/config.js', 'js/config/domain-01.js', 'js/levelsData.js', 'js/data/levels/part-01.js']) {
+  for (const f of ['js/config.js', 'js/config/domain-01.js', 'js/levelsData.js', 'js/data/levels/part-01.js', 'js/data/levels/part-02.js', 'js/data/levels/part-03.js', 'js/data/levels/part-04.js']) {
     vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), context, { filename: f });
   }
   const C = vm.runInContext('CONFIG', context);
   const levels = vm.runInContext('LEVELS_DATA', context);
   const ids = Object.keys(levels);
-  assert.deepStrictEqual(ids.sort(), ['1-1', '1-2']);
+  assert.strictEqual(ids.length, 20, '塔防共 20 关');
   for (const id of ids) {
     const lv = levels[id];
-    const p = lv.path;
-    for (const c of p) {
-      assert.ok(c.x >= 0 && c.x < C.GRID_COLS && c.y >= 0 && c.y < C.GRID_ROWS, `${id} 路径格 (${c.x},${c.y}) 在 ${C.GRID_COLS}x${C.GRID_ROWS} 网格内`);
+    for (const p of (Array.isArray(lv.path[0]) ? lv.path : [lv.path])) {
+      for (const c of p) {
+        assert.ok(c.x >= 0 && c.x < C.GRID_COLS && c.y >= 0 && c.y < C.GRID_ROWS, `${id} 路径格 (${c.x},${c.y}) 在 ${C.GRID_COLS}x${C.GRID_ROWS} 网格内`);
+      }
+      for (let i = 1; i < p.length; i++) {
+        const d = Math.abs(p[i].x - p[i - 1].x) + Math.abs(p[i].y - p[i - 1].y);
+        assert.strictEqual(d, 1, `${id} 路径相邻格必须直角相邻（第 ${i} 格）`);
+      }
+      const keys = new Set(p.map((c) => `${c.x},${c.y}`));
+      assert.strictEqual(keys.size, p.length, `${id} 路径不重复经过同一格`);
+      assert.deepStrictEqual({ x: lv.core.x, y: lv.core.y }, { x: p[p.length - 1].x, y: p[p.length - 1].y }, `${id} 核心在路径终点`);
+      assert.strictEqual(p[0].x, 0, `${id} 从左侧入场`);
+      assert.strictEqual(lv.core.x, C.GRID_COLS - 1, `${id} 从右侧出口`);
     }
-    for (let i = 1; i < p.length; i++) {
-      const d = Math.abs(p[i].x - p[i - 1].x) + Math.abs(p[i].y - p[i - 1].y);
-      assert.strictEqual(d, 1, `${id} 路径相邻格必须直角相邻（第 ${i} 格）`);
-    }
-    const keys = new Set(p.map((c) => `${c.x},${c.y}`));
-    assert.strictEqual(keys.size, p.length, `${id} 路径不重复经过同一格`);
-    assert.deepStrictEqual({ x: lv.core.x, y: lv.core.y }, { x: p[p.length - 1].x, y: p[p.length - 1].y }, `${id} 核心在路径终点`);
-    assert.strictEqual(p[0].x, 0, `${id} 从左侧入场`);
-    assert.strictEqual(lv.core.x, C.GRID_COLS - 1, `${id} 从右侧出口`);
   }
   // 1-2 蛇形三段：上游行 < 中游行 < 下游行，入口在左上、出口在右下
   const l2 = levels['1-2'];

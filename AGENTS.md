@@ -7,7 +7,7 @@
 - **纯静态前端**：这是一个基于 HTML5 Canvas + JavaScript 的纯前端项目。**严禁引入任何构建工具（如 Webpack/Vite）或 TypeScript**，除非用户明确要求。
 - **水墨风格塔防**：游戏采用中国水墨风格（浓墨、淡墨、朱砂红），通过代码实现墨晕、拖影等特效。
 - **单文件入口**：游戏唯一入口是 [index.html](index.html) (Canvas 视口固定为 960x432；地图比视口宽，靠镜头横向滚动：每格 72px，塔防 26 列 × 6 行，征服 22 列 × 6 行)。
-- **当前玩法：字形弹道（2026-10-19 起，2026-10-20 扩充）**：商店与征服召唤池有十二座单字塔——火、水、土、木、金、风、炮、雷、冰、弓、山、剑（`CONFIG.ACTIVE_TOWERS`），另有三座只能融合得到的合字塔——炎（火+火）、林（木+木）、焚（林+火）。每座塔都是笔画写出的字形弹道，普攻消耗笔画、写回即冷却，蓄满自动放大招；山是唯一路径塔（有生命、挡路）。融合：选中素材塔，另一份素材在相邻 8 格内，在信息面板点「合」，配方集中在 `CONFIG.FUSION`（[js/config/fusion.js](js/config/fusion.js)），校验与结算在 [js/core/fusion.js](js/core/fusion.js)；图鉴有炮塔志、妖异录、合字图鉴三页，合字全部开放。敌人只有尸、鬼、巨，连续刷怪（开局前选敌潮「稀/常/潮」，默认「潮」），限时坚守 `HOLD_SECONDS` 秒获胜；塔防、征服各 2 关；没有升级系统。2026-10-20 前的 32 座旧单字塔与旧攻击链已删除（留档 [docs/legacy-towers.md](docs/legacy-towers.md)），现有金风炮雷冰弓山剑是按字形结构重建的新实现，与旧版无关。
+- **当前玩法：字形弹道（2026-10-19 起，2026-10-20 扩充，2026-10-21 四大关卡与敌人扩充）**：商店与征服召唤池有十二座单字塔——火、水、土、木、金、风、炮、雷、冰、弓、山、剑（`CONFIG.ACTIVE_TOWERS`），另有三座只能融合得到的合字塔——炎（火+火）、林（木+木）、焚（林+火）。每座塔都是笔画写出的字形弹道，普攻消耗笔画、写回即冷却，蓄满自动放大招；现役塔都没有路径塔：山放在路边可建造格上，没有生命，被动「镇」压制射程内敌人的能力冷却。融合：选中素材塔，另一份素材在相邻 8 格内，在信息面板点「合」，配方集中在 `CONFIG.FUSION`（[js/config/fusion.js](js/config/fusion.js)），校验与结算在 [js/core/fusion.js](js/core/fusion.js)；图鉴有炮塔志、妖异录、合字图鉴三页，合字全部开放。敌人 23 种：尸、鬼、巨，加 12 种单字敌人（骨狐蛛鲛蛙龟铠骑巫魇瘴饕）、2 种双字精英（夜叉、傀儡）、2 种三字精英（白骨精、镇墓兽）、4 种四字首领（百鬼夜行、翻江倒海、铜墙铁壁、万劫不复）；多字敌人每个字单独计血，碎一个字就失效一种能力；连续刷怪（开局前选敌潮「稀/常/潮」，默认「潮」），限时坚守获胜，关底（每主题第 5 关）要同时坚守到时并斩下首领；塔防 4 个主题 × 5 关共 20 关，**全部解锁**，征服仍是 2 关（不接入新敌人）；没有升级系统。控制按字数分档、有卷入预算与硬控递减，四字首领免疫硬控（累积震慑），见 [js/config/control-rules.js](js/config/control-rules.js)。2026-10-20 前的 32 座旧单字塔与旧攻击链已删除（留档 [docs/legacy-towers.md](docs/legacy-towers.md)），现有金风炮雷冰弓山剑是按字形结构重建的新实现，与旧版无关。
 - **现行实现优先**：带日期的工单、测试报告和设计提案描述的是当时状态，不自动代表当前功能或当前缺陷；先核对代码与现行架构文档。
 
 ## 强制规则（必须遵守）
@@ -77,7 +77,7 @@ npm run test:balance
 ```
 涉及平衡性调整时，数值与行为以实际加载的配置和代码为准。若任务要求同步维护数值文档，使用 [全塔全敌数值平衡规格](docs/full-balance-spec.md) 时须先核对其历史基线数据，不得把其中的旧测试结论当作当前结果。
 
-`test:balance` 现为「实验护栏」，只断言结构（十五座字形塔配置齐全、三档密度单调、集中常量存在），不再断言平衡数值（决策 D12：本阶段不做数值平衡）。`test:glyph` 串跑 `test-glyph-battle.js`（火水土木与打击反馈）、`test-glyph-towers.js`（十一座新塔）、`test-fusion.js`（融合）。
+`test:balance` 是「平衡护栏」：除结构断言外，2026-10-21 起恢复数值断言（决策 E8，推翻旧 D12）——敌人总表、hpMul 曲线、压力指数三条约束、奖励/血量比、首领击杀用时、招式 `delivery` 分类，试算模型在 [scripts/lib/balance-model.js](scripts/lib/balance-model.js)，`npm run balance:sheet` 输出 [docs/test-results/balance-sheet.md](docs/test-results/balance-sheet.md)。另有 `test:segments`（多字分段与能力框架）、`test:control`（控制规则）、`test:abilities`（逐能力断言）、`test:roster`（关卡编排）、`test:boss`（首领胜负）。`test:glyph` 串跑 `test-glyph-battle.js`（火水土木与打击反馈）、`test-glyph-towers.js`（十一座新塔）、`test-fusion.js`（融合）。
 
 统一测试命令：`npm test`（含 `check:line-count`）、`npm run test:balance`、`test:damage`、`test:frame`、`test:pool`、`test:levels`、`test:camera`、`test:path`、`test:glyph` 等，完整清单见 `package.json`。
 
@@ -85,17 +85,18 @@ npm run test:balance
 
 在修改代码前，请先查阅真实实现，文档可能滞后。数值与行为始终以**代码为准**。
 
-- **全局配置**：[js/config.js](js/config.js)、[js/config/domain-01.js](js/config/domain-01.js)、[js/config/domain-02.js](js/config/domain-02.js)、[js/config/domain-03.js](js/config/domain-03.js)、[js/config/glyph-battle.js](js/config/glyph-battle.js)（连续刷怪、敌潮三档、坚守、打击反馈等字形弹道集中配置）、[js/config/glyphs.js](js/config/glyphs.js)（火、水、土、木笔画与招式参数，及全部字形塔配色与通用 `applyGlyphMoves`）、[js/config/glyphs-ext.js](js/config/glyphs-ext.js)（金风炮雷冰弓山剑）、[js/config/glyphs-fusion.js](js/config/glyphs-fusion.js)（合字笔画由素材字组合生成，及炎林焚招式参数）和 [js/config/fusion.js](js/config/fusion.js)（融合配方、冷却、相邻范围）共同建立运行时 `CONFIG`，包含炮塔、敌人、颜色等配置。游戏数值应集中在配置中，禁止在散落的模块中写死常量。
+- **全局配置**：[js/config.js](js/config.js)、[js/config/domain-01.js](js/config/domain-01.js)、[js/config/domain-02.js](js/config/domain-02.js)、[js/config/domain-03.js](js/config/domain-03.js)、[js/config/glyph-battle.js](js/config/glyph-battle.js)（连续刷怪、敌潮三档、坚守、打击反馈等字形弹道集中配置）、[js/config/glyphs.js](js/config/glyphs.js)（火、水、土、木笔画与招式参数，及全部字形塔配色与通用 `applyGlyphMoves`）、[js/config/glyphs-ext.js](js/config/glyphs-ext.js)（金风炮雷冰弓山剑）、[js/config/glyphs-fusion.js](js/config/glyphs-fusion.js)（合字笔画由素材字组合生成，及炎林焚招式参数）、[js/config/fusion.js](js/config/fusion.js)（融合配方、冷却、相邻范围）、[js/config/enemies-single.js](js/config/enemies-single.js) / [enemies-multi.js](js/config/enemies-multi.js) / [enemies-boss.js](js/config/enemies-boss.js)（20 种新敌人，须在 `glyph-battle.js` 之前加载）、[js/config/control-rules.js](js/config/control-rules.js)（控制分档、卷入预算、硬控递减、震慑）和 [js/config/boss-battle.js](js/config/boss-battle.js)（首领流程、召唤奖励、显形时长）共同建立运行时 `CONFIG`，包含炮塔、敌人、颜色等配置。游戏数值应集中在配置中，禁止在散落的模块中写死常量。
 - **主控制器**：[js/game.js](js/game.js) 及 js/core/。管理游戏主循环、状态机以及所有实体列表。
 - **核心实体**：
   - 炮塔：[js/tower.js](js/tower.js) 及 js/entities/towers/（`misc.js` 重置/更新/出售、`effects.js` 受击、`rendering-basic.js` 绘制入口）。塔的攻击由 `js/glyph/` 的字形组件接管（无升级）；`Tower` 的方法统一定义在 js/entities/towers/misc.js。
-  - 敌人：[js/enemy.js](js/enemy.js) 及 js/entities/enemy/。处理移动、寻路、扣血和死亡分裂。
+  - 敌人：[js/enemy.js](js/enemy.js) 及 js/entities/enemy/。处理移动、寻路、扣血和死亡分裂；[segments.js](js/entities/enemy/segments.js) 是多字分段（每字单独计血、溢出顺延、碎字）与伤害管线，js/entities/enemy/abilities/ 是能力实现（`registry.js` 调度，`minor-a/b`、`elite`、`boss` 按组注册）。尸、鬼、巨走旧的单段路径，带 `abilities` / `segments` 的新敌人走分段管线。新增敌人：配置（`tier`、`abilities` 或 `segments`）+ 在 abilities 下登记能力 + `ACTIVE_ENEMIES` 与 `CODEX.enemies` 文案。
 - **系统模块**：
   - **字形弹道**：`js/glyph/`（brush 笔刷、fx 特效与打击反馈、adapter 接入正式 `Tower`/`Enemy`、glyph-tower 通用笔画消耗/蓄力、kit 新塔共用工具（落点、沿路取敌、飞行笔画绘制）、每塔一个招式文件、system 调度与 `GlyphSystem.IMPLS` 注册表）。新增字形塔：配置三件套（`TOWERS` 条目、`GLYPHS` 笔画、招式参数经 `applyGlyphMoves` 注入）+ `js/glyph/<type>.js`（`update`/`cast`/`updateShot`/`drawShot`）+ 在 `IMPLS` 登记 + `index.html` 与 `tests/helpers/glyph-env.js` 加载。
   - **融合**：[js/core/fusion.js](js/core/fusion.js)（配方查询、校验、结算，塔防与征服共用）、[js/ui/fusion-panel.js](js/ui/fusion-panel.js)（信息面板合成区）、[js/ui/codex-fusion.js](js/ui/codex-fusion.js)（合字图鉴）。
-  - **路程与刷怪**：[js/core/path-track.js](js/core/path-track.js)（敌人沿里程 `s` 移动）、[js/core/spawner.js](js/core/spawner.js)（连续刷怪、敌潮、坚守计时）。
+  - **路程与刷怪**：[js/core/path-track.js](js/core/path-track.js)（敌人沿里程 `s` 移动）、[js/core/spawner.js](js/core/spawner.js)（连续刷怪、敌潮、坚守计时；关卡带 `roster` 时按编排刷怪，否则走旧逻辑）、[js/core/spawn-schedule.js](js/core/spawn-schedule.js)（roster 抽取、重敌间隔、精英时间点）、[js/core/boss.js](js/core/boss.js)（首领出场、斩首、到达核心、关底胜负）、[js/ui/boss-bar.js](js/ui/boss-bar.js)（首领血条、横幅、夜幕、屏外箭头）。
+  - **控制规则**：[js/glyph/control-rules.js](js/glyph/control-rules.js)（`ControlRules`：所有塔的击退、眩晕、冻结、卷入、吸入都经这里；`js/glyph/` 下除它之外不直接调用 `glyphStun` / `freeze` / `knockback`）。招式伤害要在 `GlyphWorld.damage` 的 `opts` 里写明 `delivery`（`projectile` / `ground` / `instant`），范围效果另加 `aoe: true`，持续伤害每跳加 `dot: true`。
   - **镜头**：[js/core/camera.js](js/core/camera.js)（横向滚动、屏幕/世界坐标换算；滚轮、键盘、拖拽、边缘滚动）。
-  - **关卡系统**：[js/levelManager.js](js/levelManager.js) 和 js/data/levels/。
+  - **关卡系统**：[js/levelManager.js](js/levelManager.js)（字段白名单：新增关卡字段必须加进 `_resolveLevel`，否则会被静默丢弃）和 js/data/levels/part-01～04.js（4 个主题各一个文件；主题表只有 [js/levelsData.js](js/levelsData.js) 一份）。岩石格走 `specialTerrain`（[js/map-rocks.js](js/map-rocks.js) 绘制）。
   - **渲染系统**：[js/inkRenderer.js](js/inkRenderer.js) 和 [js/particle.js](js/particle.js)。负责水墨特效（飞白、墨滴、拖影）。
   - **UI 交互**：[js/ui.js](js/ui.js) 及 js/ui/。
 - **测试与工具**：`tests/` 存放 Node 测试，`scripts/` 存放开发工具；根目录不再保留测试/工具入口。

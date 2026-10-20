@@ -33,10 +33,11 @@ class ConquestProgressManager {
     const exists = (id) => !hasData || (typeof id === 'string' && Object.prototype.hasOwnProperty.call(CONQUEST_LEVELS_DATA, id));
     const themeCount = typeof CONQUEST_THEMES !== 'undefined' ? CONQUEST_THEMES.length : this.totalThemes;
     const completed = Array.isArray(p.completedLevels) ? p.completedLevels.filter(exists) : [];
-    const themes = Array.isArray(p.unlockedThemes) ? p.unlockedThemes.filter((t) => t >= 1 && t <= themeCount) : [];
+    // 全部解锁（决策 E7）：读档时直接补全所有主题，不弹提示
+    const themes = Array.from({ length: Math.max(1, themeCount) }, (_, i) => i + 1);
     return {
       completedLevels: completed,
-      unlockedThemes: themes.length ? themes : [1],
+      unlockedThemes: themes,
       lastPlayedLevel: exists(p.lastPlayedLevel) ? p.lastPlayedLevel : '1-1'
     };
   }

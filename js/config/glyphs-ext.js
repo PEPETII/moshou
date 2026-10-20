@@ -145,7 +145,7 @@ const GLYPH_MOVES_EXT = {
     vortexDuration: 3,
     vortexRadius: 120,       // [px]
     vortexPull: 70,          // [px/s] 沿路吸向中心的速度
-    vortexDps: 18, vortexTick: 0.3,
+    vortexDps: 22, vortexTick: 0.3,
     vortexGlyph: 120,        // [px]
     rewriteAll: 1.2,
     landMinS: 120,           // [px]
@@ -196,7 +196,7 @@ const GLYPH_MOVES_EXT = {
     chillStacks: 1, chillDuration: 2.4, freezeTime: 1.1,
     chargePerSec: 0.09, chargePerHit: 0.02,
     frostSpeed: 380,         // [px/s] 寒潮扩散速度
-    frostFreeze: 2,
+    frostFreeze: 1.6,
     frostDamage: 18,
     rewriteAll: 1.3,
   },
@@ -206,7 +206,7 @@ const GLYPH_MOVES_EXT = {
     arrowInterval: 1.1, arrowDamage: [26, 32], arrowRewrite: 0.7,
     arrowSpeed: 900,         // [px/s]
     arrowRadius: 14,         // [px]
-    heavyMul: 1.6,           // 对重敌（weight > 1）的伤害倍率
+    heavyMul: 1.6,           // 对重敌（tier 为 heavy）的伤害倍率
     critChance: 0.2, critMul: 1.8,
     chargePerSec: 0.08, chargePerHit: 0.03,
     rainDuration: 1.8,
@@ -219,18 +219,20 @@ const GLYPH_MOVES_EXT = {
     landStep: 16,            // [px]
     landRangeMul: 1,
   },
-  // 山：路径塔，挡路并承受攻击；峰刺从脚下拱出，崩回满生命并沿路震荡
+  // 山：普通塔，被动「镇」压制射程内敌人的能力冷却；峰刺从脚下拱出，崩沿路震荡
   mountain: {
-    range: 170,              // [px]
-    spikeInterval: 1.2, spikeDamage: [14, 18], spikeRewrite: 0.8,
+    range: 185,              // [px]
+    spikeInterval: 1.2, spikeDamage: [16, 21], spikeRewrite: 0.8,
     spikeDelay: 0.25,        // 石刺从预警到拱出的秒数
     spikeStun: 0.2,
     chargePerSec: 0.1, chargePerHit: 0.02,
     quakeReach: 200,         // [px] 沿路每个方向的震荡长度
     quakeKnock: 40,          // [px]
     quakeStun: 0.9,
-    quakeDamage: 30,
-    quakeHeal: 1,            // 回复最大生命的比例
+    quakeDamage: 38,
+    suppressRadius: 185,     // [px] 「镇」光环半径，同射程
+    suppressRate: 0.6,       // 光环内敌人能力冷却的流逝速度倍率（越小冷却越慢）
+    suppressBossRate: 0.8,   // 对四字首领只打八折
     rewriteAll: 1.4,
   },
   // 剑：短射程高频斩击；巨剑沿路飞斩
@@ -256,6 +258,6 @@ applyGlyphMoves(GLYPH_MOVES_EXT, {
   thunder: ['range', 'arcJumpRange', 'boltRadius'],
   ice: ['range', 'icicleSpeed', 'icicleRadius', 'frostSpeed'],
   bow: ['range', 'arrowSpeed', 'arrowRadius', 'rainLength', 'rainHitRadius', 'landMinS', 'landStep'],
-  mountain: ['range', 'quakeReach', 'quakeKnock'],
+  mountain: ['range', 'quakeReach', 'quakeKnock', 'suppressRadius'],
   sword: ['range', 'slashLen', 'flySpeed', 'flyDistance', 'flyWidth', 'flyGlyph'],
 });

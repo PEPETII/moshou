@@ -22,13 +22,20 @@ Object.assign(CONFIG, {
   ULT_GLOBAL_GAP: 0.6,
 
   // 出场（图鉴、刷怪）的敌人；其余敌人配置保留但不出场
-  ACTIVE_ENEMIES: ['corpse', 'ghost', 'giant'],
+  // 顺序即妖异录的出场顺序（工单 07、11）
+  ACTIVE_ENEMIES: [
+    'corpse', 'ghost', 'giant',
+    'bone', 'fox', 'spider', 'jiao', 'frog', 'turtle', 'kai', 'rider', 'shaman', 'nightmare', 'miasma', 'glutton',
+    'yaksha', 'puppet', 'baigujing', 'zhenmushou',
+    'baiguiyexing', 'fanjiangdaohai', 'tongqiangtiebi', 'wanjiebufu',
+  ],
 
-  // 敌潮三档：rate = 每秒刷怪数；giantEvery = 每隔多少秒刷一只巨
+  // 敌潮三档：rate = 每秒刷怪数；giantEvery = 每隔多少秒刷一只巨（没有 heavy 编排的关卡用）；
+  // rewardMul = 击杀奖励倍率（让三档的墨水收入接近，工单 11 §3.1）
   DENSITY: {
-    sparse: { label: '稀', rate: 1.6, giantEvery: 14, desc: '疏疏落落，慢慢练笔' },
-    normal: { label: '常', rate: 3.4, giantEvery: 9, desc: '源源不断，张弛有度' },
-    flood: { label: '潮', rate: 6.5, giantEvery: 5, desc: '倾巢而出，墨浪翻涌' },
+    sparse: { label: '稀', rate: 1.6, giantEvery: 14, rewardMul: 1.6, desc: '疏疏落落，慢慢练笔' },
+    normal: { label: '常', rate: 3.4, giantEvery: 9, rewardMul: 1.0, desc: '源源不断，张弛有度' },
+    flood: { label: '潮', rate: 6.5, giantEvery: 5, rewardMul: 0.6, desc: '倾巢而出，墨浪翻涌' },
   },
   // 每次开局的默认档位（A7：不记忆上一次选择）
   DENSITY_DEFAULT: 'flood',
@@ -48,7 +55,6 @@ Object.assign(CONFIG, {
     burnMaxStacks: 4,        // 灼烧最大层数
     burnShowInterval: 0.45,  // 灼烧伤害合并显示的间隔（秒）
     wetSlow: 0.3,            // 湿身减速比例
-    giantKnockMul: 0.3,      // 重敌（weight > 1）被击退的距离折扣
     // 2026-10-20 新塔状态：减速（土、木、林）、寒（冰）、破甲（金）
     slowCap: 0.8,            // 湿身、减速、寒叠乘后的总减速上限
     chillSlowPerStack: 0.12, // 寒每层减速比例
@@ -79,9 +85,10 @@ Object.assign(CONFIG, {
   },
 });
 
-// speedPx → speed（格/秒）
+// speedPx → speed（格/秒）；多字敌人的 hp 由各段相加
 for (const key of Object.keys(CONFIG.ENEMIES)) {
   const e = CONFIG.ENEMIES[key];
+  if (Array.isArray(e.segments)) e.hp = e.segments.reduce((a, s) => a + s.hp, 0);
   if (typeof e.speedPx === 'number') {
     e.speed = e.speedPx * CONFIG.GLYPH_SCALE / CONFIG.CELL_SIZE;
     if (typeof e.size === 'number') e.drawSize = Math.round(e.size * CONFIG.GLYPH_SCALE);

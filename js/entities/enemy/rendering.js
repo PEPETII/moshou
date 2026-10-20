@@ -8,7 +8,8 @@ Enemy.prototype.draw = function(ctx, inkRenderer) {
     // 应用晃动偏移
     ctx.translate(this.shakeOffset.x, this.shakeOffset.y);
     
-    const size = this.size || 26;
+    // 多字敌人的 size 是整只的包围盒长度，绘制字号用 glyphSize
+    const size = this.glyphSize || this.size || 26;
     const dx = this.flash > 0 ? (Math.random() - 0.5) * 4 : 0;
     const dy = this.flash > 0 ? (Math.random() - 0.5) * 4 : 0;
     const ex = this.x + dx;
@@ -42,8 +43,9 @@ Enemy.prototype.draw = function(ctx, inkRenderer) {
       ctx.beginPath(); ctx.arc(this.x, this.y, size * 0.6, 0, Math.PI * 2); ctx.fill();
     }
 
-    // 确定敌人颜色状态
-    let color = CONFIG.COLORS.enemy;
+    // 确定敌人颜色状态（新敌人按 CONFIG.COLORS.enemies 取本色，缺省浓墨）
+    const fxCfg = CONFIG.ENEMY_FX;
+    let color = (CONFIG.COLORS.enemies && CONFIG.COLORS.enemies[this.type]) || CONFIG.COLORS.enemy;
     if (this.flash > 0) {
       color = "#b4473a";  // 受击闪朱砂
     } else if (this.vaporizeMark) {
@@ -60,13 +62,22 @@ Enemy.prototype.draw = function(ctx, inkRenderer) {
       color = "#6a6459";  // 减速状态显示淡墨
     }
 
-    // 绘制敌人文字（水墨风格）；鬼漂浮时略淡
+    // 绘制敌人文字（水墨风格）；鬼漂浮时略淡；隐身（不可选中）时画成虚影
     if (this.float) ctx.globalAlpha = 0.85;
-    inkRenderer.drawInkText(this.char, ex, ey, size, color, true);
+    if (this.untargetable && !(this.revealT > 0)) ctx.globalAlpha = fxCfg.ghostAlpha;
+    if (this.abil && this.abil.length) EnemyAbilities.draw(ctx, this);
+    // 前摇：字身轻微抖动
+    const wj = this.windup > 0 ? (Math.random() - 0.5) * 3 * this.windup : 0;
+    if (this.glyphCount > 1) this.drawSegments(ctx, inkRenderer, color, ex, ey);
+    else if (this.rubble) this.drawRubble(ctx, ex, ey, size);
+    else inkRenderer.drawInkText(this.char, ex + wj, ey, size, color, true);
     ctx.globalAlpha = 1;
+    this.drawStatusMarks(ctx, size);
 
-    // 血条（受伤后才显示）；眩晕时头顶画一圈
-    if (this.hp < this.maxHp) {
+    // 血条（受伤后才显示）；多字敌人逐字画，首领用顶部血条；眩晕时头顶画一圈
+    if (this.segs && this.glyphCount > 1) this.drawSegBars(ctx);
+    else if (this.isBoss) { /* 首领血条见 js/ui/boss-bar.js */ }
+    else if (this.hp < this.maxHp && !this.rubble) {
       const w = size * 0.9;
       ctx.fillStyle = 'rgba(40,34,28,0.18)';
       ctx.fillRect(this.x - w / 2, this.y + size * 0.58, w, 3);
@@ -169,4 +180,43 @@ Enemy.prototype.draw = function(ctx, inkRenderer) {
 
     ctx.restore();
   
+};
+
+// 能力状态的小标记：被「镇」压制的敌人头顶小「镇」字；前摇时头顶显示能力名（首领）
+Enemy.prototype.drawStatusMarks = function(ctx, size) {
+    if (this.suppressedT > 0) {
+        ctx.save();
+        ctx.globalAlpha = 0.6;
+        ctx.fillStyle = '#5a5a50';
+        ctx.font = `10px ${CONFIG.FONTS.BRUSH}`;
+        ctx.textAlign = 'center';
+        ctx.fillText('镇', this.x, this.y - size * 0.7);
+        ctx.restore();
+    }
+    if (this.windupLabel && this.windup > 0) {
+        ctx.save();
+        ctx.fillStyle = '#b03a2e';
+        ctx.font = `14px ${CONFIG.FONTS.BRUSH}`;
+        ctx.textAlign = 'center';
+        ctx.fillText(this.windupLabel, this.x, this.y - size * 0.95);
+        ctx.restore();
+    }
+    if (this.staggerT > 0) {
+        ctx.save();
+        ctx.fillStyle = '#b03a2e';
+        ctx.font = `12px ${CONFIG.FONTS.BRUSH}`;
+        ctx.textAlign = 'center';
+        ctx.fillText('踉跄', this.x, this.y - size * 0.75);
+        ctx.restore();
+    }
+};
+
+// 碎骨（骨的复聚等待期）：一小堆碎墨
+Enemy.prototype.drawRubble = function(ctx, x, y, size) {
+    ctx.fillStyle = 'rgba(138,133,122,0.7)';
+    for (let i = 0; i < 4; i++) {
+        ctx.beginPath();
+        ctx.arc(x + (i - 1.5) * size * 0.18, y + size * 0.25 + (i % 2) * 2, size * 0.1, 0, Math.PI * 2);
+        ctx.fill();
+    }
 };

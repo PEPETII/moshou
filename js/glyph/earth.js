@@ -15,9 +15,9 @@ const GlyphEarth = {
     GlyphTower.consume(t, 2, 0.08, cfg.poundRewrite);
     gl.recoil = 7 * S;
     for (const e of pool) {
-      e.glyphSlow(cfg.mireSlow, cfg.mireDuration);
+      ControlRules.slow(e, cfg.mireSlow, cfg.mireDuration, 'ground');
       e.pushVx = (e.x - t.x) * 0.8;
-      GlyphWorld.damage(e, Math.round(GlyphFX.rnd(cfg.poundDamage[0], cfg.poundDamage[1])), { color: c.earth, kind: 'earth' });
+      GlyphWorld.damage(e, Math.round(GlyphFX.rnd(cfg.poundDamage[0], cfg.poundDamage[1])), { color: c.earth, kind: 'earth', delivery: 'ground', aoe: true });
     }
     GlyphTower.addCharge(t, cfg.chargePerHit * Math.min(cfg.poundChargeCap, pool.length));
     GlyphSystem.push(t.game, { tower: t, kind: 'pound', ground: true, x: t.x, y: t.y, t: 0, dur: 0.45 });
@@ -59,7 +59,7 @@ const GlyphEarth = {
     const c = CONFIG.GLYPH_COLORS;
     const S = CONFIG.GLYPH_SCALE;
     GlyphFX.addHitstop(0.05);
-    GlyphFX.addShake(8);
+    GlyphFX.addShake(8, true);
     GlyphFX.ring(s.tx, s.ty, cfg.wallRadius / S, c.earth, 0.4, 7);
     GlyphFX.emit(36, s.tx, s.ty, { color: c.earthLight, speed: [80, 300], life: [0.3, 0.7], size: [2, 4], grav: 320 });
     GlyphFX.stain(s.tx, s.ty, 30, '#5c4630', 0.28);
@@ -75,8 +75,8 @@ const GlyphEarth = {
     while (s.tick >= cfg.wallTick) {
       s.tick -= cfg.wallTick;
       for (const e of GlyphWorld.enemiesInRange(s.game, s.x, s.y, cfg.wallRadius)) {
-        e.glyphSlow(cfg.wallSlow, cfg.wallTick + 0.2);
-        GlyphWorld.damage(e, cfg.wallDps * cfg.wallTick, { color: c.earth, size: 15, kind: 'earth' });
+        ControlRules.slow(e, cfg.wallSlow, cfg.wallTick + 0.2, 'ground');
+        GlyphWorld.damage(e, cfg.wallDps * cfg.wallTick, { color: c.earth, size: 15, kind: 'earth', delivery: 'ground', aoe: true, dot: true });
       }
     }
     if (Math.random() < dt * 14) {
@@ -96,12 +96,12 @@ const GlyphEarth = {
     const c = CONFIG.GLYPH_COLORS;
     const S = CONFIG.GLYPH_SCALE;
     for (const e of GlyphWorld.enemiesInRange(s.game, s.x, s.y, cfg.wallRadius)) {
-      e.glyphStun(cfg.collapseStun);
+      ControlRules.stun(e, cfg.collapseStun, 'ground');
       e.pushVx = (e.x - s.x) * 1.2;
-      GlyphWorld.damage(e, cfg.collapseDamage, { color: c.earth, kind: 'earth' });
+      GlyphWorld.damage(e, cfg.collapseDamage, { color: c.earth, kind: 'earth', delivery: 'ground', aoe: true });
     }
     GlyphFX.addHitstop(0.07);
-    GlyphFX.addShake(11);
+    GlyphFX.addShake(11, true);
     GlyphFX.ring(s.x, s.y, cfg.wallRadius / S * 1.1, c.earth, 0.45, 8);
     GlyphFX.ring(s.x, s.y, cfg.wallRadius / S * 0.7, c.ink, 0.3, 4);
     GlyphFX.emit(46, s.x, s.y, { color: c.earthLight, speed: [90, 340], life: [0.3, 0.7], size: [2, 4], grav: 320 });

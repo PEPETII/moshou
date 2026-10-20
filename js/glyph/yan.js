@@ -41,7 +41,7 @@ const GlyphYan = {
       if (Math.abs((e.x - ox) * dy - (e.y - oy) * dx) > cfg.beamWidth + e.size * 0.3) continue;
       hits++;
       e.ignite(cfg.beamIgnite, cfg.burnDuration);
-      GlyphWorld.damage(e, Math.round(GlyphFX.rnd(cfg.beamDamage[0], cfg.beamDamage[1])), { color: c.yan, kind: 'fire' });
+      GlyphWorld.damage(e, Math.round(GlyphFX.rnd(cfg.beamDamage[0], cfg.beamDamage[1])), { color: c.yan, kind: 'fire', delivery: 'instant', aoe: true });
       GlyphFX.emit(4, e.x, e.y, { color: c.yanLight, speed: [40, 150], life: [0.2, 0.4], size: [1.5, 3], kind: 'ember' });
     }
     GlyphTower.addCharge(t, cfg.chargePerHit * Math.min(cfg.beamChargeCap, hits));
@@ -88,10 +88,10 @@ const GlyphYan = {
       const d = Math.hypot(e.x - s.tx, e.y - s.ty);
       e.pushVx = (e.x - s.tx) * 4;
       e.ignite(cfg.bombIgnite, cfg.burnDuration + 1);
-      GlyphWorld.damage(e, Math.round(cfg.bombDamage * (1 - cfg.bombEdgeFalloff * d / r)), { color: c.yan, kind: 'fire' });
+      GlyphWorld.damage(e, Math.round(cfg.bombDamage * (1 - cfg.bombEdgeFalloff * d / r)), { color: c.yan, kind: 'fire', delivery: 'ground', aoe: true });
     }
     GlyphFX.addHitstop(0.08);
-    GlyphFX.addShake(14);
+    GlyphFX.addShake(14, true);
     GlyphFX.ring(s.tx, s.ty, r / S * 1.25, c.yan, 0.5, 10);
     GlyphFX.emit(60, s.tx, s.ty, { color: c.yanLight, speed: [120, 520], life: [0.35, 0.9], size: [2, 5], kind: 'ember', drag: 3 });
     GlyphFX.emit(10, s.tx, s.ty, { color: '#3a2a20', speed: [20, 80], life: [0.8, 1.4], size: [14, 26], kind: 'smoke', drag: 1 });
@@ -107,7 +107,7 @@ const GlyphYan = {
     while (s.tick >= cfg.markTick) {
       s.tick -= cfg.markTick;
       for (const e of GlyphWorld.enemiesInRange(s.game, s.x, s.y, cfg.markRadius)) {
-        GlyphWorld.damage(e, cfg.markDps * cfg.markTick, { color: c.yan, size: 15, kind: 'fire' });
+        GlyphWorld.damage(e, cfg.markDps * cfg.markTick, { color: c.yan, size: 15, kind: 'fire', delivery: 'ground', aoe: true, dot: true });
         e.ignite(1, 1.2);
       }
     }

@@ -36,7 +36,7 @@ const GlyphThunder = {
       hit.add(e);
       pts.push({ x: e.x, y: e.y });
       const wet = e.wet > 0;
-      GlyphWorld.damage(e, Math.round(dmg * (wet ? cfg.wetMul : 1)), { crit: wet, color: c.thunder, kind: 'thunder' });
+      GlyphWorld.damage(e, Math.round(dmg), { crit: wet, color: c.thunder, kind: 'thunder', delivery: 'instant', aoe: j > 0, wetBonus: cfg.wetMul });
       GlyphTower.addCharge(t, cfg.chargePerHit);
       GlyphFX.emit(5, e.x, e.y, { color: c.thunderLight, speed: [60, 200], life: [0.1, 0.25], size: [1, 2.2], kind: 'ember' });
       if (!wet) dmg *= cfg.arcFalloff;
@@ -84,11 +84,11 @@ const GlyphThunder = {
       const target = list[Math.floor(Math.random() * list.length)];
       const { x, y } = target;
       for (const e of GlyphWorld.enemiesInRange(s.game, x, y, cfg.boltRadius)) {
-        e.glyphStun(cfg.boltStun);
-        GlyphWorld.damage(e, cfg.boltDamage * (e.wet > 0 ? cfg.wetMul : 1), { crit: e === target, color: c.thunder, kind: 'thunder' });
+        ControlRules.stun(e, cfg.boltStun, 'thunder');
+        GlyphWorld.damage(e, cfg.boltDamage, { crit: e === target, color: c.thunder, kind: 'thunder', delivery: 'instant', aoe: true, wetBonus: cfg.wetMul });
       }
       GlyphSystem.push(s.game, { tower: t, kind: 'bolt', x, y, t: 0, dur: 0.28 });
-      GlyphFX.addShake(6);
+      GlyphFX.addShake(6, true);
       GlyphFX.addHitstop(0.03);
       GlyphFX.ring(x, y, cfg.boltRadius / S * 1.3, c.thunder, 0.3, 5);
       GlyphFX.emit(22, x, y, { color: c.thunderLight, speed: [80, 320], life: [0.15, 0.4], size: [1, 2.5], kind: 'ember', drag: 3 });

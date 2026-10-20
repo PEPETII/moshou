@@ -4,6 +4,8 @@ Enemy.prototype.die = function() {
     this.dead = true;
     this.deathTime = Date.now();
     this.game.ink += this.reward;
+    // 首领被斩：交给首领流程（横幅、剩余时间、胜负）
+    if (this.isBoss && typeof BossFlow !== 'undefined') BossFlow.onBossDeath(this.game, this);
     this.game.kills = (this.game.kills || 0) + 1;
     this.game.updateUI();
 
@@ -80,6 +82,8 @@ Enemy.prototype.performRangedAttack = function() {
   
 };
 Enemy.prototype.reachCore = function() {
+    // 首领到达核心：不走普通扣血，由首领流程处理（扣核心上限一半并回到入口，第二次直接判负）
+    if (this.isBoss && typeof BossFlow !== 'undefined') { BossFlow.onReachCore(this.game, this); return; }
     this.dead = true;
     this.game.leaks = (this.game.leaks || 0) + 1;
     this.game.coreHp -= this.damage;

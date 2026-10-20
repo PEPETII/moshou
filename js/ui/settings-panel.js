@@ -6,6 +6,7 @@
 //   打击反馈  CONFIG.GLYPH_FEEDBACK.storageKey 'on' / 'off'  → GlyphFX.feedback（总开关）
 //   伤害数字  moshou_damage_numbers      'on' / 'off'        → GlyphFX.numbersEnabled
 //   震动      moshou_screen_shake        'on' / 'off'        → GlyphFX.shakeEnabled
+//   震动减弱  moshou_shake_lite          'on' / 'off'（默认关）→ GlyphFX.shakeLite
 // 声音两项（开关 + 音量）仍由 js/audio.js 处理：按钮带 data-sound-toggle / data-bgm-toggle，
 // 滑块带 data-volume，状态由 InkAudio.syncButtons() 回写。
 const InkSettings = (() => {
@@ -30,6 +31,17 @@ const InkSettings = (() => {
       key: 'moshou_screen_shake', ...onOff,
       apply: (on) => { GlyphFX.shakeEnabled = on; if (!on) GlyphFX.shake = 0; },
     },
+    shakeLite: {
+      key: 'moshou_shake_lite',
+      read: (v) => v === 'on',
+      write: (on) => (on ? 'on' : 'off'),
+      apply: (on) => { GlyphFX.shakeLite = on; if (on) GlyphFX.ultShakeLock = 0; },
+    },
+    // 新敌人初见提示：第一次遇到某种新敌人时，角落弹一张小卡片（工单 14 §2.1），默认开启
+    enemyHint: {
+      key: 'moshou_enemy_hint', ...onOff,
+      apply: (on) => { if (window.EnemyHint) EnemyHint.enabled = on; },
+    },
   };
 
   const GROUPS = [
@@ -40,6 +52,8 @@ const InkSettings = (() => {
         { flag: 'feedback', label: '打击反馈', note: '顿帧、碎字、墨渍与连斩的总开关' },
         { flag: 'damage', label: '伤害数字' },
         { flag: 'shake', label: '震动', note: '墨迹动效关闭时不震屏' },
+        { flag: 'shakeLite', label: '震动减弱', note: '同一时间仅一个炮塔大招震屏，避免叠加' },
+        { flag: 'enemyHint', label: '敌人提示', note: '初见新敌人时，角落弹出一句能力说明' },
       ],
     },
     {

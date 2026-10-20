@@ -107,8 +107,8 @@ function createHarness() {
     "js/config.js",
     "js/config/domain-01.js",
     "js/config/domain-02.js",
-    "js/config/domain-03.js",
-    "js/config/glyph-battle.js",
+    "js/config/domain-03.js", "js/config/enemies-single.js", "js/config/enemies-multi.js", "js/config/enemies-boss.js",
+    "js/config/glyph-battle.js", "js/config/control-rules.js", "js/config/boss-battle.js",
     // 塔配置只留造价与文案，射程/字号由字形配置注入（与 index.html 加载顺序一致）
     "js/config/glyphs.js",
     "js/utils.js",

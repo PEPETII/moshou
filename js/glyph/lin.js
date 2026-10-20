@@ -26,10 +26,10 @@ const GlyphLin = {
     const cfg = t.gl.cfg;
     const c = CONFIG.GLYPH_COLORS;
     GlyphKit.consumeAll(t, 0.4, cfg.rewriteAll);
-    for (const e of pool) e.glyphStun(cfg.forestRoot);
+    for (const e of pool) ControlRules.root(e, cfg.forestRoot, 'ground');
     GlyphSystem.push(t.game, { tower: t, kind: 'forest', ground: true, x: t.x, y: t.y, t: 0, dur: cfg.forestDuration, tick: 0 });
     GlyphFX.addHitstop(0.06);
-    GlyphFX.addShake(8);
+    GlyphFX.addShake(8, true);
     GlyphFX.ring(t.x, t.y, cfg.range / CONFIG.GLYPH_SCALE, c.lin, 0.5, 8);
     GlyphFX.emit(40, t.x, t.y, { color: c.linLight, speed: [80, 300], life: [0.3, 0.7], size: [1.5, 3.5], grav: 160 });
     return true;
@@ -49,7 +49,7 @@ const GlyphLin = {
     while (s.tick >= cfg.forestTick) {
       s.tick -= cfg.forestTick;
       for (const e of GlyphWorld.enemiesInRange(s.game, s.x, s.y, cfg.range)) {
-        GlyphWorld.damage(e, cfg.forestDps * cfg.forestTick, { color: c.lin, size: 14, kind: 'wood' });
+        GlyphWorld.damage(e, cfg.forestDps * cfg.forestTick, { color: c.lin, size: 14, kind: 'wood', delivery: 'ground', aoe: true, dot: true });
       }
     }
     if (s.t >= s.dur) s.done = true;

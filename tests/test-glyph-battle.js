@@ -20,17 +20,17 @@ vm.createContext(ctx);
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const conquestSrc = read('js/conquestGame.js');
 const files = [
-  'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js',
-  'js/config/glyph-battle.js', 'js/config/glyphs.js', 'js/config/glyphs-ext.js', 'js/config/glyphs-fusion.js',
+  'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/enemies-single.js', 'js/config/enemies-multi.js', 'js/config/enemies-boss.js',
+  'js/config/glyph-battle.js', 'js/config/control-rules.js', 'js/config/boss-battle.js', 'js/config/glyphs.js', 'js/config/glyphs-ext.js', 'js/config/glyphs-fusion.js',
   'js/config/fusion.js', 'js/config/codex.js',
-  'js/utils.js', 'js/runtime.js', 'js/core/path-track.js', 'js/core/spawner.js',
-  'js/glyph/brush.js', 'js/glyph/fx.js', 'js/glyph/adapter.js', 'js/glyph/glyph-tower.js', 'js/glyph/kit.js',
+  'js/utils.js', 'js/runtime.js', 'js/core/path-track.js', 'js/core/spawn-schedule.js', 'js/core/spawner.js', 'js/core/boss.js',
+  'js/glyph/brush.js', 'js/glyph/fx.js', 'js/glyph/adapter.js', 'js/glyph/glyph-tower.js', 'js/glyph/kit.js', 'js/glyph/control-rules.js',
   'js/glyph/fire.js', 'js/glyph/water.js', 'js/glyph/earth.js', 'js/glyph/wood.js',
   ...['gold', 'wind', 'cannon', 'thunder', 'ice', 'bow', 'mountain', 'sword', 'yan', 'lin', 'fen'].map((n) => `js/glyph/${n}.js`),
   'js/glyph/system.js',
   'js/tower.js', 'js/entities/towers/effects.js',
   'js/entities/towers/misc.js', 'js/entities/towers/rendering-basic.js',
-  'js/enemy.js', 'js/entities/enemy/combat.js', 'js/entities/enemy/lifecycle.js', 'js/entities/enemy/misc.js', 'js/entities/enemy/motion.js',
+  'js/enemy.js', 'js/entities/enemy/combat.js', 'js/entities/enemy/lifecycle.js', 'js/entities/enemy/misc.js', 'js/entities/enemy/motion.js', 'js/entities/enemy/segments.js', 'js/entities/enemy/abilities/registry.js', 'js/entities/enemy/abilities/minor-a.js', 'js/entities/enemy/abilities/minor-b.js', 'js/entities/enemy/abilities/elite.js', 'js/entities/enemy/abilities/boss.js',
 ];
 const src = files.map(read).join('\n;\n')
   + '\nclass Game {}\n' + read('js/core/waves.js')

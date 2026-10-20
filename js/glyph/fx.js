@@ -14,6 +14,8 @@ const GlyphFX = {
   feedback: true,
   numbersEnabled: true, // 战斗设置「伤害数字」开关：关闭时只隐藏数字，其余反馈照常
   shakeEnabled: true,   // 战斗设置「震动」开关：关闭时不震屏（塔与敌人受击晃动另由各自读取）
+  shakeLite: false,     // 设置「震动减弱」：开启后同一时间只有一个炮塔大招的震屏生效
+  ultShakeLock: 0,      // 大招震屏锁剩余秒数
   reduceMotion: false,
   shake: 0,
   hitstop: 0,
@@ -40,6 +42,7 @@ const GlyphFX = {
     this.numbers.length = 0;
     this.shards.length = 0;
     this.shake = 0;
+    this.ultShakeLock = 0;
     this.hitstop = 0;
     this.combo = 0;
     this.comboTimer = 0;
@@ -136,9 +139,30 @@ const GlyphFX = {
     });
   },
 
-  addShake(v) {
+  // 任意文字飘字（碎字、能力名）：x、y 为世界坐标，opts = { color, size, life, rise }
+  text(x, y, str, opts) {
+    if (!this.feedback || !this.numbersEnabled) return;
+    const S = CONFIG.GLYPH_SCALE;
+    const cfg = CONFIG.GLYPH_FEEDBACK.number;
+    const life = (opts && opts.life) || cfg.critLife;
+    if (this.numbers.length >= CONFIG.GLYPH_FEEDBACK.numberMax) this.numbers.shift();
+    this.numbers.push({
+      x, y, vy: -((opts && opts.rise) || cfg.rise) * S, text: str,
+      size: ((opts && opts.size) || cfg.size) * S,
+      color: (opts && opts.color) || CONFIG.GLYPH_COLORS.ink, life, max: life,
+    });
+  },
+
+  // ult = true：炮塔大招的震屏。震动减弱开启时，锁内的其他大招震屏被忽略，且不累加
+  addShake(v, ult) {
     if (!this.feedback || this.reduceMotion || !this.shakeEnabled) return;
     const fb = CONFIG.GLYPH_FEEDBACK;
+    if (ult && this.shakeLite) {
+      if (this.ultShakeLock > 0) return;
+      this.ultShakeLock = fb.ultShakeLock || 0.6;
+      this.shake = Math.min(fb.maxShake * CONFIG.GLYPH_SCALE, Math.max(this.shake, v * CONFIG.GLYPH_SCALE));
+      return;
+    }
     this.shake = Math.min(fb.maxShake * CONFIG.GLYPH_SCALE, this.shake + v * CONFIG.GLYPH_SCALE);
   },
 
@@ -313,6 +337,7 @@ const GlyphFX = {
 
     const fb = CONFIG.GLYPH_FEEDBACK;
     this.shake = Math.max(0, this.shake - dt * fb.shakeDecay * CONFIG.GLYPH_SCALE);
+    if (this.ultShakeLock > 0) this.ultShakeLock -= dt;
     this.comboPop = Math.max(0, this.comboPop - dt * 5);
     if (this.comboTimer > 0) {
       this.comboTimer -= dt;

@@ -1,7 +1,7 @@
 /**
  * 关卡管理器 - 支持主题分类的关卡系统
- * 5个主题，每个主题10个关卡，共50关
- * 关卡ID格式: "主题-关卡" 如 "1-1", "2-5", "5-10"
+ * 4 个主题，每个主题 5 个关卡，共 20 关；主题表与关卡数据都来自 levelsData.js / data/levels/
+ * 关卡ID格式: "主题-关卡" 如 "1-1", "4-5"
  */
 class LevelManager {
   constructor() {
@@ -21,10 +21,8 @@ class LevelManager {
    * 初始化主题配置
    */
   _initThemes() {
-    const themeConfigs = {
-      1: { id: 1, name: "初墨", icon: "墨", color: "#6a6459", desc: "水墨初染，入门试炼", unlockRequirement: null }
-    };
-    
+    // 主题表只有 levelsData.js 的 THEMES 一份
+    const themeConfigs = typeof THEMES !== 'undefined' ? THEMES : {};
     for (const [id, config] of Object.entries(themeConfigs)) {
       this._themes.set(parseInt(id), config);
     }
@@ -61,31 +59,24 @@ class LevelManager {
    * 获取主题下的所有关卡
    */
   getLevelsByTheme(themeId) {
+    // 按实际注册的关卡取，theme 字段匹配，按关卡序号排序
     const levels = [];
-    for (let i = 1; i <= 10; i++) {
-      const levelId = `${themeId}-${i}`;
-      const level = this.get(levelId);
-      if (level) {
-        levels.push(level);
-      }
+    for (const [id, raw] of this._registry) {
+      if (raw.theme !== themeId) continue;
+      const n = parseInt(String(id).split('-')[1], 10);
+      levels.push({ n, id });
     }
-    return levels;
+    levels.sort((a, b) => a.n - b.n);
+    return levels.map((l) => this.get(l.id)).filter(Boolean);
   }
 
   /**
    * 检查主题是否已解锁
    * 第一个主题默认解锁，其他主题需要满足 unlockRequirement 条件
    */
-  isThemeUnlocked(themeId, completedLevels = []) {
-    // 第一个主题默认解锁
-    if (themeId === 1) return true;
-
-    const theme = this.getTheme(themeId);
-    if (!theme || !theme.unlockRequirement) return true;
-
-    const { theme: reqTheme, level: reqLevel } = theme.unlockRequirement;
-    const requiredLevelId = `${reqTheme}-${reqLevel}`;
-    return completedLevels.includes(requiredLevelId);
+  isThemeUnlocked() {
+    // 所有主题、关卡全部解锁（决策 E7）；unlockRequirement 保留但不再参与判断，通关记录照常保存与显示
+    return true;
   }
 
   /**
@@ -211,6 +202,14 @@ class LevelManager {
       placementGrid: placementGrid,
       // 连续刷怪（工单 04）：不再有固定波次；可选 holdSeconds 覆盖默认坚守时长
       holdSeconds: rawData.holdSeconds,
+      // 刷怪编排（工单 01）：本关敌人、重敌、精英、首领、加压时段与血量倍率。归一化白名单必须列全，否则会被静默丢弃
+      hpMul: rawData.hpMul || 1,
+      roster: rawData.roster || null,
+      heavy: rawData.heavy || null,
+      elites: rawData.elites || null,
+      boss: rawData.boss || null,
+      surges: rawData.surges || null,
+      desc: rawData.desc || '',
       unlocks: rawData.unlocks || [],
       specialTerrain: rawData.specialTerrain || [],
       metadata: rawData.metadata || {}

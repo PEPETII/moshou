@@ -21,10 +21,25 @@ function fakeCtx() {
   });
 }
 
+// 可设种子的随机数（mulberry32）：测试里替换 vm 内的 Math.random，让概率相关的断言可复现
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function rnd() {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 function createEnv() {
   const vt = { t: 1e6 };
   const store = new Map();
-  const ctx = { console, Math, Set, Map, WeakMap, Array, Object, JSON, setTimeout, clearTimeout };
+  const rng = { fn: mulberry32(20261021) };
+  const SeededMath = Object.create(Math);
+  SeededMath.random = () => rng.fn();
+  const ctx = { console, Math: SeededMath, Set, Map, WeakMap, Array, Object, JSON, setTimeout, clearTimeout };
   ctx.Date = { now: () => vt.t };
   ctx.performance = { now: () => vt.t };
   ctx.window = ctx;
@@ -40,23 +55,23 @@ function createEnv() {
   const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
   const conquestSrc = read('js/conquestGame.js');
   const files = [
-    'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js',
-    'js/config/glyph-battle.js', 'js/config/glyphs.js', 'js/config/glyphs-ext.js', 'js/config/glyphs-fusion.js',
+    'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/enemies-single.js', 'js/config/enemies-multi.js', 'js/config/enemies-boss.js',
+    'js/config/glyph-battle.js', 'js/config/control-rules.js', 'js/config/boss-battle.js', 'js/config/glyphs.js', 'js/config/glyphs-ext.js', 'js/config/glyphs-fusion.js',
     'js/config/fusion.js', 'js/config/codex.js',
-    'js/utils.js', 'js/runtime.js', 'js/core/path-track.js', 'js/core/spawner.js',
-    'js/glyph/brush.js', 'js/glyph/fx.js', 'js/glyph/adapter.js', 'js/glyph/glyph-tower.js', 'js/glyph/kit.js',
+    'js/utils.js', 'js/runtime.js', 'js/core/path-track.js', 'js/core/spawn-schedule.js', 'js/core/spawner.js', 'js/core/boss.js',
+    'js/glyph/brush.js', 'js/glyph/fx.js', 'js/glyph/adapter.js', 'js/glyph/glyph-tower.js', 'js/glyph/kit.js', 'js/glyph/control-rules.js',
     'js/glyph/fire.js', 'js/glyph/water.js', 'js/glyph/earth.js', 'js/glyph/wood.js',
     ...GLYPH_TYPES.map((n) => `js/glyph/${n}.js`),
     'js/glyph/system.js',
     'js/tower.js', 'js/entities/towers/effects.js', 'js/entities/towers/misc.js', 'js/entities/towers/rendering-basic.js',
     'js/enemy.js', 'js/entities/enemy/combat.js', 'js/entities/enemy/lifecycle.js', 'js/entities/enemy/misc.js',
-    'js/entities/enemy/motion.js', 'js/entities/enemy/rendering.js', 'js/core/fusion.js',
+    'js/entities/enemy/motion.js', 'js/entities/enemy/rendering.js', 'js/entities/enemy/segments.js', 'js/entities/enemy/abilities/registry.js', 'js/entities/enemy/abilities/minor-a.js', 'js/entities/enemy/abilities/minor-b.js', 'js/entities/enemy/abilities/elite.js', 'js/entities/enemy/abilities/boss.js', 'js/core/fusion.js',
   ];
   const src = files.map(read).join('\n;\n')
     + '\nclass Game {}\n' + read('js/core/waves.js') + '\n' + read('js/core/towers.js')
     + '\n;' + conquestSrc.slice(0, conquestSrc.indexOf('class ConquestGame {'))
     + '\nclass ConquestGame {}\n' + read('js/modes/conquest/waves.js')
-    + '\nglobalThis.__X = { Enemy, Tower, Game, ConquestGame, PathTrack, RuntimeIndexes, CONFIG, GlyphTower, GlyphSystem, GlyphFX, GlyphKit, GlyphWorld, GlyphWater, Fusion, Brush };';
+    + '\nglobalThis.__X = { Enemy, Tower, Game, ConquestGame, PathTrack, RuntimeIndexes, CONFIG, GlyphTower, GlyphSystem, GlyphFX, GlyphKit, GlyphWorld, GlyphWater, Fusion, Brush, ControlRules, EnemyAbilities, BattleDirector, BossFlow, SpawnSchedule };';
   vm.runInContext(src, ctx);
   const X = ctx.__X;
   const CELL = X.CONFIG.CELL_SIZE;
@@ -113,7 +128,8 @@ function createEnv() {
 
   const sNear = (g, t) => X.GlyphKit.nearestTrack(g, t.x, t.y).s;
 
-  return { X, vt, ctx, store, cells, CELL, makeGame, mk, run, spawnAt, sNear, fakeCtx, GLYPH_TYPES };
+  const seed = (n) => { rng.fn = mulberry32(n); };
+  return { X, vt, ctx, store, cells, CELL, makeGame, mk, run, spawnAt, sNear, fakeCtx, GLYPH_TYPES, seed };
 }
 
 function makeChecker() {

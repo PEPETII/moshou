@@ -71,7 +71,7 @@ const GlyphGold = {
     for (const e of GlyphWorld.enemiesInRange(s.game, s.x, s.y, cfg.bladeRadius + 40)) {
       if (s.hit.has(e) || Math.hypot(e.x - s.x, e.y - s.y) > cfg.bladeRadius + e.size * 0.4) continue;
       s.hit.add(e);
-      GlyphWorld.damage(e, Math.round(GlyphFX.rnd(cfg.bladeDamage[0], cfg.bladeDamage[1])), { color: c.gold, kind: 'gold' });
+      GlyphWorld.damage(e, Math.round(GlyphFX.rnd(cfg.bladeDamage[0], cfg.bladeDamage[1])), { color: c.gold, kind: 'gold', delivery: 'projectile' });
       GlyphTower.addCharge(s.tower, cfg.chargePerHit);
       GlyphFX.emit(5, e.x, e.y, { color: c.goldLight, speed: [60, 180], life: [0.15, 0.35], size: [1.2, 2.5], kind: 'ember' });
     }
@@ -96,10 +96,10 @@ const GlyphGold = {
     for (const e of GlyphWorld.enemiesInRange(s.game, s.tx, s.ty, r)) {
       const d = Math.hypot(e.x - s.tx, e.y - s.ty);
       e.expose(cfg.exposeRatio, cfg.exposeDuration);
-      GlyphWorld.damage(e, Math.round(cfg.bellDamage * (1 - cfg.bellEdgeFalloff * d / r)), { color: c.gold, kind: 'gold' });
+      GlyphWorld.damage(e, Math.round(cfg.bellDamage * (1 - cfg.bellEdgeFalloff * d / r)), { color: c.gold, kind: 'gold', delivery: 'ground', aoe: true });
     }
     GlyphFX.addHitstop(0.08);
-    GlyphFX.addShake(12);
+    GlyphFX.addShake(12, true);
     GlyphFX.ring(s.tx, s.ty, r / S * 1.2, c.gold, 0.6, 9);
     GlyphFX.ring(s.tx, s.ty, r / S * 0.85, c.goldLight, 0.45, 5);
     GlyphFX.emit(50, s.tx, s.ty, { color: c.goldLight, speed: [120, 420], life: [0.3, 0.7], size: [1.5, 3.5], kind: 'ember', drag: 3 });

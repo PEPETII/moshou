@@ -17,7 +17,7 @@ const GlyphSword = {
     GlyphTower.consume(t, this.SLASH, 0.02, cfg.slashRewrite);
     const crit = Math.random() < cfg.critChance;
     const dmg = GlyphFX.rnd(cfg.slashDamage[0], cfg.slashDamage[1]) * (crit ? cfg.critMul : 1);
-    GlyphWorld.damage(target, Math.round(dmg), { crit, color: crit ? c.seal : c.sword, kind: 'sword' });
+    GlyphWorld.damage(target, Math.round(dmg), { crit, color: crit ? c.seal : c.sword, kind: 'sword', delivery: 'instant' });
     GlyphTower.addCharge(t, cfg.chargePerHit);
     GlyphSystem.push(t.game, {
       tower: t, kind: 'slash', x: target.x, y: target.y, ang: -Math.PI / 4 + GlyphFX.rnd(-0.6, 0.6), t: 0, dur: 0.2, crit,
@@ -35,7 +35,7 @@ const GlyphSword = {
     GlyphSystem.push(t.game, {
       tower: t, kind: 'fly', track: near.track, s: near.s, d: 0, x: p.x, y: p.y, ang: p.ang + Math.PI, hit: new Set(), trail: [],
     });
-    GlyphFX.addShake(4);
+    GlyphFX.addShake(4, true);
     GlyphFX.emit(18, t.x, t.y, { color: CONFIG.GLYPH_COLORS.swordLight, speed: [100, 260], life: [0.2, 0.4], size: [1, 2.5] });
     return true;
   },
@@ -61,7 +61,7 @@ const GlyphSword = {
       if (s.hit.has(e)) continue;
       s.hit.add(e);
       e.pushVx = Math.cos(s.ang) * 160 * CONFIG.GLYPH_SCALE;
-      GlyphWorld.damage(e, cfg.flyDamage, { crit: true, color: c.sword, kind: 'sword' });
+      GlyphWorld.damage(e, cfg.flyDamage, { crit: true, color: c.sword, kind: 'sword', delivery: 'projectile' });
       GlyphFX.emit(6, e.x, e.y, { color: c.swordLight, speed: [80, 240], life: [0.15, 0.35], size: [1, 2.5], angle: s.ang, spread: 0.7 });
       GlyphFX.addShake(1.5);
     }

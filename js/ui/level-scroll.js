@@ -10,6 +10,8 @@ UI.prototype.renderThemeShelf = function(shelf, themes, onPick) {
     if (!shelf) return;
     shelf.innerHTML = '';
     shelf.classList.toggle('scroll-shelf--few', themes.length <= 2);
+    // 4 个主题卷轴在 960 宽的画面下要一屏放下，不折行
+    shelf.classList.toggle('scroll-shelf--many', themes.length >= 4);
     themes.forEach((theme) => {
       const card = document.createElement('button');
       card.type = 'button';
@@ -40,6 +42,7 @@ UI.prototype.renderLevelScroll = function(host, levels, opts) {
           <strong class="scroll-info__name"></strong>
           <span class="scroll-info__meta"></span>
           <button id="${opts.enterId}" class="ink-btn ink-btn--primary scroll-info__enter" type="button">入境</button>
+          <p class="scroll-info__desc"></p>
         </div>
       </div>`;
     const track = host.querySelector('.level-scroll__track');
@@ -58,6 +61,7 @@ UI.prototype.renderLevelScroll = function(host, levels, opts) {
       host.querySelector('.scroll-info__name').textContent = level.name;
       host.querySelector('.scroll-info__meta').innerHTML =
         level.meta.map((m) => `<span>${m}</span>`).join('');
+      host.querySelector('.scroll-info__desc').textContent = level.desc || '';
     };
 
     levels.forEach((level) => {
@@ -68,7 +72,7 @@ UI.prototype.renderLevelScroll = function(host, levels, opts) {
       node.setAttribute('aria-selected', 'false');
       node.tabIndex = -1;
       node.innerHTML = `
-        <span class="scroll-node__seal">${LEVEL_SCROLL_NUMERALS[level.num - 1] || level.num}</span>
+        <span class="scroll-node__seal">${LEVEL_SCROLL_NUMERALS[level.num - 1] || level.num}${level.boss ? '<i class="scroll-node__boss" title="关底首领">首</i>' : ''}</span>
         <span class="scroll-node__name">${level.name}</span>`;
       this.addTrackedEventListener(node, 'click', () => select(level, node));
       track.appendChild(node);
@@ -127,9 +131,10 @@ UI.prototype.renderLevelSelect = function(themeId) {
     const levels = levelManager.getLevelsByTheme(themeId).map((level, i) => {
       const done = completed.includes(level.id);
       return {
-        id: level.id, num: i + 1, name: level.name, done,
+        id: level.id, num: i + 1, name: level.name, done, desc: level.desc,
+        boss: level.boss ? CONFIG.ENEMIES[level.boss.type].name : null,
         meta: [`坚守 ${level.holdSeconds || CONFIG.HOLD_SECONDS} 秒`, `初墨 ${level.startInk}`,
-          `核心 ${level.coreHp}`, done ? '已守成' : '未守'],
+          `核心 ${level.coreHp}`].concat(level.boss ? [`首领 ${CONFIG.ENEMIES[level.boss.type].name}`] : [], [done ? '已守成' : '未守']),
       };
     });
     this.currentThemeId = themeId;

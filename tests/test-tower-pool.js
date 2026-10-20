@@ -20,8 +20,8 @@ ctx.window = ctx;
 ctx.globalThis = ctx;
 vm.createContext(ctx);
 const files = [
-  'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/glyph-battle.js',
-  'js/utils.js', 'js/levelsData.js', 'js/data/levels/part-01.js', 'js/data/levels/export.js',
+  'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/enemies-single.js', 'js/config/enemies-multi.js', 'js/config/enemies-boss.js', 'js/config/glyph-battle.js', 'js/config/control-rules.js', 'js/config/boss-battle.js',
+  'js/utils.js', 'js/levelsData.js', 'js/data/levels/part-01.js', 'js/data/levels/part-02.js', 'js/data/levels/part-03.js', 'js/data/levels/part-04.js', 'js/data/levels/export.js',
   'js/levelManager.js', 'js/tower.js', 'js/entities/towers/misc.js',
 ];
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -42,11 +42,10 @@ check('ACTIVE_TOWERS 为十二座单字塔', JSON.stringify(X.CONFIG.ACTIVE_TOWE
 check('getUnlockedTowers 读取塔池', JSON.stringify(X.Game.prototype.getUnlockedTowers.call({})) === '["fire","water","earth","wood","gold","wind","cannon","thunder","ice","bow","mountain","sword"]');
 check('塔配置只有十二座单字塔与三座合字塔', Object.keys(X.CONFIG.TOWERS).join() === 'fire,water,earth,wood,gold,wind,cannon,thunder,ice,bow,mountain,sword,yan,lin,fen');
 check('塔池成员都有配置', X.CONFIG.ACTIVE_TOWERS.every((t) => X.CONFIG.TOWERS[t]));
-check('图鉴敌人只列尸、鬼、巨', JSON.stringify(X.CONFIG.ACTIVE_ENEMIES) === '["corpse","ghost","giant"]');
+check('图鉴敌人 23 种：尸、鬼、巨在前，其后 20 种新敌人', X.CONFIG.ACTIVE_ENEMIES.length === 23 && X.CONFIG.ACTIVE_ENEMIES.slice(0, 3).join() === 'corpse,ghost,giant');
 
 // 关卡
-check('塔防只有 1-1、1-2', Object.keys(X.LEVELS_DATA).join() === '1-1,1-2');
-check('塔防只剩主题 1', Object.keys(X.THEMES).join() === '1' && X.levelManager.getThemes().length === 1);
+check('塔防 4 个主题、20 关', Object.keys(X.THEMES).join() === '1,2,3,4' && X.levelManager.getThemes().length === 4 && Object.keys(X.LEVELS_DATA).length === 20);
 check('塔防关卡 unlocks 全部清空', Object.values(X.LEVELS_DATA).every((l) => Array.isArray(l.unlocks) && l.unlocks.length === 0));
 check('征服只有 1-1、1-2', Object.keys(X.CONQUEST_LEVELS_DATA).join() === '1-1,1-2');
 check('征服只剩主题 1', X.CONQUEST_THEMES.length === 1);
@@ -70,7 +69,7 @@ check('旧征服存档丢弃不存在的关卡/主题', p && p.completedLevels.j
 check('读取不清空原存档', JSON.parse(store.moshou_conquest_progress).completedLevels.length === 5);
 store.moshou_conquest_progress = '{"completedLevels":"oops"}';
 check('损坏的征服存档不报错', (() => { try { return X.conquestProgress.getProgress().completedLevels.length === 0; } catch (e) { return false; } })());
-check('levelManager 不认旧关卡 ID', !X.levelManager.get('3-5') && !!X.levelManager.get('1-2'));
+check('levelManager 不认不存在的关卡 ID，认得 1-2 与 4-5', !X.levelManager.get('5-1') && !X.levelManager.get('1-9') && !!X.levelManager.get('1-2') && !!X.levelManager.get('4-5'));
 
 if (failed) { console.log(`\n${failed} 项失败`); process.exit(1); }
 console.log('\n塔池/关卡/升级移除/存档兼容测试通过');

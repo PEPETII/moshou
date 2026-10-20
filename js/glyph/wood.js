@@ -83,9 +83,9 @@ const GlyphWood = {
       let hits = 0;
       for (const e of GlyphWorld.enemiesInRange(s.game, s.x, s.y, cfg.sproutRadius)) {
         hits++;
-        e.glyphSlow(cfg.sproutSlow, cfg.sproutTick + 0.2);
-        if (s.touched && !s.touched.has(e)) { s.touched.add(e); e.glyphStun(cfg.sproutRoot); }
-        GlyphWorld.damage(e, cfg.sproutDps * cfg.sproutTick, { color: c.wood, size: 14, kind: 'wood' });
+        ControlRules.slow(e, cfg.sproutSlow, cfg.sproutTick + 0.2, 'ground');
+        if (s.touched && !s.touched.has(e)) { s.touched.add(e); ControlRules.root(e, cfg.sproutRoot, 'ground'); }
+        GlyphWorld.damage(e, cfg.sproutDps * cfg.sproutTick, { color: c.wood, size: 14, kind: 'wood', delivery: 'ground', aoe: true, dot: true });
       }
       if (hits) {
         GlyphTower.addCharge(s.tower, cfg.chargePerHit);
@@ -104,7 +104,7 @@ const GlyphWood = {
     s.done = true;
     const c = CONFIG.GLYPH_COLORS;
     GlyphFX.addHitstop(0.05);
-    GlyphFX.addShake(7);
+    GlyphFX.addShake(7, true);
     GlyphFX.ring(s.tx, s.ty, 60, c.wood, 0.4, 6);
     GlyphFX.emit(24, s.tx, s.ty, { color: c.woodLight, speed: [60, 200], life: [0.3, 0.6], size: [1.5, 3], grav: 240 });
     GlyphFX.stain(s.tx, s.ty, 24, '#3f5233', 0.22);
@@ -123,8 +123,8 @@ const GlyphWood = {
     while (s.tick >= cfg.vineTick) {
       s.tick -= cfg.vineTick;
       for (const e of GlyphKit.alongTrack(s.game, s.track, s.s, s.len)) {
-        e.glyphSlow(cfg.vineSlow, cfg.vineTick + 0.25);
-        GlyphWorld.damage(e, cfg.vineDps * cfg.vineTick, { color: c.wood, size: 14, kind: 'wood' });
+        ControlRules.slow(e, cfg.vineSlow, cfg.vineTick + 0.25, 'ground');
+        GlyphWorld.damage(e, cfg.vineDps * cfg.vineTick, { color: c.wood, size: 14, kind: 'wood', delivery: 'ground', aoe: true, dot: true });
       }
     }
     // 生长的两端冒出新叶

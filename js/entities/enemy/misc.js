@@ -207,7 +207,10 @@ Enemy.prototype.reset = function(type, path, game) {
     
     // 全屏爆炸
     this.globalExplosion = config.globalExplosion || false;
-  
+
+    // 能力、体量与多字分段（工单 07）：必须最后调用，用到上面的 size、hp 等
+    this.lastHitOpts = null;
+    this.initAdvanced(config);
 };
 Enemy.prototype.update = function(now, deltaTime) {
     if (this.dead) return;
@@ -251,6 +254,7 @@ Enemy.prototype.update = function(now, deltaTime) {
 
     // 字形状态（灼烧、湿身、击中闪光）与位置同步不受旧版冻结/眩晕影响
     this.tickGlyphStatus(deltaTime / 1000);
+    if (this.adv && this.abil.length) EnemyAbilities.update(this, deltaTime / 1000, this.game);
 
     if (this.frozen || this.stunned) {
       this.syncPosition();

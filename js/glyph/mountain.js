@@ -1,13 +1,29 @@
-// 山塔（2026-10-20）：唯一的路径塔。
-// 放在路上，有生命（CONFIG.TOWERS.mountain.hp），敌人走到它前一格会停下攻击它——
-// 挡路沿用敌人侧既有的阻挡链（Enemy.checkBlocking → RuntimeIndexes.blockingTowerByCell → Tower.takeDamage），
-// 生命归零时由敌人侧调用 removeTower 移除。
+// 山塔（2026-10-20 建，2026-10-21 改为普通塔）：镇守与压制。
+// 和其它塔一样放在路边的可建造格上，没有生命，不挡路。
+// 被动「镇」：射程内敌人的能力冷却变慢（enemy.abilityTimeScale，多座山不叠加，取最小值且不低于 CONTROL.suppressFloor）。
 // 普攻「峰刺」：三笔各化一根石刺，预警片刻后从最前三名敌人脚下拱出，伤害并短暂定身。
-// 大招「崩」：回满生命，以山为心沿路双向震荡，击退、眩晕并伤害。
+// 大招「崩」：沿最近的路段双向震荡，击退、眩晕并伤害。
 const GlyphMountain = {
+  // 「镇」：每帧给光环内的敌人压低能力冷却的流逝速度；取最小值，不低于 suppressFloor
+  suppress(t, dt) {
+    const cfg = t.gl.cfg;
+    const floor = (CONFIG.CONTROL && CONFIG.CONTROL.suppressFloor) || 0.6;
+    for (const e of GlyphWorld.enemiesInRange(t.game, t.x, t.y, cfg.suppressRadius)) {
+      const rate = e.isBoss ? cfg.suppressBossRate : cfg.suppressRate;
+      e.abilityTimeScale = Math.min(e.abilityTimeScale == null ? 1 : e.abilityTimeScale, Math.max(floor, rate));
+      e.suppressedT = 0.25;
+    }
+  },
+
+  // 塔身下方的「镇」光环底纹（GlyphTower.draw 调用）
+  drawAura(ctx, t) {
+    GlyphKit.drawPool(ctx, t.x, t.y, t.gl.cfg.suppressRadius, '70,66,58', 0.08);
+  },
+
   update(t, dt, pool) {
     const gl = t.gl;
     const cfg = gl.cfg;
+    this.suppress(t, dt);
     gl.timer -= dt;
     if (gl.timer > 0 || !pool.length) return;
     const ready = [0, 1, 2].filter((i) => GlyphTower.ready(t, i));
@@ -25,22 +41,20 @@ const GlyphMountain = {
     const cfg = t.gl.cfg;
     const near = GlyphKit.nearestTrack(t.game, t.x, t.y);
     if (!near) return false;
-    if (t.maxHp > 0) t.hp = Math.min(t.maxHp, t.hp + t.maxHp * cfg.quakeHeal);
     GlyphKit.consumeAll(t, 0.3, cfg.rewriteAll);
     const c = CONFIG.GLYPH_COLORS;
     const S = CONFIG.GLYPH_SCALE;
     for (const e of GlyphKit.alongTrack(t.game, near.track, near.s, cfg.quakeReach)) {
-      e.knockback(cfg.quakeKnock);
-      e.glyphStun(cfg.quakeStun);
-      GlyphWorld.damage(e, cfg.quakeDamage, { color: c.mountain, kind: 'mountain' });
+      ControlRules.knock(e, cfg.quakeKnock, 'mountain');
+      ControlRules.stun(e, cfg.quakeStun, 'ground');
+      GlyphWorld.damage(e, cfg.quakeDamage, { color: c.mountain, kind: 'mountain', delivery: 'ground', aoe: true });
     }
     GlyphSystem.push(t.game, { tower: t, kind: 'quake', ground: true, track: near.track, s: near.s, t: 0, dur: 0.55 });
     GlyphFX.addHitstop(0.08);
-    GlyphFX.addShake(13);
+    GlyphFX.addShake(13, true);
     GlyphFX.ring(t.x, t.y, 90, c.mountain, 0.5, 9);
     GlyphFX.emit(40, t.x, t.y, { color: c.mountainLight, speed: [90, 320], life: [0.3, 0.7], size: [2, 4], grav: 320 });
     GlyphFX.emit(10, t.x, t.y, { color: '#4a4a40', speed: [15, 60], life: [0.7, 1.2], size: [12, 22], kind: 'smoke', drag: 1 });
-    GlyphFX.number(t, t.maxHp * cfg.quakeHeal, { color: c.wood, size: 18 });
     return true;
   },
 
@@ -59,8 +73,8 @@ const GlyphMountain = {
       let hits = 0;
       for (const e of GlyphWorld.enemiesInRange(s.game, s.x, s.y, 26 * S)) {
         hits++;
-        e.glyphStun(cfg.spikeStun);
-        GlyphWorld.damage(e, Math.round(GlyphFX.rnd(cfg.spikeDamage[0], cfg.spikeDamage[1])), { color: c.mountain, kind: 'mountain' });
+        ControlRules.stun(e, cfg.spikeStun, 'ground');
+        GlyphWorld.damage(e, Math.round(GlyphFX.rnd(cfg.spikeDamage[0], cfg.spikeDamage[1])), { color: c.mountain, kind: 'mountain', delivery: 'ground', aoe: true });
       }
       if (hits) GlyphTower.addCharge(s.tower, cfg.chargePerHit);
       GlyphFX.emit(10, s.x, s.y, { color: c.mountainLight, speed: [60, 200], life: [0.2, 0.45], size: [1.5, 3], grav: 300, angle: -Math.PI / 2, spread: 0.9 });

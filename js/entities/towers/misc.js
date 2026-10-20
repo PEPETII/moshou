@@ -31,6 +31,15 @@ Tower.prototype.reset = function(type, gx, gy, game) {
 
     this.selected = false;
 
+    // 敌人施加的状态（工单 08、10）：缚丝（蛛）、梦魇（魇）、封笔（天劫）。塔被出售或融合后状态随塔消失
+    this.webT = 0;
+    this.webMul = 1;
+    this.webLockT = 0;
+    this.dreadT = 0;
+    this.dreadMul = 1;
+    this.sealT = 0;
+    this.sealLockT = 0;
+
     // 受击震动（字形塔由 GlyphFX 承担打击反馈，这里只服务路径塔）
     this.shakeOffset = { x: 0, y: 0 };
     this.shakeEndTime = 0;

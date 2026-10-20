@@ -16,9 +16,9 @@ ctx.globalThis = ctx;
 vm.createContext(ctx);
 
 const files = [
-  'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/glyph-battle.js',
+  'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/enemies-single.js', 'js/config/enemies-multi.js', 'js/config/enemies-boss.js', 'js/config/glyph-battle.js', 'js/config/control-rules.js', 'js/config/boss-battle.js',
   'js/utils.js', 'js/core/path-track.js', 'js/enemy.js',
-  'js/entities/enemy/combat.js', 'js/entities/enemy/lifecycle.js', 'js/entities/enemy/misc.js', 'js/entities/enemy/motion.js',
+  'js/entities/enemy/combat.js', 'js/entities/enemy/lifecycle.js', 'js/entities/enemy/misc.js', 'js/entities/enemy/motion.js', 'js/glyph/control-rules.js', 'js/entities/enemy/segments.js', 'js/entities/enemy/abilities/registry.js', 'js/entities/enemy/abilities/minor-a.js', 'js/entities/enemy/abilities/minor-b.js', 'js/entities/enemy/abilities/elite.js', 'js/entities/enemy/abilities/boss.js',
 ];
 const src = files.map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n;\n')
   + '\nglobalThis.__X = { Enemy, CONFIG };';
@@ -43,9 +43,9 @@ function check(name, ok, detail) {
 const FPS = [30, 60, 144];
 const spread = (arr) => (Math.max(...arr) - Math.min(...arr)) / Math.max(1e-9, Math.abs(Math.min(...arr)));
 
-function run(fps, seconds, setup) {
+function run(fps, seconds, setup, type) {
   vt.t = 1e6;
-  const e = new Enemy('giant', cells, game);
+  const e = new Enemy(type || 'giant', cells, game);
   e.lane = 0; e.s = 0; e.baseSpeed = e.speed = 1; e.syncPosition();
   if (setup) setup(e);
   const dt = 1000 / fps;
@@ -71,7 +71,7 @@ function run(fps, seconds, setup) {
 
 // 眩晕 2 秒后继续前进
 {
-  const s = FPS.map((f) => run(f, 10, (e) => e.glyphStun(2)).s);
+  const s = FPS.map((f) => run(f, 10, (e) => e.glyphStun(2), 'corpse').s);   // 小怪的眩晕不打折（重敌 × 0.7 见 test:control）
   const expected = 8 * CONFIG.CELL_SIZE;
   check('眩晕 2 秒：10 秒后 s 误差 < 1%', spread(s) < 0.01, s.map((x) => x.toFixed(1)).join('/'));
   check('眩晕 2 秒：s ≈ 8 秒的路程', Math.abs(s[1] - expected) / expected < 0.01, `s=${s[1].toFixed(1)} 期望 ${expected.toFixed(1)}`);

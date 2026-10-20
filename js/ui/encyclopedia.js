@@ -205,16 +205,31 @@ UI.prototype.codexSpeedTier = function(speed) {
     return tier ? tier.label : "";
 };
 
+// 字数徽记：单 / 双 / 三 / 四
+const CODEX_COUNT_BADGE = ["", "单", "双", "三", "四"];
+
 UI.prototype.populateEnemyEncyclopedia = function() {
     const entries = CONFIG.ACTIVE_ENEMIES
       .filter((type) => CONFIG.ENEMIES[type])
       .map((type) => {
         const config = CONFIG.ENEMIES[type];
         const codex = CONFIG.CODEX.enemies[type] || {};
-        return { key: type, char: config.char, name: config.char, role: codex.role || "", tag: `${config.hp} 血` };
+        const count = config.segments ? config.segments.length : 1;
+        return {
+          key: type, char: config.segments ? config.segments[0].char : config.char,
+          name: config.name || config.char, role: codex.role || "",
+          tag: `${CODEX_COUNT_BADGE[count] || ""}字 · ${config.hp} 血`,
+          boss: config.tier === "boss",
+        };
       });
     this.renderCodexList("enemy-encyclopedia-grid", "enemy-detail-panel", entries,
       (type) => this.showEnemyDetail(type, CONFIG.ENEMIES[type]));
+    // 首领卡片用朱砂边框
+    const list = document.getElementById("enemy-encyclopedia-grid");
+    if (list) list.querySelectorAll(".ink-item").forEach((item) => {
+      const e = CONFIG.ENEMIES[item.dataset.type];
+      item.classList.toggle("codex-item--boss", !!(e && e.tier === "boss"));
+    });
 };
 
 UI.prototype.showEnemyDetail = function(type, config) {
@@ -222,17 +237,30 @@ UI.prototype.showEnemyDetail = function(type, config) {
     if (!panel || !config) return;
     const codex = CONFIG.CODEX.enemies[type] || {};
     const speed = Math.round(config.speed * 100) / 100;
+    const count = config.segments ? config.segments.length : 1;
+    const name = config.name || config.char;
+    // 多字敌人把各字并排显示；单字直接显示
+    const glyphs = config.segments
+      ? config.segments.map((s) => `<span class="codex-glyph__char codex-glyph__char--seg">${s.char}</span>`).join("")
+      : `<span class="codex-glyph__char">${config.char}</span>`;
+    const traits = (codex.traits || []).map((m) => `
+        <div class="codex-move">
+          <span class="codex-move__kind">${m.kind}</span>
+          <span class="codex-move__name codex-move__name--fire">${m.name}</span>
+          <p class="codex-move__text">${m.text}</p>
+        </div>`).join("");
 
     panel.innerHTML = `
       <div class="codex-detail__head">
-        <figure class="codex-glyph codex-glyph--enemy"><span class="codex-glyph__char">${config.char}</span></figure>
+        <figure class="codex-glyph codex-glyph--enemy${count > 1 ? " codex-glyph--multi" : ""}">${glyphs}</figure>
         <div class="codex-detail__summary">
-          <h3 class="ink-panel__title">${config.char}<span class="codex-detail__role">${codex.role || ""}</span></h3>
+          <h3 class="ink-panel__title">${name}<span class="codex-badge${config.tier === "boss" ? " codex-badge--boss" : ""}">${CODEX_COUNT_BADGE[count] || ""}字</span><span class="codex-detail__role">${codex.role || ""}</span></h3>
           ${this.codexStat("生命", config.hp, "血")}
           ${this.codexStat("移速", speed, `格/秒 · ${this.codexSpeedTier(config.speed)}`)}
-          ${this.codexStat("撞核", config.damage, "点")}
+          ${this.codexStat("撞核", config.tier === "boss" ? "—" : config.damage, config.tier === "boss" ? "" : "点")}
           ${this.codexStat("击败奖励", config.reward, "墨", true)}
         </div>
       </div>
-      <p class="codex-detail__desc">${codex.desc || ""}</p>`;
+      <p class="codex-detail__desc">${codex.desc || ""}</p>
+      ${traits ? `<div class="codex-moves">${traits}</div>` : ""}`;
 };

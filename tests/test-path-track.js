@@ -18,11 +18,11 @@ vm.createContext(ctx);
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const conquestSrc = read('js/conquestGame.js');
 const files = [
-  'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/glyph-battle.js',
-  'js/utils.js', 'js/runtime.js', 'js/core/path-track.js', 'js/core/spawner.js',
+  'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/enemies-single.js', 'js/config/enemies-multi.js', 'js/config/enemies-boss.js', 'js/config/glyph-battle.js', 'js/config/control-rules.js', 'js/config/boss-battle.js',
+  'js/utils.js', 'js/runtime.js', 'js/core/path-track.js', 'js/core/spawn-schedule.js', 'js/core/spawner.js', 'js/core/boss.js',
   'js/tower.js', 'js/entities/towers/effects.js',
   'js/entities/towers/misc.js', 'js/entities/towers/rendering-basic.js',
-  'js/enemy.js', 'js/entities/enemy/combat.js', 'js/entities/enemy/lifecycle.js', 'js/entities/enemy/misc.js', 'js/entities/enemy/motion.js',
+  'js/enemy.js', 'js/entities/enemy/combat.js', 'js/entities/enemy/lifecycle.js', 'js/entities/enemy/misc.js', 'js/entities/enemy/motion.js', 'js/glyph/control-rules.js', 'js/entities/enemy/segments.js', 'js/entities/enemy/abilities/registry.js', 'js/entities/enemy/abilities/minor-a.js', 'js/entities/enemy/abilities/minor-b.js', 'js/entities/enemy/abilities/elite.js', 'js/entities/enemy/abilities/boss.js',
 ];
 const src = files.map(read).join('\n;\n')
   + '\nclass Game {}\n' + read('js/core/waves.js')
@@ -117,7 +117,7 @@ check('三档密度与上限', CONFIG.DENSITY.sparse.rate === 1.6 && CONFIG.DENS
   e.s = 4 * CELL; e.knockback(100);
   check('knockback 减小 s', near(e.s, 4 * CELL - 100));
   const giant = new Enemy('giant', cells, g); giant.s = 4 * CELL; giant.knockback(100);
-  check('重敌击退打折', near(giant.s, 4 * CELL - 100 * CONFIG.GLYPH_STATUS.giantKnockMul));
+  check('重敌击退打折', near(giant.s, 4 * CELL - 100 * CONFIG.CONTROL.tiers.heavy.knockMul));
   const edge = new Enemy('corpse', cells, g); edge.s = 10; edge.knockback(500);
   check('s 不会小于 0', edge.s === 0);
   // 眩晕、湿身、被卷入

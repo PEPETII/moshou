@@ -30,7 +30,7 @@ Game.prototype.gameOver = function(victory) {
       InkModal.show({
         scene: "victory",
         title: "胜",
-        lines: [`守境已成 · 第 ${this.currentLevel} 境`, `赏墨 ${reward}`],
+        lines: [`守境已成 · 第 ${this.currentLevel} 境`, `赏墨 ${reward}`].concat(this.bossKillLine()),
         stars,
         actions,
       });
@@ -38,7 +38,7 @@ Game.prototype.gameOver = function(victory) {
       InkModal.show({
         scene: "defeat",
         title: "破",
-        lines: [`守印已裂 · 第 ${this.currentLevel} 境`],
+        lines: [`${this.failReason === 'boss' ? '首领破阵' : '守印已裂'} · 第 ${this.currentLevel} 境`],
         actions: [
           { label: "主菜单", onClick: () => this.returnToMenu() },
           { label: "选关", onClick: () => this.returnToLevelSelect() },
@@ -47,6 +47,11 @@ Game.prototype.gameOver = function(victory) {
       });
     }
   
+};
+// 关底胜利结算多一行「斩首用时」（首领出场到被斩的时间）
+Game.prototype.bossKillLine = function() {
+    if (this.bossSlainAt == null || this.bossEntryAt == null) return [];
+    return [`斩首用时 ${BattleDirector.formatHold(this.bossSlainAt - this.bossEntryAt)}`];
 };
 Game.prototype.nextLevel = function() {
     const nextId = levelManager.getNextId(this.currentLevel);

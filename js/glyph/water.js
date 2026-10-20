@@ -26,7 +26,7 @@ const GlyphWater = {
     const gl = t.gl;
     const cfg = gl.cfg;
     const S = CONFIG.GLYPH_SCALE;
-    const front = GlyphTower.frontTarget(pool);
+    const front = GlyphTower.frontTarget(pool, true);
     if (!front || !front.track) return false;
     const track = front.track;
     const s0 = Math.min(track.total - 10 * S, front.s + cfg.waveLead);
@@ -35,7 +35,10 @@ const GlyphWater = {
     if (s0 - floor < cfg.waveMinTravel) return false;
     const step = cfg.rewriteSides / 3;
     for (let i = 1; i < 4; i++) GlyphTower.consume(t, i, cfg.waveTime * 0.7 + (i - 1) * step, step);
-    GlyphSystem.push(t.game, { tower: t, kind: 'wave', track, s: s0, s0, floor, t: 0, dur: cfg.waveTime, caught: [] });
+    GlyphSystem.push(t.game, {
+      tower: t, kind: 'wave', track, s: s0, s0, floor, t: 0, dur: cfg.waveTime, caught: [],
+      budget: CONFIG.CONTROL.carryBudget.water, touched: new Set(),
+    });
     GlyphFX.addShake(5);
     GlyphFX.addHitstop(0.05);
     GlyphFX.emit(24, t.x, t.y, { color: CONFIG.GLYPH_COLORS.waterLight, speed: [80, 240], life: [0.3, 0.6], size: [1.5, 3], kind: 'drop' });
@@ -67,10 +70,10 @@ const GlyphWater = {
       const off = Math.abs((e.x - s.x) * dy - (e.y - s.y) * dx);
       if (off > cfg.jetWidth + e.size * 0.3) continue;
       hits++;
-      e.knockback(cfg.jetKnock);
+      ControlRules.knock(e, cfg.jetKnock, 'water');
       e.makeWet(cfg.wetDuration);
       e.pushVx = dx * 140 * CONFIG.GLYPH_SCALE;
-      GlyphWorld.damage(e, Math.round(GlyphFX.rnd(cfg.jetDamage[0], cfg.jetDamage[1])), { color: c.water, kind: 'water' });
+      GlyphWorld.damage(e, Math.round(GlyphFX.rnd(cfg.jetDamage[0], cfg.jetDamage[1])), { color: c.water, kind: 'water', delivery: 'instant' });
       GlyphFX.emit(7, e.x, e.y, { color: c.waterLight, speed: [60, 200], life: [0.25, 0.5], size: [1.5, 3], angle: s.aim, spread: 0.9, kind: 'drop' });
     }
     // 充能按命中数计，但每发最多按 jetChargeCap 个，避免敌群扎堆时潮无限连放
@@ -87,23 +90,36 @@ const GlyphWater = {
     const cfg = s.tower.gl.cfg;
     const c = CONFIG.GLYPH_COLORS;
     const track = s.track;
+    if (!s.touched) { s.touched = new Set(); s.budget = CONFIG.CONTROL.carryBudget.water; }
     s.t += dt;
     const prev = s.s;
     s.s = Math.max(s.floor, s.s - cfg.waveSpeed * dt);
+    // 卷入受体量预算约束（工单 12）：按里程从大到小（离核心近的优先），预算不够的敌人只吃伤害、被打湿，不被拖走；
+    // 三字、四字敌人不卷入；刚被放下的敌人有 carryImmune 抗性
+    const reach = [];
     for (const e of s.game.enemies) {
-      // 一只敌人同一时间只能被一道浪卷入，避免多座水塔反复卷同一批敌人把它们永久卡死
-      if (e.dead || e.carried || e.track !== track) continue;
-      if (e.s >= s.s - cfg.waveCatchBack && e.s <= prev + cfg.waveCatchFront && e.s <= s.s0 + cfg.waveLead) {
+      if (e.dead || e.track !== track || s.touched.has(e)) continue;
+      if (e.s >= s.s - cfg.waveCatchBack && e.s <= prev + cfg.waveCatchFront && e.s <= s.s0 + cfg.waveLead) reach.push(e);
+    }
+    reach.sort((a, b) => b.s - a.s);
+    for (const e of reach) {
+      s.touched.add(e);
+      const cost = ControlRules.carryCost(e);
+      if (ControlRules.canCarry(e, 'water') && s.budget >= cost) {
+        s.budget -= cost;
         e.carried = s;
         e.carryOff = GlyphFX.rnd(cfg.waveCarryOff[0], cfg.waveCarryOff[1]);
+        e.carryCatchS = s.s;
         s.caught.push(e);
-        e.makeWet(cfg.wetDuration + 1.5);
-        GlyphWorld.damage(e, cfg.waveCatchDamage, { color: c.water, kind: 'water' });
       }
+      e.makeWet(cfg.wetDuration + 1.5);
+      GlyphWorld.damage(e, cfg.waveCatchDamage, { color: c.water, kind: 'water', delivery: 'instant', aoe: true });
     }
     for (const e of s.caught) {
       if (e.dead) continue;
-      e.s = s.s + e.carryOff;
+      // 倒卷距离按档位打折：重敌、双字被拖着走的距离更短
+      const lag = (1 - ControlRules.tier(e).carryDistMul) * (e.carryCatchS - s.s);
+      e.s = s.s + e.carryOff + lag;
       e.syncPosition();
     }
     const p = track.pointAt(s.s);
@@ -130,11 +146,12 @@ const GlyphWater = {
     for (const e of s.caught) {
       if (e.dead) continue;
       e.carried = null;
-      e.glyphStun(cfg.waveStun);
+      e.carryImmuneT = CONFIG.CONTROL.carryImmune;
+      ControlRules.stun(e, cfg.waveStun, 'water');
       e.makeWet(cfg.wetDuration + 1.5);
-      GlyphWorld.damage(e, cfg.waveEndDamage, { color: c.water, kind: 'water' });
+      GlyphWorld.damage(e, cfg.waveEndDamage, { color: c.water, kind: 'water', delivery: 'instant', aoe: true });
     }
-    GlyphFX.addShake(9);
+    GlyphFX.addShake(9, true);
     GlyphFX.addHitstop(0.07);
     GlyphFX.ring(p.x, p.y, 95, c.water, 0.5, 9);
     GlyphFX.emit(55, p.x, p.y, { color: c.waterLight, speed: [80, 400], life: [0.3, 0.8], size: [1.5, 3.5], kind: 'drop', drag: 2.5 });

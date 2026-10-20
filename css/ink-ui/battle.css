@@ -34,8 +34,43 @@
 }
 .density-option.selected .density-label { color: var(--ink-seal-dark); }
 
+/* 本关敌人预览：来犯的字、精英名、首领名 */
+#density-picker-preview { display: flex; flex-direction: column; gap: 3px; margin: 0 0 10px; padding: 5px 8px; border: 1px solid var(--ink-grid); text-align: left; }
+#density-picker-preview.hidden { display: none; }
+.density-row { display: flex; align-items: center; gap: 8px; font-size: var(--fs-xs); color: var(--ink-soft); }
+.density-row__label { flex: 0 0 auto; min-width: 2.6em; color: var(--ink-faint); letter-spacing: .1em; }
+.density-row__chars { display: flex; flex-wrap: wrap; gap: 4px; }
+.density-enemy { display: inline-grid; place-items: center; width: 22px; height: 22px; font: var(--fs-m)/1 var(--font-brush); color: var(--ink-strong); border: 1px solid var(--ink-grid); }
+.density-row__text { color: var(--ink-strong); letter-spacing: .06em; }
+.density-row--boss .density-row__text { color: var(--ink-seal-dark); }
+
+/* 新敌人初见提示：画布角落的小卡片，3 秒后淡出，不暂停游戏（工单 14 §2.1） */
+.enemy-hint {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(420px, 86vw);
+  padding: 8px 12px;
+  color: var(--ink-strong);
+  background: var(--ink-shadow-paper);
+  border: 1px solid var(--ink-seal);
+  box-shadow: 0 2px 10px var(--ink-press);
+  transform: translateX(-50%);
+  pointer-events: none;
+  animation: enemy-hint-fade 3s ease forwards;
+}
+.enemy-hint__char { flex: 0 0 auto; font: var(--fs-xl)/1 var(--font-brush); color: var(--ink-seal-dark); }
+.enemy-hint__text { font-size: var(--fs-xs); line-height: 1.4; }
+.enemy-hint__name { display: block; font: var(--fs-m) var(--font-brush); letter-spacing: .1em; }
+@keyframes enemy-hint-fade { 0% { opacity: 0; } 8% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+html[data-ink-motion="reduced"] .enemy-hint { animation: none; }
+
 @media (max-height: 500px) and (orientation: landscape) {
-  
+  #density-picker-preview { margin-bottom: 6px; padding: 4px 8px; }
   #density-picker-title { font-size: 28px; }
   #density-picker-hint { margin-bottom: 6px; font-size: 12px; }
   .density-option { padding: 8px 4px; }

@@ -7,6 +7,7 @@ Object.assign(CONFIG, {
     // size 为原型字号（px），weight > 1 表示重敌（击退打折），float 表示漂浮（鬼）。
     corpse: {
       char: "尸",
+      tier: "minor",
       hp: 40,
       damage: 1,
       speedPx: 46,
@@ -16,6 +17,7 @@ Object.assign(CONFIG, {
     },
     ghost: {
       char: "鬼",
+      tier: "minor",
       hp: 22,
       damage: 1,
       speedPx: 82,
@@ -47,6 +49,7 @@ Object.assign(CONFIG, {
     // 显示字改为单字「巨」（原型写法；旧「巨尸」仅为过去的叫法）
     giant: {
       char: "巨",
+      tier: "heavy",
       hp: 300,
       damage: 3,
       speedPx: 25,

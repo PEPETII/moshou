@@ -136,6 +136,36 @@
     }
   });
 
+  // 首领出场前的预兆：低沉的战鼓两声，墨晕渐起（工单 10 §5；素材未备，先用合成音）
+  audio.defineCue('boss_omen', {
+    cooldown: 1500,
+    priority: 'high',
+    render(a) {
+      a.tone(62, 40, 0.6, 0.18, 'sine');
+      a.tone(55, 38, 0.7, 0.16, 'sine', 0.55);
+      a.noise(0.5, 'lowpass', 220, 0.1, 0.1);
+    }
+  });
+
+  // 首领碎字：一声脆裂
+  audio.defineCue('segment_break', {
+    cooldown: 200,
+    priority: 'high',
+    render(a) {
+      a.noise(0.12, 'highpass', 1800, 0.16);
+      a.tone(210, 70, 0.28, 0.14, 'triangle');
+    }
+  });
+
+  // 天劫封笔：雷纹劈落
+  audio.defineCue('seal', {
+    cooldown: 300,
+    render(a) {
+      a.noise(0.09, 'bandpass', 3200, 0.12);
+      a.tone(340, 90, 0.22, 0.1, 'square');
+    }
+  });
+
   // 界面轻点：墨滴落纸。
   audio.defineCue('uiTap', {
     cooldown: 60,

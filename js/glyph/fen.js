@@ -58,7 +58,7 @@ const GlyphFen = {
     for (const e of GlyphWorld.enemiesInRange(s.game, s.tx, s.ty, cfg.logRadius)) {
       hits++;
       e.ignite(cfg.fireIgnite, cfg.burnDuration);
-      GlyphWorld.damage(e, cfg.logDamage, { color: c.fen, kind: 'fire' });
+      GlyphWorld.damage(e, cfg.logDamage, { color: c.fen, kind: 'fire', delivery: 'projectile' });
     }
     if (hits) GlyphTower.addCharge(s.tower, cfg.chargePerHit);
     GlyphFX.ring(s.tx, s.ty, cfg.logRadius / CONFIG.GLYPH_SCALE, c.fen, 0.3, 4);
@@ -76,7 +76,7 @@ const GlyphFen = {
       s.tick -= cfg.fireTick;
       for (const e of GlyphWorld.enemiesInRange(s.game, s.x, s.y, cfg.fireRadius)) {
         e.ignite(cfg.fireIgnite, cfg.burnDuration);
-        GlyphWorld.damage(e, cfg.fireDps * cfg.fireTick, { color: c.fen, size: 14, kind: 'fire' });
+        GlyphWorld.damage(e, cfg.fireDps * cfg.fireTick, { color: c.fen, size: 14, kind: 'fire', delivery: 'ground', aoe: true, dot: true });
       }
     }
     if (Math.random() < dt * 25) {
@@ -99,7 +99,7 @@ const GlyphFen = {
     s.done = true;
     const c = CONFIG.GLYPH_COLORS;
     GlyphFX.addHitstop(0.08);
-    GlyphFX.addShake(12);
+    GlyphFX.addShake(12, true);
     GlyphFX.ring(s.tx, s.ty, 110, c.fen, 0.5, 9);
     GlyphFX.emit(50, s.tx, s.ty, { color: c.fenLight, speed: [120, 460], life: [0.3, 0.8], size: [2, 5], kind: 'ember', drag: 3 });
     GlyphFX.stain(s.tx, s.ty, 36, '#4a2a1e', 0.35);
@@ -132,7 +132,7 @@ const GlyphFen = {
     for (const p of pending) {
       for (const e of GlyphWorld.enemiesInRange(s.game, p.x, p.y, cfg.explodeRadius)) {
         e.ignite(cfg.explodeIgnite, cfg.burnDuration);
-        GlyphWorld.damage(e, cfg.explodeDamage, { color: c.fen, kind: 'fire' });
+        GlyphWorld.damage(e, cfg.explodeDamage, { color: c.fen, kind: 'fire', delivery: 'ground', aoe: true });
       }
       GlyphFX.ring(p.x, p.y, cfg.explodeRadius / CONFIG.GLYPH_SCALE, c.fen, 0.3, 5);
       GlyphFX.emit(14, p.x, p.y, { color: c.fenLight, speed: [80, 260], life: [0.2, 0.5], size: [1.5, 3.5], kind: 'ember' });
@@ -145,7 +145,7 @@ const GlyphFen = {
       for (const e of GlyphKit.alongTrack(s.game, s.track, s.s, hi)) {
         if (!this.onBlaze(s, e, cfg)) continue;
         e.ignite(cfg.blazeIgnite, cfg.burnDuration);
-        GlyphWorld.damage(e, cfg.blazeDps * cfg.blazeTick, { color: c.fen, size: 14, kind: 'fire' });
+        GlyphWorld.damage(e, cfg.blazeDps * cfg.blazeTick, { color: c.fen, size: 14, kind: 'fire', delivery: 'ground', aoe: true, dot: true });
       }
     }
     // 火苗沿燃烧段窜起
