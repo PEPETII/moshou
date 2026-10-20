@@ -130,7 +130,7 @@ Tower.prototype.reset = function(type, gx, gy, game) {
     // 风链弹射效果
     this.chainEffects = [];
 
-    // 字形塔（火、水）：笔画、蓄力、招式全部由 GlyphTower 组件接管（工单 05）
+    // 字形塔（火、水、土、木）：笔画、蓄力、招式全部由 GlyphTower 组件接管（工单 05、20）
     this.gl = null;
     if (typeof GlyphTower !== 'undefined' && GlyphTower.has(type)) {
       GlyphTower.init(this);

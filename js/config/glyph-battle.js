@@ -45,7 +45,7 @@ Object.assign(CONFIG, {
     prefillSpacing: 80,      // 预铺间距（px 里程）
   },
 
-  // 敌人身上的字形状态（05 的火、水招式通过 Enemy.ignite / Enemy.makeWet 施加）
+  // 敌人身上的字形状态（05 的火、水招式与 20 的土、木招式通过 Enemy.ignite / makeWet / glyphStun 施加）
   GLYPH_STATUS: {
     burnDps: 5,              // 灼烧每层每秒伤害
     burnMaxStacks: 4,        // 灼烧最大层数

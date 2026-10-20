@@ -150,6 +150,25 @@
 }
 #bottom-bar::-webkit-scrollbar { display: none; }
 
+/* 四座塔起：卡槽一屏放不下四张竖排卡（可用高度约 185px），改为 2×2 网格并压缩卡片，
+   让四张塔卡都直接可见；镜头余量仍按 --battle-dock-w，不随卡片数量变化。 */
+#bottom-bar:has(.tower-select:nth-child(4)) {
+  display: grid;
+  grid-template-columns: repeat(2, 40px);
+  justify-content: center;
+  align-content: start;
+  gap: 4px;
+  padding: 4px 0 0;
+}
+#bottom-bar:has(.tower-select:nth-child(4)) .tower-select {
+  width: 40px;
+  height: 46px;
+  flex: none;
+  padding: 2px;
+}
+#bottom-bar:has(.tower-select:nth-child(4)) .tower-char { font-size: var(--bfs-l); }
+#bottom-bar:has(.tower-select:nth-child(4)) .tower-cost { margin-top: 2px; font-size: var(--bfs-xs); }
+
 /* ── 征服竖条 ── */
 #conquest-side-panel { justify-content: flex-start; gap: var(--sp-3); }
 #conquest-side-panel .summon-btn {

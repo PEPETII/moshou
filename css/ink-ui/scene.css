@@ -45,6 +45,8 @@ html[data-input="touch"] #scale-container { transition: none; }
 }
 #bottom-bar .tower-select[data-type="fire"] { --card-tint: color-mix(in srgb, var(--tint-fire) 26%, transparent); }
 #bottom-bar .tower-select[data-type="water"] { --card-tint: color-mix(in srgb, var(--tint-water) 26%, transparent); }
+#bottom-bar .tower-select[data-type="earth"] { --card-tint: color-mix(in srgb, var(--tint-earth) 26%, transparent); }
+#bottom-bar .tower-select[data-type="wood"] { --card-tint: color-mix(in srgb, var(--tint-wood) 26%, transparent); }
 #bottom-bar .tower-select::before { content: none; }
 #bottom-bar .tower-select:hover,
 #bottom-bar .tower-select:active {

@@ -23,8 +23,8 @@ function check(name, bad, detail) {
 }
 const num = (v) => typeof v === 'number' && Number.isFinite(v);
 
-// 1. 塔池与火、水字段
-check('塔池为火、水', JSON.stringify(C.ACTIVE_TOWERS) === '["fire","water"]' ? [] : ['ACTIVE_TOWERS']);
+// 1. 塔池与火、水、土、木字段
+check('塔池为火、水、土、木', JSON.stringify(C.ACTIVE_TOWERS) === '["fire","water","earth","wood"]' ? [] : ['ACTIVE_TOWERS']);
 {
   const bad = [];
   for (const k of C.ACTIVE_TOWERS) {
@@ -36,7 +36,7 @@ check('塔池为火、水', JSON.stringify(C.ACTIVE_TOWERS) === '["fire","water"
     else for (const f of ['range', 'chargePerSec', 'chargePerHit']) if (!(t.glyph[f] > 0)) bad.push(`${k}.glyph.${f}`);
     if (!C.GLYPHS || !C.GLYPHS[k]) bad.push(`${k}:缺字形笔画数据`);
   }
-  check('火、水配置字段齐全（含 glyph 与笔画数据）', bad);
+  check('火、水、土、木配置字段齐全（含 glyph 与笔画数据）', bad);
 }
 
 // 2. 三档敌潮

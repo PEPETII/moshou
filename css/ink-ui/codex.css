@@ -171,6 +171,8 @@
 .codex-move__name { margin-left: var(--sp-2); font: var(--fs-l) / 1 var(--font-brush); }
 .codex-move__name--fire { color: var(--tint-fire); }
 .codex-move__name--water { color: var(--tint-water); }
+.codex-move__name--earth { color: var(--tint-earth); }
+.codex-move__name--wood { color: var(--tint-wood); }
 .codex-move__text {
   margin: var(--sp-1) 0 0;
   color: var(--ink-nong);

@@ -193,6 +193,8 @@
 }
 .ink-chip--fire { color: var(--tint-fire); }
 .ink-chip--water { color: var(--tint-water); }
+.ink-chip--earth { color: var(--tint-earth); }
+.ink-chip--wood { color: var(--tint-wood); }
 
 /* ── 开关：印章亮 / 暗，文字只写名称 ──────────────── */
 .ink-switch {

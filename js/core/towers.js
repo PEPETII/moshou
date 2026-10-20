@@ -1,6 +1,6 @@
 // Game：炮塔放置
 Game.prototype.getUnlockedTowers = function() {
-    // 实验阶段：只开放 CONFIG.ACTIVE_TOWERS（火、水）；其余单字塔下架但配置保留
+    // 实验阶段：只开放 CONFIG.ACTIVE_TOWERS（火、水、土、木）；其余单字塔下架但配置保留
     return CONFIG.ACTIVE_TOWERS.filter((type) => CONFIG.TOWERS[type]);
   
 };

@@ -43,13 +43,13 @@ Object.assign(CONFIG, {  // 上下各4行 + 中间1行路 = 9行
     wood: {
       char: "木",
       cost: 105,
-      damage: 0.45,
-      range: 4.0,
-      cooldown: 380,
+      damage: 0,
+      range: 3.0,
+      cooldown: 550,
       upgradeCost: 50,
       maxLevel: 3,
-      unlockLevel: 2,
-      desc: "快速连射",
+      size: 68,
+      desc: "普攻「木刺」：撇笔化作木刺直线射出，可贯穿至多三名敌人。大招「森」：整字砸向敌群，落地炸开一圈木刺并把敌人推开（蓄满自动释放）。",
       upgradeParams: { damageInc: 0.3, rangeInc: 0.5, cooldownDec: 60 },
     },
     gold: {
@@ -67,16 +67,14 @@ Object.assign(CONFIG, {  // 上下各4行 + 中间1行路 = 9行
     },
     earth: {
       char: "土",
-      cost: 230,
-      damage: 2.8,
-      range: 3.2,
-      cooldown: 1550,
-      aoe: true,
-      aoeRange: 2.2,
-      upgradeCost: 110,
+      cost: 150,
+      damage: 0,
+      range: 2.9,
+      cooldown: 1150,
+      upgradeCost: 80,
       maxLevel: 3,
-      unlockLevel: 4,
-      desc: "范围AOE伤害",
+      size: 68,
+      desc: "普攻「落石」：上横化作石片直线掷出，命中后碎石四溅。大招「陷」：整字砸下，范围内敌人受伤定身，地面留「土」字陷坑持续碾压（蓄满自动释放）。",
       upgradeParams: { damageInc: 1, rangeInc: 0.5, cooldownDec: 100 },
     },
     thunder: {
@@ -546,8 +544,8 @@ Object.assign(CONFIG, {  // 上下各4行 + 中间1行路 = 9行
     },
   },
 
-  // 字形弹道实验（工单 02）：当前开放的塔池。其余单字塔配置与代码保留但下架，
+  // 字形弹道玩法（工单 02/05，2026-10-19 加入土，2026-10-20 加入木）：当前开放的塔池。其余单字塔配置与代码保留但下架，
   // 不出现在卡片栏、征服召唤、图鉴中，也不保证仍能正常运行。
-  ACTIVE_TOWERS: ['fire', 'water'],
+  ACTIVE_TOWERS: ['fire', 'water', 'earth', 'wood'],
   // 出场敌人 ACTIVE_ENEMIES 在 config/glyph-battle.js（工单 04）
 });

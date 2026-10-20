@@ -38,9 +38,9 @@ function check(name, ok, detail) {
 }
 
 // 塔池
-check('ACTIVE_TOWERS 只有火、水', JSON.stringify(X.CONFIG.ACTIVE_TOWERS) === '["fire","water"]');
-check('getUnlockedTowers 读取塔池', JSON.stringify(X.Game.prototype.getUnlockedTowers.call({})) === '["fire","water"]');
-check('下架塔的配置仍保留', ['wood', 'mountain', 'gold', 'earth'].every((t) => X.CONFIG.TOWERS[t]));
+check('ACTIVE_TOWERS 为火、水、土、木', JSON.stringify(X.CONFIG.ACTIVE_TOWERS) === '["fire","water","earth","wood"]');
+check('getUnlockedTowers 读取塔池', JSON.stringify(X.Game.prototype.getUnlockedTowers.call({})) === '["fire","water","earth","wood"]');
+check('下架塔的配置仍保留', ['mountain', 'gold'].every((t) => X.CONFIG.TOWERS[t]));
 check('塔池成员都有配置', X.CONFIG.ACTIVE_TOWERS.every((t) => X.CONFIG.TOWERS[t]));
 check('图鉴敌人只列尸、鬼、巨', JSON.stringify(X.CONFIG.ACTIVE_ENEMIES) === '["corpse","ghost","giant"]');
 

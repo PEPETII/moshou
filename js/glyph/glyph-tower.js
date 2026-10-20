@@ -3,7 +3,12 @@
 // 每座塔各自持有 strokes[]（笔画消耗与按笔顺写回）、charge（圆相蓄力）、timer、
 // nextDot、recoil、readyPulse。写回过程就是冷却；蓄满后自动释放大招，没有手动入口。
 const GlyphTower = {
-  impl(type) { return type === 'fire' ? GlyphFire : GlyphWater; },
+  impl(type) {
+    if (type === 'fire') return GlyphFire;
+    if (type === 'earth') return GlyphEarth;
+    if (type === 'wood') return GlyphWood;
+    return GlyphWater;
+  },
 
   has(type) { return !!(CONFIG.GLYPHS && CONFIG.GLYPHS[type]); },
 
@@ -98,8 +103,9 @@ const GlyphTower = {
   draw(ctx, t) {
     const gl = t.gl;
     const colors = CONFIG.GLYPH_COLORS;
-    const color = gl.type === 'fire' ? colors.fire : colors.water;
-    const glow = gl.type === 'fire' ? colors.fireGlow : colors.waterGlow;
+    // 元素色按类型取：fire / water / earth 各有主色与光晕，缺省退回浓墨
+    const color = colors[gl.type] || colors.ink;
+    const glow = colors[gl.type + 'Glow'] || null;
     const full = gl.charge >= 1;
     const pulse = full ? 0.5 + 0.5 * Math.sin(gl.readyPulse * 7) : 0;
     const size = gl.size;

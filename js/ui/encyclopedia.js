@@ -150,7 +150,8 @@ UI.prototype.showTowerDetail = function(type, config) {
     if (!panel || !config) return;
     const codex = CONFIG.CODEX.towers[type] || { moves: [] };
     const glyph = CONFIG.GLYPHS && CONFIG.GLYPHS[type];
-    const tint = type === "water" ? "water" : "fire";
+    // 元素色按塔类型取：有字形数据的塔（火、水、土）用自己的主色，其余退回火色
+    const tint = CONFIG.GLYPHS && CONFIG.GLYPHS[type] ? type : "fire";
 
     const strokes = glyph
       ? glyph.strokes.map((s, i) => `<li data-stroke="${i}">${s.name}</li>`).join("")
