@@ -25,9 +25,9 @@
                 <div id="game-version" class="game-version"></div>
             </div>
             <div class="menu-buttons">
-                <button class="menu-btn" id="btn-levels" type="button"><span class="menu-glyph">守</span><span class="menu-btn__text"><span class="menu-btn__name">塔防</span><span class="menu-btn__note">限时坚守，以字御敌</span></span></button>
-                <button class="menu-btn" id="btn-conquest" type="button"><span class="menu-glyph">征</span><span class="menu-btn__text"><span class="menu-btn__name">征服</span><span class="menu-btn__note">召唤成塔，压住危险</span></span></button>
-                <button class="menu-btn" id="btn-encyclopedia" type="button"><span class="menu-glyph">谱</span><span class="menu-btn__text"><span class="menu-btn__name">图鉴</span><span class="menu-btn__note">字形与妖异</span></span></button>
+                <button class="menu-btn" id="btn-levels" type="button"><span class="menu-glyph">守</span><span class="menu-btn__text"><span class="menu-btn__name">塔防</span><span class="menu-btn__note">塔防模式</span></span></button>
+                <button class="menu-btn" id="btn-conquest" type="button"><span class="menu-glyph">征</span><span class="menu-btn__text"><span class="menu-btn__name">征服</span><span class="menu-btn__note">征服模式</span></span></button>
+                <button class="menu-btn" id="btn-encyclopedia" type="button"><span class="menu-glyph">谱</span><span class="menu-btn__text"><span class="menu-btn__name">图鉴</span><span class="menu-btn__note">炮塔与敌人图鉴</span></span></button>
                 <button class="menu-btn" id="btn-custom" hidden style="display:none" aria-hidden="true" tabindex="-1"><span class="menu-glyph">作</span><span class="menu-btn__text"><span class="menu-btn__name">自定</span></span></button>
                 <button class="menu-btn" id="btn-settings" type="button"><span class="menu-glyph">设</span><span class="menu-btn__text"><span class="menu-btn__name">设置</span><span class="menu-btn__note">画面与声音</span></span></button>
             </div>
@@ -218,7 +218,7 @@
                         <div id="top-bar" class="dock-stats">
                             <div class="stat core-stat"><span class="label">守</span><span id="core-hp" class="value">20/20</span></div>
                             <div class="stat dock-stat"><span class="label">墨</span><span id="ink" class="value">300</span></div>
-                            <div class="stat dock-stat"><span class="label">守时</span><span id="hold-time" class="value">--:--</span></div>
+                            <div class="stat dock-stat"><span class="label">时间</span><span id="hold-time" class="value">--:--</span></div>
                             <div class="stat dock-stat"><span class="label">尸</span><span id="enemies" class="value">0</span></div>
                         </div>
                     </aside>
@@ -232,7 +232,7 @@
                 <aside id="conquest-side-panel" class="battle-dock battle-dock--left" aria-label="征服">
                     <button id="conquest-summon-btn" class="summon-btn" type="button">召<span id="conquest-summon-cost" class="summon-cost">50墨</span></button>
                     <div class="dock-stat"><span class="label">墨</span><span id="conquest-ink" class="value">300</span></div>
-                    <div class="dock-stat"><span class="label">守时</span><span id="conquest-hold" class="value">--:--</span></div>
+                    <div class="dock-stat"><span class="label">时间</span><span id="conquest-hold" class="value">--:--</span></div>
                     <div class="dock-stat dock-stat--danger"><span class="label">危</span><span id="conquest-danger" class="value">0 / 200</span></div>
                     <button id="conquest-menu-btn" class="conquest-menu-btn" type="button" title="返回选关" aria-label="返回选关">退</button>
                 </aside>
