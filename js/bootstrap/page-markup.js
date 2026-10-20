@@ -73,14 +73,17 @@
                     <button class="codex-entry" id="btn-tower-encyclopedia" type="button">
                         <span class="codex-entry__glyph">塔</span>
                         <span class="codex-entry__name">炮塔志</span>
-                        <span class="codex-entry__desc">字形如何写成弹道</span>
                         <span class="codex-entry__count" id="codex-count-towers"></span>
                     </button>
                     <button class="codex-entry" id="btn-enemy-encyclopedia" type="button">
-                        <span class="codex-entry__glyph">鬼</span>
+                        <span class="codex-entry__glyph">敌</span>
                         <span class="codex-entry__name">妖异录</span>
-                        <span class="codex-entry__desc">来犯者的血量与脚程</span>
                         <span class="codex-entry__count" id="codex-count-enemies"></span>
+                    </button>
+                    <button class="codex-entry" id="btn-fusion-encyclopedia" type="button">
+                        <span class="codex-entry__glyph">合</span>
+                        <span class="codex-entry__name">合字图鉴</span>
+                        <span class="codex-entry__count" id="codex-count-fusion"></span>
                     </button>
                 </div>
             </div>
@@ -120,6 +123,23 @@
             </div>
         </section>
         
+        <!-- 合字图鉴：同上；全部合字开放 -->
+        <section id="fusion-encyclopedia-container" class="ink-page codex-page hidden" aria-labelledby="fusion-codex-title">
+            <header class="ink-page__bar">
+                <button id="back-to-encyclopedia-from-fusion" class="ink-back" type="button">图鉴</button>
+                <h2 id="fusion-codex-title" class="ink-page__title">合字图鉴</h2>
+                <div class="ink-page__aside">
+                    <button id="fusion-codex-home" class="ink-btn ink-btn--ghost codex-home" type="button">主菜单</button>
+                </div>
+            </header>
+            <div class="ink-page__body ink-page__body--fill">
+                <div class="ink-split codex-split">
+                    <div id="fusion-encyclopedia-grid" class="codex-list" role="listbox" aria-label="合字"></div>
+                    <article id="fusion-detail-panel" class="ink-panel codex-detail" aria-live="polite"></article>
+                </div>
+            </div>
+        </section>
+
         <button id="back-to-menu" class="hidden">主菜单</button>
 
         <!-- 自定义主界面 -->
@@ -212,9 +232,11 @@
                     <div id="game-area">
                         <canvas id="game-canvas"></canvas>
                     </div>
-                    <aside class="battle-dock" aria-label="塔卡与战况">
-                        <button id="pause-btn" class="dock-pause" type="button" title="暂停" aria-label="暂停">停</button>
+                    <aside class="battle-dock battle-dock--left battle-dock--cards" aria-label="塔卡">
                         <div id="bottom-bar"></div>
+                    </aside>
+                    <aside class="battle-dock" aria-label="战况">
+                        <button id="pause-btn" class="dock-pause" type="button" title="暂停" aria-label="暂停">停</button>
                         <div id="top-bar" class="dock-stats">
                             <div class="stat core-stat"><span class="label">守</span><span id="core-hp" class="value">20/20</span></div>
                             <div class="stat dock-stat"><span class="label">墨</span><span id="ink" class="value">300</span></div>
@@ -278,6 +300,7 @@
             <span class="info-desc"></span>
         </div>
         <div class="info-stats"></div>
+        <div class="info-fusion" hidden></div>
         <div class="info-actions">
             <button class="sell-btn">出售</button>
         </div>
@@ -289,6 +312,7 @@
             <span class="info-desc"></span>
         </div>
         <div class="info-stats"></div>
+        <div class="info-fusion" hidden></div>
         <div class="info-actions">
             <button class="sell-btn">出售</button>
         </div>

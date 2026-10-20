@@ -13,7 +13,7 @@ const BattleDirector = {
     return CONFIG.DENSITY_DEFAULT;
   },
 
-  /** 玩家确认敌潮档位后开战：重置计时与计数，预铺敌人，开始计时 */
+  /** 玩家确认敌潮档位后开战：重置计时与计数，开始从入口刷怪 */
   begin(game, densityKey) {
     const key = CONFIG.DENSITY[densityKey] ? densityKey : this.defaultDensity();
     game.density = key;
@@ -25,20 +25,6 @@ const BattleDirector = {
     game.kills = 0;
     game.leaks = 0;
     game.battleActive = true;
-    this.prefill(game);
-  },
-
-  /** 开局在路上预铺一批敌人，让塔第一眼就有目标 */
-  prefill(game) {
-    const cfg = CONFIG.SPAWN;
-    for (let i = 0; i < cfg.prefillCount; i++) {
-      const type = Math.random() < cfg.corpseRatio ? 'corpse' : 'ghost';
-      const enemy = game.spawnGlyphEnemy(type);
-      if (!enemy) continue;
-      const s = cfg.prefillStart * CONFIG.CELL_SIZE + i * cfg.prefillSpacing;
-      enemy.s = Math.min(s, enemy.track.total - CONFIG.CELL_SIZE);
-      enemy.syncPosition();
-    }
   },
 
   /** 每帧调用，dt 单位为秒 */

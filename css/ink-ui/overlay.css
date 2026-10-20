@@ -84,7 +84,7 @@
   to { opacity: 1; transform: scale(1); }
 }
 
-/* ── 择潮 ─────────────────────────────────────── */
+/* ── 敌潮 ─────────────────────────────────────── */
 #density-picker { z-index: calc(var(--z-modal, 300) + 1); }
 #density-picker.hidden { display: none; }
 #density-picker-box {

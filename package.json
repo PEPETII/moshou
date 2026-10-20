@@ -18,8 +18,9 @@
     "test:camera": "node tests/test-camera.js",
     "test:audio": "node tests/test-audio.js",
     "test:path": "node tests/test-path-track.js",
-    "test:glyph": "node tests/test-glyph-battle.js",
-    "test": "npm run check:line-count && npm run check:syntax && node scripts/check-tokens.js --ratchet && npm run test:balance && npm run test:damage && npm run test:frame && npm run test:pool && npm run test:levels && npm run test:conquest-touch && npm run test:placement-drag && npm run test:grid && npm run test:camera && npm run test:audio && npm run test:path && npm run test:glyph && node tests/test-menu-ink-lifespan.js",
+    "test:spawn": "node tests/test-spawn-entry.js",
+    "test:glyph": "node tests/test-glyph-battle.js && node tests/test-glyph-towers.js && node tests/test-fusion.js",
+    "test": "npm run check:line-count && npm run check:syntax && node scripts/check-tokens.js --ratchet && npm run test:balance && npm run test:damage && npm run test:frame && npm run test:pool && npm run test:levels && npm run test:conquest-touch && npm run test:placement-drag && npm run test:grid && npm run test:camera && npm run test:audio && npm run test:path && npm run test:spawn && npm run test:glyph && node tests/test-menu-ink-lifespan.js",
     "posters": "node scripts/generate-posters.js"
   }
 }

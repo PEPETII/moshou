@@ -3,11 +3,9 @@
 // 每座塔各自持有 strokes[]（笔画消耗与按笔顺写回）、charge（圆相蓄力）、timer、
 // nextDot、recoil、readyPulse。写回过程就是冷却；蓄满后自动释放大招，没有手动入口。
 const GlyphTower = {
+  // 招式实现查 GlyphSystem.IMPLS 注册表（system.js）；未注册的类型退回水塔，保持旧行为
   impl(type) {
-    if (type === 'fire') return GlyphFire;
-    if (type === 'earth') return GlyphEarth;
-    if (type === 'wood') return GlyphWood;
-    return GlyphWater;
+    return (GlyphSystem.IMPLS && GlyphSystem.IMPLS[type]) || GlyphWater;
   },
 
   has(type) { return !!(CONFIG.GLYPHS && CONFIG.GLYPHS[type]); },
@@ -103,7 +101,7 @@ const GlyphTower = {
   draw(ctx, t) {
     const gl = t.gl;
     const colors = CONFIG.GLYPH_COLORS;
-    // 元素色按类型取：fire / water / earth 各有主色与光晕，缺省退回浓墨
+    // 元素色按类型取：每座字形塔在 GLYPH_COLORS 里有主色与光晕，缺省退回浓墨
     const color = colors[gl.type] || colors.ink;
     const glow = colors[gl.type + 'Glow'] || null;
     const full = gl.charge >= 1;
@@ -145,6 +143,16 @@ const GlyphTower = {
         glowBlur: 10 + pulse * 10,
       };
     });
+
+    // 路径塔（山）：受过伤才显示生命条
+    if (t.maxHp > 0 && t.hp < t.maxHp) {
+      const w = size * 0.8;
+      const by = t.y + size * 0.5;
+      ctx.fillStyle = 'rgba(40,34,28,0.2)';
+      ctx.fillRect(t.x - w / 2, by, w, 4);
+      ctx.fillStyle = colors[gl.type] || colors.ink;
+      ctx.fillRect(t.x - w / 2, by, w * Math.max(0, t.hp / t.maxHp), 4);
+    }
   },
 
   // 放置预览 / 拖拽中的半透明字

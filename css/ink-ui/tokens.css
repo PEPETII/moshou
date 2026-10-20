@@ -39,6 +39,18 @@
   --tint-fire: var(--seal); /* 朱红：火塔卡、选中印章 */
   --tint-earth: #8a6a3f;   /* 赭土：土塔卡、土相关数值 */
   --tint-wood: #4f6f4a;    /* 竹青：木塔卡、木相关数值 */
+  /* 2026-10-20 新塔色：与 CONFIG.GLYPH_COLORS 主色一致 */
+  --tint-gold: #a8822a;    /* 赤金 */
+  --tint-wind: #5f7d78;    /* 苍青 */
+  --tint-cannon: #4a3f36;  /* 铁褐 */
+  --tint-thunder: #5a4fa0; /* 雷紫 */
+  --tint-ice: #4f8fb0;     /* 冰蓝 */
+  --tint-bow: #7a4a2e;     /* 檀褐 */
+  --tint-mountain: #5a5a50;/* 岩灰 */
+  --tint-sword: #3d4d5c;   /* 铁青 */
+  --tint-yan: #d0461f;     /* 炎橙 */
+  --tint-lin: #2f6b3a;     /* 深林 */
+  --tint-fen: #9c2f1c;     /* 焦赤 */
   --tint-ochre: #a88a62;   /* 淡赭：尸的计数与敌人晕影 */
 
   /* ── 字体 ── */

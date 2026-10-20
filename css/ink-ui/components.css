@@ -195,6 +195,17 @@
 .ink-chip--water { color: var(--tint-water); }
 .ink-chip--earth { color: var(--tint-earth); }
 .ink-chip--wood { color: var(--tint-wood); }
+.ink-chip--gold { color: var(--tint-gold); }
+.ink-chip--wind { color: var(--tint-wind); }
+.ink-chip--cannon { color: var(--tint-cannon); }
+.ink-chip--thunder { color: var(--tint-thunder); }
+.ink-chip--ice { color: var(--tint-ice); }
+.ink-chip--bow { color: var(--tint-bow); }
+.ink-chip--mountain { color: var(--tint-mountain); }
+.ink-chip--sword { color: var(--tint-sword); }
+.ink-chip--yan { color: var(--tint-yan); }
+.ink-chip--lin { color: var(--tint-lin); }
+.ink-chip--fen { color: var(--tint-fen); }
 
 /* ── 开关：印章亮 / 暗，文字只写名称 ──────────────── */
 .ink-switch {

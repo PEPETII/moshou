@@ -1,5 +1,5 @@
 // UI：图鉴（工单 P2：图鉴横屏改版）
-// 图鉴主界面 → 炮塔志 / 妖异录。两本谱都是常驻双栏：左列表、右详情；进入即选中第一项。
+// 图鉴主界面 → 炮塔志 / 妖异录 / 合字图鉴（合字页见 codex-fusion.js）。两本谱都是常驻双栏：左列表、右详情；进入即选中第一项。
 // 文案来自 CONFIG.CODEX，数值读 CONFIG.TOWERS / CONFIG.ENEMIES。
 
 // === 事件 ===
@@ -12,6 +12,7 @@ UI.prototype.setupEncyclopediaEventListeners = function() {
       CodexGlyph.stop();
       this.hideTowerEncyclopedia();
       this.hideEnemyEncyclopedia();
+      this.hideFusionEncyclopedia();
       this.hideEncyclopedia();
     };
 
@@ -20,11 +21,14 @@ UI.prototype.setupEncyclopediaEventListeners = function() {
     on("back-to-menu-from-encyclopedia", () => this.hideEncyclopedia());
     on("back-to-encyclopedia-from-towers", () => { this.hideTowerEncyclopedia(); this.showEncyclopedia(); });
     on("back-to-encyclopedia-from-enemies", () => { this.hideEnemyEncyclopedia(); this.showEncyclopedia(); });
+    on("btn-fusion-encyclopedia", () => this.showFusionEncyclopedia());
+    on("back-to-encyclopedia-from-fusion", () => { this.hideFusionEncyclopedia(); this.showEncyclopedia(); });
     on("tower-codex-home", toMenu);
     on("enemy-codex-home", toMenu);
+    on("fusion-codex-home", toMenu);
 
     // 列表键盘操作：上下方向键切换选中项
-    ["tower-encyclopedia-grid", "enemy-encyclopedia-grid"].forEach((id) => {
+    ["tower-encyclopedia-grid", "enemy-encyclopedia-grid", "fusion-encyclopedia-grid"].forEach((id) => {
       const list = document.getElementById(id);
       if (!list) return;
       this.addTrackedEventListener(list, "keydown", (e) => {
@@ -74,9 +78,11 @@ UI.prototype.updateCodexTally = function() {
     const towers = CONFIG.ACTIVE_TOWERS.filter((t) => CONFIG.TOWERS[t]).length;
     const enemies = CONFIG.ACTIVE_ENEMIES.filter((t) => CONFIG.ENEMIES[t]).length;
     const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+    const fusions = (CONFIG.FUSION ? CONFIG.FUSION.recipes : []).length;
     set("codex-count-towers", `已录 ${towers} 字`);
     set("codex-count-enemies", `已录 ${enemies} 种`);
-    set("codex-tally", `共 ${towers + enemies} 条`);
+    set("codex-count-fusion", `已录 ${fusions} 字`);
+    set("codex-tally", `共 ${towers + enemies + fusions} 条`);
 };
 
 // === 列表 ===
@@ -150,7 +156,7 @@ UI.prototype.showTowerDetail = function(type, config) {
     if (!panel || !config) return;
     const codex = CONFIG.CODEX.towers[type] || { moves: [] };
     const glyph = CONFIG.GLYPHS && CONFIG.GLYPHS[type];
-    // 元素色按塔类型取：有字形数据的塔（火、水、土）用自己的主色，其余退回火色
+    // 元素色按塔类型取：有字形数据的塔用自己的主色，其余退回火色
     const tint = CONFIG.GLYPHS && CONFIG.GLYPHS[type] ? type : "fire";
 
     const strokes = glyph

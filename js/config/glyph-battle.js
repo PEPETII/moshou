@@ -33,16 +33,13 @@ Object.assign(CONFIG, {
   // 每次开局的默认档位（A7：不记忆上一次选择）
   DENSITY_DEFAULT: 'flood',
 
-  // 刷怪参数
+  // 刷怪参数：所有敌人都从入口生成（s ≈ 0 起步），沿路径走进来，不在路径中段预铺
   SPAWN: {
     corpseRatio: 0.7,        // 普通怪里尸的占比，其余为鬼
     firstGiantDelay: 4,      // 开局后第一只巨出现的时间（秒）
     startSpread: 20,         // 新怪初始里程 s 的随机范围（px），避免同帧重叠
     laneRange: 9,            // 横向偏移范围（px，乘 GLYPH_SCALE），让队伍不排成一线
     speedJitter: 0.08,       // 速度随机浮动 ±8%
-    prefillCount: 12,        // 开局预铺在路上的敌人数（原型 22，地图更长故减少）
-    prefillStart: 1.5,       // 预铺起点（格）
-    prefillSpacing: 80,      // 预铺间距（px 里程）
   },
 
   // 敌人身上的字形状态（05 的火、水招式与 20 的土、木招式通过 Enemy.ignite / makeWet / glyphStun 施加）
@@ -52,6 +49,10 @@ Object.assign(CONFIG, {
     burnShowInterval: 0.45,  // 灼烧伤害合并显示的间隔（秒）
     wetSlow: 0.3,            // 湿身减速比例
     giantKnockMul: 0.3,      // 重敌（weight > 1）被击退的距离折扣
+    // 2026-10-20 新塔状态：减速（土、木、林）、寒（冰）、破甲（金）
+    slowCap: 0.8,            // 湿身、减速、寒叠乘后的总减速上限
+    chillSlowPerStack: 0.12, // 寒每层减速比例
+    chillMaxStacks: 4,       // 寒叠到此层数即冻结
   },
 
   // 打击反馈（工单 06）：数值照原型，像素量由 GlyphFX 内部统一乘 GLYPH_SCALE
@@ -73,7 +74,7 @@ Object.assign(CONFIG, {
       { at: 120, text: '所向披靡' },
     ],
     // 击杀着色：火杀偏焦褐，水杀偏靛青，其余用浓墨
-    killTint: { fire: '#5a2a1c', water: '#22445c' },
+    killTint: { fire: '#5a2a1c', water: '#22445c', ice: '#3e6f88', thunder: '#3f3778', gold: '#6e5418' },
     heavyKill: { shake: 7, hitstop: 0.06, ringR: 70 },   // 重敌（weight > 1）击杀
   },
 });

@@ -85,7 +85,8 @@ class Game {
       worldW: this.worldW,
       viewW: CONFIG.VIEW_W,
       viewH: CONFIG.VIEW_H,
-      insetRight: CONFIG.BATTLE_DOCK_W, // 右缘叠放塔卡卡槽（P4）
+      insetLeft: CONFIG.BATTLE_DOCK_W, // 左缘叠放塔卡栏
+      insetRight: CONFIG.BATTLE_DOCK_W, // 右缘叠放停/战况
       hitTower: (cx, cy, isTouch) => !!ui.pickTowerNear(cx, cy, {
         tolerance: isTouch ? (window.DeviceProfile && window.DeviceProfile.tapTolerance) : undefined,
       }),

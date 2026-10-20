@@ -56,7 +56,8 @@
           : { x: c.x * cell + cell / 2, y: c.y * cell + cell / 2 }
       );
     }
-    return out;
+    // 与敌人轨迹一致：拐角画成圆弧
+    return typeof PathTrack !== 'undefined' && PathTrack.smoothPolyline ? PathTrack.smoothPolyline(out, cell) : out;
   }
 
   function pathKey(paths) {

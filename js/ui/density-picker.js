@@ -25,7 +25,7 @@ const DensityPicker = {
 
     const title = document.createElement('h2');
     title.id = 'density-picker-title';
-    title.textContent = '择潮';
+    title.textContent = '敌潮';
     box.appendChild(title);
 
     const hint = document.createElement('p');
@@ -43,8 +43,6 @@ const DensityPicker = {
       btn.dataset.density = key;
       btn.innerHTML =
         `<span class="density-label">${cfg.label}</span>` +
-        `<span class="density-rate">每秒 ${cfg.rate} 只</span>` +
-        `<span class="density-giant">巨 每 ${cfg.giantEvery} 秒</span>` +
         `<span class="density-desc">${cfg.desc}</span>`;
       btn.addEventListener('click', () => this.select(key));
       row.appendChild(btn);

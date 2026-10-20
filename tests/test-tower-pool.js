@@ -38,9 +38,9 @@ function check(name, ok, detail) {
 }
 
 // 塔池
-check('ACTIVE_TOWERS 为火、水、土、木', JSON.stringify(X.CONFIG.ACTIVE_TOWERS) === '["fire","water","earth","wood"]');
-check('getUnlockedTowers 读取塔池', JSON.stringify(X.Game.prototype.getUnlockedTowers.call({})) === '["fire","water","earth","wood"]');
-check('下架塔的配置已删除', Object.keys(X.CONFIG.TOWERS).join() === 'fire,water,earth,wood');
+check('ACTIVE_TOWERS 为十二座单字塔', JSON.stringify(X.CONFIG.ACTIVE_TOWERS) === '["fire","water","earth","wood","gold","wind","cannon","thunder","ice","bow","mountain","sword"]');
+check('getUnlockedTowers 读取塔池', JSON.stringify(X.Game.prototype.getUnlockedTowers.call({})) === '["fire","water","earth","wood","gold","wind","cannon","thunder","ice","bow","mountain","sword"]');
+check('塔配置只有十二座单字塔与三座合字塔', Object.keys(X.CONFIG.TOWERS).join() === 'fire,water,earth,wood,gold,wind,cannon,thunder,ice,bow,mountain,sword,yan,lin,fen');
 check('塔池成员都有配置', X.CONFIG.ACTIVE_TOWERS.every((t) => X.CONFIG.TOWERS[t]));
 check('图鉴敌人只列尸、鬼、巨', JSON.stringify(X.CONFIG.ACTIVE_ENEMIES) === '["corpse","ghost","giant"]');
 

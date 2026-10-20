@@ -47,6 +47,14 @@ html[data-input="touch"] #scale-container { transition: none; }
 #bottom-bar .tower-select[data-type="water"] { --card-tint: color-mix(in srgb, var(--tint-water) 26%, transparent); }
 #bottom-bar .tower-select[data-type="earth"] { --card-tint: color-mix(in srgb, var(--tint-earth) 26%, transparent); }
 #bottom-bar .tower-select[data-type="wood"] { --card-tint: color-mix(in srgb, var(--tint-wood) 26%, transparent); }
+#bottom-bar .tower-select[data-type="gold"] { --card-tint: color-mix(in srgb, var(--tint-gold) 26%, transparent); }
+#bottom-bar .tower-select[data-type="wind"] { --card-tint: color-mix(in srgb, var(--tint-wind) 26%, transparent); }
+#bottom-bar .tower-select[data-type="cannon"] { --card-tint: color-mix(in srgb, var(--tint-cannon) 26%, transparent); }
+#bottom-bar .tower-select[data-type="thunder"] { --card-tint: color-mix(in srgb, var(--tint-thunder) 26%, transparent); }
+#bottom-bar .tower-select[data-type="ice"] { --card-tint: color-mix(in srgb, var(--tint-ice) 26%, transparent); }
+#bottom-bar .tower-select[data-type="bow"] { --card-tint: color-mix(in srgb, var(--tint-bow) 26%, transparent); }
+#bottom-bar .tower-select[data-type="mountain"] { --card-tint: color-mix(in srgb, var(--tint-mountain) 26%, transparent); }
+#bottom-bar .tower-select[data-type="sword"] { --card-tint: color-mix(in srgb, var(--tint-sword) 26%, transparent); }
 #bottom-bar .tower-select::before { content: none; }
 #bottom-bar .tower-select:hover,
 #bottom-bar .tower-select:active {
@@ -173,3 +181,20 @@ html[data-input="touch"] #bottom-bar .tower-select.locked {
 #conquest-tower-info .info-actions { gap: 5px; }
 #tower-info .sell-btn,
 #conquest-tower-info .sell-btn { color: var(--ink-seal-dark) !important; }
+
+/* ---- 合成区（2026-10-20）：一行一个配方，「合」字朱印 + 合字 + 墨价；不可合时下方写原因 ---- */
+#tower-info .info-fusion,
+#conquest-tower-info .info-fusion { display: grid; gap: 6px; margin: 6px 0; padding-top: 6px; border-top: 1px dashed var(--ink-grid); }
+#tower-info .info-fusion[hidden],
+#conquest-tower-info .info-fusion[hidden] { display: none; }
+.fusion-row { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 8px; }
+.fusion-row .fusion-btn { grid-row: span 2; display: inline-flex; align-items: center; gap: 6px; }
+.fusion-btn__seal { color: var(--ink-paper); background: var(--ink-seal); padding: 0 4px; font-size: var(--fs-xs); line-height: 1.4; }
+.fusion-btn__char { font-size: var(--fs-l); line-height: 1; }
+.fusion-btn__cost { color: var(--ink-soft); font-size: var(--fs-xs); }
+.fusion-btn:disabled .fusion-btn__seal { background: var(--ink-faint); }
+.fusion-row__formula { color: var(--ink-soft); font-size: var(--fs-xs); }
+.fusion-row__reason { color: var(--ink-seal-dark); font-size: var(--fs-xs); min-height: 1em; }
+.fusion-btn__char--yan { color: var(--tint-yan); }
+.fusion-btn__char--lin { color: var(--tint-lin); }
+.fusion-btn__char--fen { color: var(--tint-fen); }

@@ -9,7 +9,19 @@
     fire: 'fire',
     water: 'water',
     wood: 'wind',
-    earth: 'thud'
+    earth: 'thud',
+    // 2026-10-20 新塔：借用现有五种音色
+    gold: 'metal',
+    wind: 'wind',
+    cannon: 'thud',
+    thunder: 'metal',
+    ice: 'water',
+    bow: 'wind',
+    mountain: 'thud',
+    sword: 'metal',
+    yan: 'fire',
+    lin: 'wind',
+    fen: 'fire'
   };
   // 首领级敌人：击杀时播放钟鸣。
   const BOSS_ENEMIES = new Set(['overlord', 'tyrant', 'matriarch', 'doomsday', 'juggernaut']);

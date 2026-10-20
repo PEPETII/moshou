@@ -66,7 +66,7 @@ check('三档密度与上限', CONFIG.DENSITY.sparse.rate === 1.6 && CONFIG.DENS
 
 // ---------- PathTrack ----------
 {
-  const tr = PathTrack.fromCells(cells);
+  const tr = PathTrack.fromCells(cells, { round: false });
   check('共线点合并：总长 = 路径格数差×格长', near(tr.total, 8 * CELL) && tr.segs.length === 3, `segs=${tr.segs.length} total=${tr.total}`);
   const p0 = tr.pointAt(0);
   check('起点在首格中心', near(p0.x, CELL / 2) && near(p0.y, CELL * 1.5));
@@ -84,8 +84,20 @@ check('三档密度与上限', CONFIG.DENSITY.sparse.rate === 1.6 && CONFIG.DENS
     const before = tr.pointAt(5.2 * CELL), after = tr.pointAt(5.2 * CELL - 100);
     check('减小 s 后坐标沿路后退且连续', after.x < before.x || after.y < before.y);
   }
-  const ext = PathTrack.fromCells(cells, { extendEntry: true });
+  const ext = PathTrack.fromCells(cells, { extendEntry: true, round: false });
   check('入口向画外延伸一格', near(ext.total, 9 * CELL) && near(ext.pointAt(0).x, -CELL / 2) && near(ext.cellS[0], CELL) && ext.cellIndexAt(CELL) === 0);
+  {
+    // 圆角轨迹：朝向连续（相邻采样转角 < 25°）、总长小于折线、格心里程单调
+    const rt = PathTrack.fromCells(cells);
+    let maxTurn = 0;
+    for (let s = 1; s < rt.total; s += 2) {
+      let d = Math.abs(rt.pointAt(s).ang - rt.pointAt(s - 1).ang);
+      if (d > Math.PI) d = 2 * Math.PI - d;
+      maxTurn = Math.max(maxTurn, d);
+    }
+    check('拐角圆弧：朝向逐段渐变、总长略短于折线', maxTurn < 0.44 && rt.total < 8 * CELL && rt.total > 7.5 * CELL, `maxTurn=${maxTurn} total=${rt.total}`);
+    check('圆角后 cellS 单调且 cellIndexAt 仍一一对应', rt.cellS.every((v, i) => i === 0 || v >= rt.cellS[i - 1]) && rt.cellIndexAt(rt.total + 1) === 8);
+  }
   check('forPath 按数组缓存', PathTrack.forPath(cells) === PathTrack.forPath(cells) && PathTrack.forPath(cells) !== PathTrack.forPath(cells, { loop: true }));
 }
 
@@ -100,7 +112,7 @@ check('三档密度与上限', CONFIG.DENSITY.sparse.rate === 1.6 && CONFIG.DENS
   // 拐角平滑：走过拐角后 x 不再增加
   e.s = e.track.cellS[3] - 5; e.syncPosition();   // 塔防路径带入口延伸，拐点格(3,1)的里程取自 cellS
   e.baseSpeed = e.speed = 1; e.update(vt.t, 100);
-  check('拐角处沿折线转向、不穿墙', near(e.x, 3 * CELL + CELL / 2, 1e-6) && e.y > CELL * 1.5, `x=${e.x} y=${e.y}`);
+  check('拐角处沿圆弧转向、不穿墙', e.x < 3 * CELL + CELL / 2 + 1e-6 && e.y > CELL * 1.5 - 1e-6 && e.y < CELL * 1.5 + CELL / 2, `x=${e.x} y=${e.y}`);
   // 击退
   e.s = 4 * CELL; e.knockback(100);
   check('knockback 减小 s', near(e.s, 4 * CELL - 100));
@@ -150,10 +162,8 @@ check('三档密度与上限', CONFIG.DENSITY.sparse.rate === 1.6 && CONFIG.DENS
     vt.t = 1e6;
     const g = makeGame();
     BattleDirector.begin(g, key);
-    const before = g.enemies.length;
     g.holdLeft = 1e9; g.holdTotal = 1e9;
     g.giantTimer = 1e9;                      // 先不算巨，只测普通怪速率
-    for (const e of g.enemies) e.baseSpeed = e.speed = 0;
     let spawned = 0;
     for (let i = 0; i < 60 * 20; i++) {
       const n0 = g.enemies.length;
@@ -161,14 +171,26 @@ check('三档密度与上限', CONFIG.DENSITY.sparse.rate === 1.6 && CONFIG.DENS
       spawned += g.enemies.length - n0;
     }
     rates[key] = spawned / 20;
-    check(`「${CONFIG.DENSITY[key].label}」档每秒刷怪数 ≈ ${CONFIG.DENSITY[key].rate}`, Math.abs(rates[key] - CONFIG.DENSITY[key].rate) < 0.2, `实测 ${rates[key].toFixed(2)}，预铺 ${before}`);
+    check(`「${CONFIG.DENSITY[key].label}」档每秒刷怪数 ≈ ${CONFIG.DENSITY[key].rate}`, Math.abs(rates[key] - CONFIG.DENSITY[key].rate) < 0.2, `实测 ${rates[key].toFixed(2)}`);
   }
   check('三档速率严格递增', rates.sparse < rates.normal && rates.normal < rates.flood);
+
+  // 开战当帧不预铺；此后敌人一律从入口（s ≈ 0）生成，再沿路径走进来
+  vt.t = 1e6;
+  {
+    const entry = makeGame();
+    BattleDirector.begin(entry, 'flood');
+    check('开战当帧不在路径中段预铺敌人', entry.enemies.length === 0);
+    entry.holdLeft = entry.holdTotal = 1e9;
+    for (let i = 0; i < 30; i++) entry.updateSpawner(1 / 60);
+    check('开战后敌人从入口生成', entry.enemies.length > 0
+      && entry.enemies.every((e) => e.s >= 0 && e.s <= CONFIG.SPAWN.startSpread),
+    `n=${entry.enemies.length} s=${entry.enemies.map((e) => e.s.toFixed(1)).join('/')}`);
+  }
 
   vt.t = 1e6;
   const g = makeGame();
   BattleDirector.begin(g, 'flood');
-  check('开局预铺 prefillCount 只且都在路上', g.enemies.length === CONFIG.SPAWN.prefillCount && g.enemies.every((e) => e.s > 0 && e.s < e.track.total));
   check('非法档位回落「潮」', (() => { const h = makeGame(); BattleDirector.begin(h, 'xx'); return h.density === 'flood'; })());
   check('开局第一只巨在 firstGiantDelay 秒后', near(g.giantTimer, CONFIG.SPAWN.firstGiantDelay));
   g.holdLeft = g.holdTotal = 1e9;
@@ -212,7 +234,7 @@ check('三档密度与上限', CONFIG.DENSITY.sparse.rate === 1.6 && CONFIG.DENS
   e.update(vt.t, 1000);
   check('走到终点后 s 归零继续绕圈，不扣核心血量', !e.dead && e.s < CELL * 2 && c.coreHp === core0, `s=${e.s}`);
   c.enemies = []; BattleDirector.begin(c, 'flood');
-  check('征服同样预铺与计时', c.enemies.length === CONFIG.SPAWN.prefillCount && c.holdLeft === CONFIG.HOLD_SECONDS);
+  check('征服同样不在开战当帧预铺，只开始计时', c.enemies.length === 0 && c.holdLeft === CONFIG.HOLD_SECONDS);
 }
 
 // ---------- RuntimeIndexes 空间分桶 ----------

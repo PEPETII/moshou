@@ -1,4 +1,7 @@
-// 字形弹道：笔画数据与火、水、土、木的招式参数（工单 05；土、木于 2026-10-20 接入）
+// 字形弹道：笔画数据与火、水、土、木的招式参数（工单 05；土、木于 2026-10-20 接入并重做）
+//
+// 其余八座单字塔见 glyphs-ext.js，合字塔见 glyphs-fusion.js；三份文件都通过本文件的
+// applyGlyphMoves 注入 CONFIG.TOWERS[type].glyph。
 //
 // 加载顺序：必须在 glyph-battle.js 之后（要用 GLYPH_SCALE）。
 // 笔画坐标为 0..100 字身坐标（y 向下），w = [起笔, 行笔, 收笔] 笔宽。数组顺序即笔顺。
@@ -65,6 +68,18 @@ Object.assign(CONFIG, {
     woodLight: '#86a06e',
     woodGlow: 'rgba(110,150,90,0.5)',
     woodWash: 'rgba(80,110,70,0.18)',
+    // 2026-10-20 新塔：主色 / 浅色 / 光晕
+    gold: '#a8822a', goldLight: '#dcb85e', goldGlow: 'rgba(220,180,80,0.55)',
+    wind: '#5f7d78', windLight: '#a7c1b8', windGlow: 'rgba(150,190,180,0.5)',
+    cannon: '#4a3f36', cannonLight: '#8a7a68', cannonGlow: 'rgba(120,100,80,0.45)',
+    thunder: '#5a4fa0', thunderLight: '#b7aef0', thunderGlow: 'rgba(160,150,240,0.6)',
+    ice: '#4f8fb0', iceLight: '#bfe2f2', iceGlow: 'rgba(170,220,245,0.6)',
+    bow: '#7a4a2e', bowLight: '#c09068', bowGlow: 'rgba(190,140,100,0.45)',
+    mountain: '#5a5a50', mountainLight: '#9a9a88', mountainGlow: 'rgba(140,140,120,0.45)',
+    sword: '#3d4d5c', swordLight: '#a9bccb', swordGlow: 'rgba(170,190,210,0.55)',
+    yan: '#d0461f', yanLight: '#ffb057', yanGlow: 'rgba(255,140,60,0.6)',
+    lin: '#2f6b3a', linLight: '#7fb27a', linGlow: 'rgba(110,170,100,0.55)',
+    fen: '#9c2f1c', fenLight: '#f2984a', fenGlow: 'rgba(240,120,50,0.6)',
     seal: '#b4473a',
   },
 
@@ -131,70 +146,62 @@ const GLYPH_MOVES_RAW = {
     waveCatchDamage: 6, waveEndDamage: 16, waveStun: 0.55,
     rewriteSides: 1.2,
   },
-  // 土：短射程、慢节奏、重控场。普攻只掷出上横（一笔），大招三笔整字下砸并留陷坑
+  // 土（2026-10-20 重做）：范围压制与减速。普攻不出弹道，下横砸地以塔为心震荡一圈；
+  // 大招把整字立在敌群最密处成「壁垒」，区域内重度减速并持续碾压，到时崩塌
   earth: {
-    range: 210,              // [px]
-    slabInterval: 1.05, slabDamage: [22, 28], slabRewrite: 0.6,
-    slabSpeed: 620,          // [px] 石片直线速度
-    slabRadius: 18,          // [px] 命中判定半径
-    slabKnock: 5,            // [px] 命中时的轻微外推
-    slabSplash: 52,          // [px] 碎石溅射半径
-    slabSplashDamage: 12,
-    chargePerSec: 0.1, chargePerHit: 0.025,
-    quakeFlight: 0.72,       // 整字下砸的飞行时间
-    quakeArc: 120,           // [px] 抛物高度
-    quakeDamage: 56,
-    quakeRadius: 110,        // [px]
-    quakeEdgeFalloff: 0.35,
-    quakeStun: 0.8,
-    quakeKnock: 12,          // [px] 落点向外的推力
-    pitDuration: 2.6,        // 地面「土」字陷坑持续秒数
-    pitRadius: 95,           // [px]
-    pitDps: 25, pitTick: 0.4,
-    pitStun: 0.25,           // 每跳把敌人按住的时间，表现为陷在坑里
-    pitGlyph: 150,           // [px] 陷坑字形的字号
+    range: 165,              // [px] 震荡半径即射程
+    poundInterval: 1.15, poundDamage: [10, 14], poundRewrite: 0.7,
+    poundChargeCap: 5,       // 单次震荡最多按几个命中计充能
+    mireSlow: 0.35, mireDuration: 1.6,   // 泥泞：减速比例与秒数
+    chargePerSec: 0.1, chargePerHit: 0.006,
+    wallFlight: 0.7,         // 整字飞向落点的时间
+    wallArc: 120,            // [px] 抛物高度
+    wallDuration: 4,         // 壁垒持续秒数
+    wallRadius: 95,          // [px]
+    wallSlow: 0.65,          // 壁垒内减速比例
+    wallDps: 14, wallTick: 0.4,
+    wallGlyph: 150,          // [px] 壁垒字号
+    collapseDamage: 45, collapseStun: 0.8,
     rewriteAll: 1.5,         // 三笔写回的总时长
     landMinS: 120,           // [px] 落点至少离入口这么远
     landStep: 16,            // [px] 沿路采样间距
-    landRangeMul: 1.2,       // 落点限制在射程的这个倍数以内
+    landRangeMul: 1.3,       // 落点限制在射程的这个倍数以内
   },
-  // 木：中速穿透。普攻只掷出撇笔（一笔木刺），大招四笔整字掷出后炸成一圈木刺
+  // 木（2026-10-20 重做）：持续生长与蔓延。普攻把撇笔种到最前敌人前方的路上，长成木苗；
+  // 大招让藤蔓从落点沿路双向生长，缠住其上敌人
   wood: {
     range: 215,              // [px]
-    shardInterval: 0.55, shardDamage: [9, 13], shardRewrite: 0.5,
-    shardSpeed: 640,         // [px] 木刺直线速度
-    shardRadius: 16,         // [px] 命中判定半径
-    shardPierce: 3,          // 单发木刺最多结算几个目标
-    shardKnock: 4,           // [px] 每次命中的轻推
-    chargePerSec: 0.09, chargePerHit: 0.018,
-    burstFlight: 0.65,       // 整字掷出的飞行时间
-    burstArc: 130,           // [px] 抛物高度
-    burstDamage: 60,
-    burstRadius: 120,        // [px]
-    burstEdgeFalloff: 0.35,
-    burstKnock: 14,          // [px] 落点向外的推力
-    rewriteAll: 1.2,         // 四笔写回的总时长
-    landMinS: 140,           // [px] 落点至少离入口这么远
-    landStep: 16,            // [px] 沿路采样间距
-    landRangeMul: 1.15,      // 落点限制在射程的这个倍数以内
+    seedInterval: 0.9, seedRewrite: 0.6,
+    seedFlight: 0.4,         // 种子飞行秒数
+    seedArc: 50,             // [px]
+    seedLead: 30,            // [px] 种在目标前方多远（沿路里程）
+    sproutGrow: 0.7,         // 木苗长成所需秒数，长成前不伤人
+    sproutLife: 6,           // 木苗存活秒数
+    sproutRadius: 26,        // [px]
+    sproutDps: 12, sproutTick: 0.4, sproutSlow: 0.25,
+    sproutMax: 4,            // 每座塔同时存在的木苗上限，超出则最老的枯萎
+    chargePerSec: 0.09, chargePerHit: 0.01,
+    vineFlight: 0.6,
+    vineArc: 110,            // [px]
+    vineGrowSpeed: 160,      // [px/s] 每个方向的生长速度
+    vineLength: 170,         // [px] 每个方向最长
+    vineDuration: 4.5,
+    vineWidth: 26,           // [px] 藤蔓带半宽
+    vineSlow: 0.5, vineDps: 16, vineTick: 0.4,
+    rewriteAll: 1.3,         // 四笔写回的总时长
+    landMinS: 120,           // [px]
+    landStep: 16,            // [px]
+    landRangeMul: 1.15,
   },
 };
 
-(function applyGlyphMoves() {
+// 把招式参数写进 CONFIG.TOWERS[type].glyph：pxKeys 中的像素量乘 GLYPH_SCALE。
+// glyphs-ext.js、glyphs-fusion.js 也用它注入新塔，保证十五座塔的字段处理一致。
+function applyGlyphMoves(raw, pxKeys) {
   const S = CONFIG.GLYPH_SCALE;
-  const PX_KEYS = {
-    fire: ['range', 'sparkSpeed', 'sparkSpeed0', 'sparkAccel', 'sparkSeek', 'bombArc', 'bombRadius',
-      'markRadius', 'markGlyph', 'landMinS', 'landStep'],
-    water: ['range', 'jetWidth', 'jetKnock', 'jetReach', 'waveSpeed', 'waveLead', 'waveFloor',
-      'waveMinTravel', 'waveCatchBack', 'waveCatchFront', 'waveGlyph', 'waveTrail'],
-    earth: ['range', 'slabSpeed', 'slabRadius', 'slabKnock', 'slabSplash', 'quakeArc', 'quakeRadius',
-      'quakeKnock', 'pitRadius', 'pitGlyph', 'landMinS', 'landStep'],
-    wood: ['range', 'shardSpeed', 'shardRadius', 'shardKnock', 'burstArc', 'burstRadius', 'burstKnock',
-      'landMinS', 'landStep'],
-  };
-  for (const type of Object.keys(GLYPH_MOVES_RAW)) {
-    const cfg = Object.assign({}, GLYPH_MOVES_RAW[type]);
-    for (const key of PX_KEYS[type]) cfg[key] *= S;
+  for (const type of Object.keys(raw)) {
+    const cfg = Object.assign({}, raw[type]);
+    for (const key of pxKeys[type] || []) cfg[key] *= S;
     if (cfg.waveCarryOff) cfg.waveCarryOff = cfg.waveCarryOff.map((v) => v * S);
     const tower = CONFIG.TOWERS[type];
     if (!tower) continue;
@@ -202,4 +209,14 @@ const GLYPH_MOVES_RAW = {
     tower.size = tower.size || 68;
     tower.range = cfg.range / CONFIG.CELL_SIZE; // 格，供射程圈与说明复用
   }
-})();
+}
+
+applyGlyphMoves(GLYPH_MOVES_RAW, {
+  fire: ['range', 'sparkSpeed', 'sparkSpeed0', 'sparkAccel', 'sparkSeek', 'bombArc', 'bombRadius',
+    'markRadius', 'markGlyph', 'landMinS', 'landStep'],
+  water: ['range', 'jetWidth', 'jetKnock', 'jetReach', 'waveSpeed', 'waveLead', 'waveFloor',
+    'waveMinTravel', 'waveCatchBack', 'waveCatchFront', 'waveGlyph', 'waveTrail'],
+  earth: ['range', 'wallArc', 'wallRadius', 'wallGlyph', 'landMinS', 'landStep'],
+  wood: ['range', 'seedArc', 'seedLead', 'sproutRadius', 'vineArc', 'vineGrowSpeed', 'vineLength',
+    'vineWidth', 'landMinS', 'landStep'],
+});

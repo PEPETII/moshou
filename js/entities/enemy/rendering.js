@@ -30,6 +30,17 @@ Enemy.prototype.draw = function(ctx, inkRenderer) {
       ctx.fillStyle = 'rgba(220,100,40,0.16)';
       ctx.beginPath(); ctx.arc(this.x, this.y - 2, size * 0.6, 0, Math.PI * 2); ctx.fill();
     }
+    // 减速（泥泞 / 藤蔓）：脚下一道赭色淡圈；寒：青白光晕，层数越多越浓
+    if (this.slowTime > 0) {
+      ctx.strokeStyle = 'rgba(120,92,58,0.45)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(this.x, this.y + size * 0.42, size * 0.48, size * 0.14, 0, 0, Math.PI * 2); ctx.stroke();
+    }
+    if (this.chillStacks > 0 || this.iceTime > 0) {
+      const a = this.iceTime > 0 ? 0.32 : 0.08 * this.chillStacks;
+      ctx.fillStyle = `rgba(150,200,230,${a})`;
+      ctx.beginPath(); ctx.arc(this.x, this.y, size * 0.6, 0, Math.PI * 2); ctx.fill();
+    }
 
     // 确定敌人颜色状态
     let color = CONFIG.COLORS.enemy;
@@ -39,6 +50,8 @@ Enemy.prototype.draw = function(ctx, inkRenderer) {
       color = "#8a8377";  // 蒸发状态显示干墨（墨色转淡）
     } else if (this.burning || this.fireMarked || this.burnTime > 0) {
       color = "#b03a2e";  // 灼烧状态显示朱砂
+    } else if (this.iceTime > 0) {
+      color = "#5b8aa6";  // 冻结显示冰青
     } else if (this.wet > 0) {
       color = "#1f3446";  // 湿身显示青墨
     } else if (this.blocked) {
@@ -59,6 +72,11 @@ Enemy.prototype.draw = function(ctx, inkRenderer) {
       ctx.fillRect(this.x - w / 2, this.y + size * 0.58, w, 3);
       ctx.fillStyle = '#b4473a';
       ctx.fillRect(this.x - w / 2, this.y + size * 0.58, w * Math.max(0, this.hp / this.maxHp), 3);
+    }
+    // 破甲：头顶一枚金色「破」点
+    if (this.exposeTime > 0) {
+      ctx.fillStyle = '#b8902e';
+      ctx.beginPath(); ctx.arc(this.x + size * 0.42, this.y - size * 0.48, 2.6, 0, Math.PI * 2); ctx.fill();
     }
     if (this.stun > 0 && !this.carried) {
       ctx.strokeStyle = '#6f9bb8';

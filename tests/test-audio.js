@@ -122,6 +122,8 @@ function advance(world, seconds) {
     assert.strictEqual(audio.familyOf({ type: 'water' }), 'water');
     assert.strictEqual(audio.familyOf({ type: 'earth' }), 'thud');
     assert.strictEqual(audio.familyOf({ type: 'wood' }), 'wind');
+    assert.strictEqual(audio.familyOf({ type: 'ice' }), 'water');
+    assert.strictEqual(audio.familyOf({ type: 'fen' }), 'fire');
     assert.strictEqual(audio.familyOf({ type: 'unknown' }), 'metal');
     assert.strictEqual(audio.deathVariantOf({ type: 'overlord', maxHp: 10 }), 'boss');
     assert.strictEqual(audio.deathVariantOf({ type: 'giant', maxHp: 80 }), 'large');

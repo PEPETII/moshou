@@ -1,10 +1,10 @@
 // Game：炮塔放置
 Game.prototype.getUnlockedTowers = function() {
-    // 实验阶段：只开放 CONFIG.ACTIVE_TOWERS（火、水、土、木）；其余单字塔下架但配置保留
+    // 商店只开放 CONFIG.ACTIVE_TOWERS（十二座单字塔）；合字塔只能由融合得到（js/core/fusion.js）
     return CONFIG.ACTIVE_TOWERS.filter((type) => CONFIG.TOWERS[type]);
   
 };
-// 配置了 maxCount 的塔（财、医）达到数量上限后不可再放置
+// 配置了 maxCount 的塔达到数量上限后不可再放置（现役塔都没有配置）
 Game.prototype.isTowerTypeAtLimit = function(type) {
     const max = CONFIG.TOWERS[type] && CONFIG.TOWERS[type].maxCount;
     if (!max) return false;

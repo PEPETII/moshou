@@ -75,6 +75,14 @@ Enemy.prototype.reset = function(type, path, game) {
     this.stun = 0;
     this.flash = 0;
     this.carried = null;
+    // 新塔状态（2026-10-20）：减速、寒、冻结、破甲；单位秒
+    this.slowRatio = 0;
+    this.slowTime = 0;
+    this.chillStacks = 0;
+    this.chillTime = 0;
+    this.iceTime = 0;
+    this.exposeRatio = 0;
+    this.exposeTime = 0;
     this.pushVx = 0;
     this.lastHitKind = null;
     this._burnAccum = 0;

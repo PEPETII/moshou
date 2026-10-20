@@ -10,7 +10,7 @@ const vm = require('vm');
 const ROOT = path.join(__dirname, '..');
 const sandbox = {};
 vm.createContext(sandbox);
-const files = ['js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/glyph-battle.js', 'js/config/glyphs.js'];
+const files = ['js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js', 'js/config/glyph-battle.js', 'js/config/glyphs.js', 'js/config/glyphs-ext.js', 'js/config/glyphs-fusion.js', 'js/config/fusion.js'];
 vm.runInContext(files.map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n') + '\nthis.__C = CONFIG;', sandbox);
 const C = sandbox.__C;
 
@@ -23,11 +23,12 @@ function check(name, bad, detail) {
 }
 const num = (v) => typeof v === 'number' && Number.isFinite(v);
 
-// 1. 塔池与火、水、土、木字段
-check('塔池为火、水、土、木', JSON.stringify(C.ACTIVE_TOWERS) === '["fire","water","earth","wood"]' ? [] : ['ACTIVE_TOWERS']);
+// 1. 塔池（十二座单字塔，2026-10-20 扩充）与字段
+check('塔池为十二座单字塔', JSON.stringify(C.ACTIVE_TOWERS) === '["fire","water","earth","wood","gold","wind","cannon","thunder","ice","bow","mountain","sword"]' ? [] : ['ACTIVE_TOWERS']);
 {
   const bad = [];
-  for (const k of C.ACTIVE_TOWERS) {
+  // 合字塔不在塔池里，同样要求字段齐全
+  for (const k of [...C.ACTIVE_TOWERS, ...C.FUSION.recipes.map((r) => r.result)]) {
     const t = C.TOWERS[k];
     if (!t) { bad.push(`${k}:缺配置`); continue; }
     for (const f of ['char', 'desc']) if (typeof t[f] !== 'string' || !t[f]) bad.push(`${k}.${f}`);
@@ -37,7 +38,7 @@ check('塔池为火、水、土、木', JSON.stringify(C.ACTIVE_TOWERS) === '["f
     else for (const f of ['range', 'chargePerSec', 'chargePerHit']) if (!(t.glyph[f] > 0)) bad.push(`${k}.glyph.${f}`);
     if (!C.GLYPHS || !C.GLYPHS[k]) bad.push(`${k}:缺字形笔画数据`);
   }
-  check('火、水、土、木配置字段齐全（含 glyph 与笔画数据）', bad);
+  check('十五座字形塔配置字段齐全（含 glyph 与笔画数据）', bad);
 }
 
 // 2. 三档敌潮

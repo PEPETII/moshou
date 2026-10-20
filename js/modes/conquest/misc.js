@@ -310,6 +310,12 @@ ConquestGame.prototype.showTowerInfo = function(tower, x, y) {
       this.sellTower(tower);
       this.hideTowerInfo();
     };
+    if (typeof FusionPanel !== "undefined") {
+      FusionPanel.render(info, this, tower, {
+        notify: (msg, type) => this._notify(msg, type),
+        onDone: (made) => this.showTowerInfo(made, x, y),
+      });
+    }
 
     // 关闭方式的提示：桌面端是右键，移动端没有右键，只能提示"点击空白处"
     let closeHint = info.querySelector(".right-click-hint");
@@ -349,6 +355,7 @@ ConquestGame.prototype.showTowerInfo = function(tower, x, y) {
 ConquestGame.prototype.hideTowerInfo = function() {
     const info = document.getElementById("conquest-tower-info");
     if (info) info.classList.add("hidden");
+    if (typeof FusionPanel !== "undefined") FusionPanel.stop();
     for (const t of this.towers) {
       t.selected = false;
     }

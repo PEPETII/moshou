@@ -1,55 +1,56 @@
-// 木塔：撇笔化作木刺直线射出，沿路贯穿（普攻「木刺」）；四笔整字掷向敌群最密处，
-// 落地炸开成一圈木刺并把敌人推开（大招「森」，蓄满自动释放）。
-// 与火、水、土同构，复用 GlyphTower 的笔画消耗、蓄力与写回；本文件只描述木自己的招式与绘制。
+// 木塔（2026-10-20 重做）：持续生长与蔓延，与火的「直线爆发」区分开。
+// 普攻「播种」：撇笔落到最前敌人前方的路上，长成木苗，持续刺伤并拖慢经过者；每塔木苗有上限。
+// 大招「蔓生」：四笔整字落向敌群最密处，藤蔓从落点沿路双向生长，缠住其上敌人（减速 + 持续伤害）。
+// 木苗的种植、生长与绘制也供合字「林」复用（见 lin.js），参数一律读各自塔的 cfg。
 const GlyphWood = {
-  // 普攻：撇笔写满才发；木刺沿直线飞出，不做追踪
+  // 普攻：撇（第 3 笔）写满才播种
   update(t, dt, pool) {
     const gl = t.gl;
     const cfg = gl.cfg;
     gl.timer -= dt;
-    if (gl.timer > 0 || !pool.length) return;
-    if (!GlyphTower.ready(t, 2)) return;
+    if (gl.timer > 0 || !pool.length || !GlyphTower.ready(t, 2)) return;
     const target = GlyphTower.frontTarget(pool);
-    if (!target) return;
-    const S = CONFIG.GLYPH_SCALE;
-    gl.timer = cfg.shardInterval;
-    const from = GlyphTower.strokeWorld(t, 2, 0.5);
-    const d = Math.hypot(target.x - from.x, target.y - from.y) || 1;
-    GlyphTower.consume(t, 2, 0.05, cfg.shardRewrite);
-    gl.recoil = 3 * S;
-    GlyphSystem.push(t.game, {
-      tower: t, kind: 'shard', x: from.x, y: from.y,
-      vx: (target.x - from.x) / d * cfg.shardSpeed,
-      vy: (target.y - from.y) / d * cfg.shardSpeed,
-      hit: new Set(), life: (cfg.range * 1.35) / cfg.shardSpeed, trail: [],
-    });
-    GlyphFX.emit(4, from.x, from.y, { color: CONFIG.GLYPH_COLORS.woodLight, speed: [40, 110], life: [0.2, 0.4], size: [1.5, 3], kind: 'ink' });
+    if (!target || !target.track) return;
+    gl.timer = cfg.seedInterval;
+    GlyphTower.consume(t, 2, 0.05, cfg.seedRewrite);
+    gl.recoil = 3 * CONFIG.GLYPH_SCALE;
+    this.sow(t, 2, target.track, target.s + cfg.seedLead);
   },
 
-  // 大招「森」：在这座塔射程内找敌群最密的路段落点；没有合适落点返回 false
+  // 把第 i 笔作为种子抛到 track 上里程 s 处，落地后长成木苗
+  sow(t, i, track, s) {
+    const sw = GlyphKit.wrapS(track, track.loop ? s : Math.min(track.total - 10, s));
+    const p = track.pointAt(sw);
+    const from = GlyphTower.strokeWorld(t, i, 0.5);
+    GlyphSystem.push(t.game, {
+      tower: t, kind: 'seed', stroke: i, sx: from.x, sy: from.y, tx: p.x, ty: p.y, x: from.x, y: from.y,
+      t: 0, dur: t.gl.cfg.seedFlight, track, s: sw, rot: 0,
+    });
+    GlyphFX.emit(4, from.x, from.y, { color: CONFIG.GLYPH_COLORS.woodLight, speed: [40, 110], life: [0.2, 0.4], size: [1.5, 3] });
+  },
+
+  // 木苗落地：超过上限时最老的一株枯萎
+  plant(s) {
+    const t = s.tower;
+    const cfg = t.gl.cfg;
+    const mine = s.game.glyphShots.filter((o) => o.kind === 'sprout' && o.tower === t && !o.done);
+    for (let k = 0; k <= mine.length - cfg.sproutMax; k++) mine[k].done = true;
+    GlyphSystem.push(s.game, {
+      tower: t, kind: 'sprout', ground: true, x: s.tx, y: s.ty, track: s.track, s: s.s,
+      t: 0, tick: 0, touched: cfg.sproutRoot ? new Set() : null,
+    });
+    GlyphFX.emit(6, s.tx, s.ty, { color: CONFIG.GLYPH_COLORS.woodLight, speed: [30, 90], life: [0.2, 0.4], size: [1.5, 3], grav: 160 });
+  },
+
+  // 大招「蔓生」
   cast(t) {
     const cfg = t.gl.cfg;
-    const game = t.game;
-    const reach = cfg.range * cfg.landRangeMul;
-    const r = cfg.burstRadius * 0.8;
-    let best = null;
-    let bestScore = 0;
-    for (const track of GlyphWorld.tracks(game)) {
-      const from = track.loop ? 0 : cfg.landMinS;
-      const to = track.loop ? track.total : track.total - 40 * CONFIG.GLYPH_SCALE;
-      for (const p of track.sample(cfg.landStep, from, to)) {
-        if (Math.hypot(p.x - t.x, p.y - t.y) > reach) continue;
-        let score = 0;
-        for (const e of GlyphWorld.enemiesInRange(game, p.x, p.y, r)) score += e.weight;
-        if (score > bestScore) { bestScore = score; best = p; }
-      }
-    }
+    const best = GlyphKit.densest(t, { radius: cfg.vineLength * 0.5 });
     if (!best) return false;
-    const step = cfg.rewriteAll / 4;
-    for (let i = 0; i < 4; i++) GlyphTower.consume(t, i, cfg.burstFlight + i * step, step);
-    GlyphSystem.push(game, {
-      tower: t, kind: 'burst', sx: t.x, sy: t.y, tx: best.x, ty: best.y, x: t.x, y: t.y,
-      t: 0, dur: cfg.burstFlight, scale: 1, rot: 0,
+    GlyphKit.consumeAll(t, cfg.vineFlight, cfg.rewriteAll);
+    GlyphSystem.push(t.game, {
+      tower: t, kind: 'lob', sx: t.x, sy: t.y, tx: best.x, ty: best.y, x: t.x, y: t.y,
+      t: 0, dur: cfg.vineFlight, scale: 1, rot: 0, track: best.track, s: best.s,
     });
     GlyphFX.addShake(3);
     GlyphFX.emit(14, t.x, t.y, { color: CONFIG.GLYPH_COLORS.woodLight, speed: [70, 190], life: [0.25, 0.5], size: [1.5, 3.5], grav: 220 });
@@ -57,118 +58,121 @@ const GlyphWood = {
   },
 
   updateShot(s, dt) {
-    if (s.kind === 'shard') this.updateShard(s, dt);
-    else if (s.kind === 'burst') this.updateBurst(s, dt);
+    if (s.kind === 'seed') this.updateSeed(s, dt);
+    else if (s.kind === 'sprout') this.updateSprout(s, dt);
+    else if (s.kind === 'lob') this.updateLob(s, dt);
+    else if (s.kind === 'vine') this.updateVine(s, dt);
   },
 
-  // ---- 普攻：贯穿木刺 ----
-  updateShard(s, dt) {
-    const cfg = s.tower.gl.cfg;
-    s.life -= dt;
-    s.x += s.vx * dt;
-    s.y += s.vy * dt;
-    s.trail.push({ x: s.x, y: s.y });
-    if (s.trail.length > 8) s.trail.shift();
-    for (const e of GlyphWorld.enemiesInRange(s.game, s.x, s.y, cfg.shardRadius + 40)) {
-      if (s.hit.has(e)) continue;
-      if (Math.hypot(e.x - s.x, e.y - s.y) > cfg.shardRadius + e.size * 0.4) continue;
-      this.shardHit(s, e);
-      if (s.done) return;
-    }
-    const b = GlyphWorld.bounds(s.game);
-    if (s.life <= 0 || s.x < -50 || s.x > b.w + 50 || s.y < -50 || s.y > b.h + 50) s.done = true;
+  updateSeed(s, dt) {
+    const k = GlyphKit.lob(s, dt, s.tower.gl.cfg.seedArc);
+    s.rot += dt * 9;
+    if (k >= 1) { s.done = true; this.plant(s); }
   },
 
-  shardHit(s, e) {
+  // 木苗：长成后每跳刺伤半径内敌人并减速；林的木苗另有「初触定身」
+  updateSprout(s, dt) {
     const cfg = s.tower.gl.cfg;
     const c = CONFIG.GLYPH_COLORS;
-    s.hit.add(e);
-    e.knockback(cfg.shardKnock);
-    GlyphWorld.damage(e, Math.round(GlyphFX.rnd(cfg.shardDamage[0], cfg.shardDamage[1])), { color: c.wood, kind: 'wood' });
-    GlyphTower.addCharge(s.tower, cfg.chargePerHit);
-    GlyphFX.emit(6, e.x, e.y, { color: c.woodLight, speed: [60, 180], life: [0.2, 0.4], size: [1.5, 3], grav: 180 });
-    GlyphFX.ring(e.x, e.y, 16, c.wood, 0.18, 2.5);
-    // 贯穿上限：结算满额目标后木刺散尽
-    if (s.hit.size >= cfg.shardPierce) s.done = true;
-  },
-
-  // ---- 大招：整字掷出 ----
-  updateBurst(s, dt) {
-    const cfg = s.tower.gl.cfg;
     s.t += dt;
-    const k = Math.min(1, s.t / s.dur);
-    s.x = s.sx + (s.tx - s.sx) * k;
-    s.y = s.sy + (s.ty - s.sy) * k - Math.sin(Math.PI * k) * cfg.burstArc;
-    s.scale = 1 + 0.4 * Math.sin(Math.PI * k) + 0.4 * k;
-    s.rot = Math.sin(k * Math.PI * 2) * 0.16;
-    GlyphFX.emit(Math.ceil(dt * 45), s.x, s.y, { color: CONFIG.GLYPH_COLORS.woodLight, speed: [10, 45], life: [0.2, 0.45], size: [1.5, 3], grav: 160, kind: 'ink' });
-    if (k >= 1) { s.done = true; this.burstLand(s); }
+    if (s.t >= cfg.sproutGrow + cfg.sproutLife) { s.done = true; return; }
+    if (s.t < cfg.sproutGrow) return;
+    s.tick += dt;
+    while (s.tick >= cfg.sproutTick) {
+      s.tick -= cfg.sproutTick;
+      let hits = 0;
+      for (const e of GlyphWorld.enemiesInRange(s.game, s.x, s.y, cfg.sproutRadius)) {
+        hits++;
+        e.glyphSlow(cfg.sproutSlow, cfg.sproutTick + 0.2);
+        if (s.touched && !s.touched.has(e)) { s.touched.add(e); e.glyphStun(cfg.sproutRoot); }
+        GlyphWorld.damage(e, cfg.sproutDps * cfg.sproutTick, { color: c.wood, size: 14, kind: 'wood' });
+      }
+      if (hits) {
+        GlyphTower.addCharge(s.tower, cfg.chargePerHit);
+        GlyphFX.emit(3, s.x, s.y, { color: c.woodLight, speed: [40, 100], life: [0.2, 0.35], size: [1.5, 2.5], angle: -Math.PI / 2, spread: 0.8 });
+      }
+    }
   },
 
-  burstLand(s) {
+  updateLob(s, dt) {
+    const cfg = s.tower.gl.cfg;
+    const k = GlyphKit.lob(s, dt, cfg.vineArc);
+    s.scale = 1 + 0.4 * Math.sin(Math.PI * k) + 0.3 * k;
+    s.rot = Math.sin(k * Math.PI * 2) * 0.16;
+    GlyphFX.emit(Math.ceil(dt * 40), s.x, s.y, { color: CONFIG.GLYPH_COLORS.woodLight, speed: [10, 45], life: [0.2, 0.45], size: [1.5, 3], grav: 160 });
+    if (k < 1) return;
+    s.done = true;
+    const c = CONFIG.GLYPH_COLORS;
+    GlyphFX.addHitstop(0.05);
+    GlyphFX.addShake(7);
+    GlyphFX.ring(s.tx, s.ty, 60, c.wood, 0.4, 6);
+    GlyphFX.emit(24, s.tx, s.ty, { color: c.woodLight, speed: [60, 200], life: [0.3, 0.6], size: [1.5, 3], grav: 240 });
+    GlyphFX.stain(s.tx, s.ty, 24, '#3f5233', 0.22);
+    GlyphSystem.push(s.game, {
+      tower: s.tower, kind: 'vine', ground: true, x: s.tx, y: s.ty, track: s.track, s: s.s, len: 0, t: 0, tick: 0,
+    });
+  },
+
+  // 藤蔓：沿路双向生长到 vineLength，缠住其上敌人
+  updateVine(s, dt) {
     const cfg = s.tower.gl.cfg;
     const c = CONFIG.GLYPH_COLORS;
-    const S = CONFIG.GLYPH_SCALE;
-    const r = cfg.burstRadius;
-    const { tx, ty } = s;
-    for (const e of GlyphWorld.enemiesInRange(s.game, tx, ty, r)) {
-      const d = Math.hypot(e.x - tx, e.y - ty);
-      const dmg = Math.round(cfg.burstDamage * (1 - cfg.burstEdgeFalloff * d / r));
-      e.knockback(cfg.burstKnock);
-      e.pushVx = (e.x - tx) * 1.4;
-      GlyphWorld.damage(e, dmg, { color: c.wood, kind: 'wood' });
+    s.t += dt;
+    s.len = Math.min(cfg.vineLength, s.len + cfg.vineGrowSpeed * dt);
+    s.tick += dt;
+    while (s.tick >= cfg.vineTick) {
+      s.tick -= cfg.vineTick;
+      for (const e of GlyphKit.alongTrack(s.game, s.track, s.s, s.len)) {
+        e.glyphSlow(cfg.vineSlow, cfg.vineTick + 0.25);
+        GlyphWorld.damage(e, cfg.vineDps * cfg.vineTick, { color: c.wood, size: 14, kind: 'wood' });
+      }
     }
-    GlyphFX.addHitstop(0.06);
-    GlyphFX.addShake(9);
-    // ring 内部会再乘 GLYPH_SCALE，这里传回原型像素
-    GlyphFX.ring(tx, ty, r / S * 1.05, c.wood, 0.4, 7);
-    GlyphFX.ring(tx, ty, r / S * 0.65, c.ink, 0.28, 3);
-    // 一圈木刺：按圆周均匀发射，视觉上就是炸开的枝杈
-    const spikes = 14;
-    for (let i = 0; i < spikes; i++) {
-      const a = (i / spikes) * Math.PI * 2;
-      GlyphFX.emit(2, tx, ty, {
-        color: i % 2 ? c.woodLight : c.wood, speed: [150, 260], life: [0.22, 0.38], size: [2, 3.5],
-        angle: a, spread: 0.12, drag: 2.6, kind: 'ink',
-      });
+    // 生长的两端冒出新叶
+    if (s.len < cfg.vineLength) {
+      for (const dir of [-1, 1]) {
+        const p = s.track.pointAt(GlyphKit.wrapS(s.track, s.s + dir * s.len));
+        GlyphFX.emit(1, p.x, p.y, { color: c.woodLight, speed: [20, 60], life: [0.3, 0.5], size: [1.5, 3], grav: -40 });
+      }
     }
-    GlyphFX.emit(18, tx, ty, { color: c.woodLight, speed: [60, 200], life: [0.3, 0.6], size: [1.5, 3], grav: 240 });
-    GlyphFX.stain(tx, ty, 26, '#3f5233', 0.24);
+    if (s.t >= cfg.vineDuration) s.done = true;
+  },
+
+  // 木苗外观：一株随生长放大的小「木」字，脚下一圈淡绿
+  drawSprout(ctx, s, size, color, glow) {
+    const cfg = s.tower.gl.cfg;
+    const grow = Math.min(1, s.t / cfg.sproutGrow);
+    const fade = Math.min(1, (cfg.sproutGrow + cfg.sproutLife - s.t) / 0.6);
+    GlyphKit.drawPool(ctx, s.x, s.y, cfg.sproutRadius * 1.1, '80,110,70', 0.16 * grow * fade);
+    Brush.drawGlyph(ctx, CONFIG.GLYPHS.wood, {
+      x: s.x, y: s.y - size * 0.25 * grow, size: size * (0.3 + 0.7 * grow), color,
+      alpha: 0.85 * fade, glow: grow >= 1 ? glow : null, glowBlur: 8, dry: false,
+    });
   },
 
   drawShot(ctx, s) {
     const c = CONFIG.GLYPH_COLORS;
     const S = CONFIG.GLYPH_SCALE;
     const gl = s.tower.gl;
-    if (s.kind === 'shard') {
-      Brush.drawTrail(ctx, s.trail, 6 * S, c.woodLight, 0.5);
-      // 飞出去的就是撇笔本身，按飞行方向旋转笔画
-      const stroke = gl.glyph.strokes[2];
-      const info = Brush.prepare(stroke);
-      const mid = info.pts[Math.floor(info.pts.length / 2)];
-      const head = info.pts[0];
-      const tail = info.pts[info.pts.length - 1];
-      const strokeAng = Math.atan2(tail.y - head.y, tail.x - head.x);
-      const size = gl.size * 0.95;
-      const k = size / 100;
-      ctx.save();
-      ctx.translate(s.x, s.y);
-      ctx.rotate(Math.atan2(s.vy, s.vx) - strokeAng);
-      Brush.drawStroke(ctx, stroke, {
-        x: (50 - mid.x) * k, y: (50 - mid.y) * k, size, color: c.wood, glow: c.woodGlow, glowBlur: 10, dry: false,
-      });
-      ctx.restore();
-    } else if (s.kind === 'burst') {
-      const f = s.t / s.dur;
-      const gx = s.sx + (s.tx - s.sx) * f;
-      const gy = s.sy + (s.ty - s.sy) * f;
-      ctx.fillStyle = 'rgba(40,30,20,0.14)';
-      ctx.beginPath();
-      ctx.ellipse(gx, gy + 10 * S, 30 * S * s.scale, 9 * S * s.scale, 0, 0, Math.PI * 2);
-      ctx.fill();
-      Brush.drawGlyph(ctx, gl.glyph, {
-        x: s.x, y: s.y, size: gl.size * s.scale, rot: s.rot, color: c.wood, glow: c.woodGlow, glowBlur: 22,
-      });
+    if (s.kind === 'seed') {
+      GlyphKit.drawStrokeAt(ctx, gl, s.stroke, s.x, s.y, { rot: s.rot, scale: 0.7, color: c.wood, glow: c.woodGlow });
+    } else if (s.kind === 'sprout') {
+      this.drawSprout(ctx, s, 34 * S, c.wood, c.woodGlow);
+    } else if (s.kind === 'lob') {
+      GlyphKit.drawLobGlyph(ctx, s, gl.glyph, gl.size, c.wood, c.woodGlow);
+    } else if (s.kind === 'vine') {
+      const cfg = gl.cfg;
+      const fade = Math.min(1, (cfg.vineDuration - s.t) / 0.5);
+      GlyphKit.drawBand(ctx, s.track, s.s - s.len, s.s + s.len, cfg.vineWidth, `rgba(79,111,74,${0.16 * fade})`);
+      // 藤上的叶：沿路每隔一段交替画撇、捺
+      const strokes = CONFIG.GLYPHS.wood.strokes;
+      const step = 26 * S;
+      let n = 0;
+      for (let d = -s.len; d <= s.len; d += step, n++) {
+        const p = s.track.pointAt(GlyphKit.wrapS(s.track, s.s + d));
+        Brush.drawStroke(ctx, strokes[2 + (n % 2)], {
+          x: p.x, y: p.y, size: 30 * S, rot: p.ang + (n % 2 ? 0.5 : -0.5), color: c.wood, alpha: 0.75 * fade, dry: false,
+        });
+      }
     }
   },
 };

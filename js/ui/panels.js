@@ -34,6 +34,18 @@ UI.prototype.showTowerInfo = function(tower, x, y, source) {
 
     sellBtn.textContent = `出售 +${tower.getSellValue()}墨`;
 
+    // 合成区：成功后面板改为显示新合字塔
+    if (typeof FusionPanel !== "undefined") {
+      FusionPanel.render(this.towerInfo, this.game, tower, {
+        notify: (msg, type) => this.showToast(msg, type),
+        onDone: (made) => {
+          this.selectedTower = made;
+          const anchor = this._infoAnchor || { x, y, source };
+          this.showTowerInfo(made, anchor.x, anchor.y, anchor.source);
+        },
+      });
+    }
+
     // 取消选中提示：文案必须与当前输入方式一致
     // （触摸端没有右键；此前的硬编码"右键取消选择"会让移动端玩家无从下手）
     const isTouchInput =
@@ -107,6 +119,7 @@ UI.prototype.hideTowerInfo = function() {
     }
 
     this.towerInfo.classList.add("hidden");
+    if (typeof FusionPanel !== "undefined") FusionPanel.stop();
     for (const t of this.game.towers) {
       t.selected = false;
     }

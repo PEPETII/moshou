@@ -4,7 +4,7 @@
 /* ── 图鉴主界面：两张入口卡占满内容区 ───────────────── */
 .codex-entries {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--sp-6);
   height: 100%;
 }
@@ -40,7 +40,6 @@
 .codex-entry:active { transform: translateY(1px); }
 .codex-entry__glyph { font: calc(var(--fs-hero) * 1.5) / 1 var(--font-brush); }
 .codex-entry__name { font: var(--fs-l) / 1.2 var(--font-brush); letter-spacing: .2em; padding-left: .2em; }
-.codex-entry__desc { color: var(--ink-zhong); font-size: var(--fs-s); letter-spacing: .08em; }
 .codex-entry__count {
   margin-top: var(--sp-1);
   padding: 2px var(--sp-2);
@@ -145,7 +144,9 @@
 .codex-glyph--enemy .codex-glyph__char { color: var(--ink-nong); }
 .codex-glyph__order {
   display: flex;
-  gap: var(--sp-2);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-1) var(--sp-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -173,6 +174,17 @@
 .codex-move__name--water { color: var(--tint-water); }
 .codex-move__name--earth { color: var(--tint-earth); }
 .codex-move__name--wood { color: var(--tint-wood); }
+.codex-move__name--gold { color: var(--tint-gold); }
+.codex-move__name--wind { color: var(--tint-wind); }
+.codex-move__name--cannon { color: var(--tint-cannon); }
+.codex-move__name--thunder { color: var(--tint-thunder); }
+.codex-move__name--ice { color: var(--tint-ice); }
+.codex-move__name--bow { color: var(--tint-bow); }
+.codex-move__name--mountain { color: var(--tint-mountain); }
+.codex-move__name--sword { color: var(--tint-sword); }
+.codex-move__name--yan { color: var(--tint-yan); }
+.codex-move__name--lin { color: var(--tint-lin); }
+.codex-move__name--fen { color: var(--tint-fen); }
 .codex-move__text {
   margin: var(--sp-1) 0 0;
   color: var(--ink-nong);
@@ -204,3 +216,9 @@
 
 html[data-ink-motion="reduced"] .codex-entry,
 html[data-ink-motion="reduced"] .codex-glyph__order li { transition: none; }
+
+/* ---- 合字图鉴（2026-10-20）：公式行 = 素材印 + 「＋」 + 合字印 ---- */
+.codex-formula { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3); }
+.codex-formula__op { color: var(--ink-faint); font: var(--fs-l) / 1 var(--font-brush); }
+.codex-formula__note { width: 100%; color: var(--ink-zhong); font-size: var(--fs-xs); }
+.codex-howto { margin-top: var(--sp-3); color: var(--ink-zhong); font-size: var(--fs-s); }

@@ -35,8 +35,10 @@ Game.prototype.resetBattleState = function(level) {
 Game.prototype.updateSpawner = function(dt) {
     BattleDirector.update(this, dt);
 };
-// 玩家确认敌潮档位后开战：开始计时、预铺敌人
+// 玩家确认敌潮档位后开战：开始计时，敌人从入口陆续刷出
 Game.prototype.beginBattle = function(densityKey) {
+    // 开场演出只属于开战前：开战即收尾，否则还在飞行途中的塔卡会继续隐藏且不可点
+    if (this.inkTrailAnimation && this.inkTrailAnimation.active) this.inkTrailAnimation.stop();
     BattleDirector.begin(this, densityKey);
     this.runtimeIndexes.rebuildEnemies();
     this.updateUI();

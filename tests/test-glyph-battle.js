@@ -21,10 +21,13 @@ const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const conquestSrc = read('js/conquestGame.js');
 const files = [
   'js/config.js', 'js/config/domain-01.js', 'js/config/domain-02.js', 'js/config/domain-03.js',
-  'js/config/glyph-battle.js', 'js/config/glyphs.js', 'js/config/codex.js',
+  'js/config/glyph-battle.js', 'js/config/glyphs.js', 'js/config/glyphs-ext.js', 'js/config/glyphs-fusion.js',
+  'js/config/fusion.js', 'js/config/codex.js',
   'js/utils.js', 'js/runtime.js', 'js/core/path-track.js', 'js/core/spawner.js',
-  'js/glyph/brush.js', 'js/glyph/fx.js', 'js/glyph/adapter.js', 'js/glyph/glyph-tower.js',
-  'js/glyph/fire.js', 'js/glyph/water.js', 'js/glyph/earth.js', 'js/glyph/wood.js', 'js/glyph/system.js',
+  'js/glyph/brush.js', 'js/glyph/fx.js', 'js/glyph/adapter.js', 'js/glyph/glyph-tower.js', 'js/glyph/kit.js',
+  'js/glyph/fire.js', 'js/glyph/water.js', 'js/glyph/earth.js', 'js/glyph/wood.js',
+  ...['gold', 'wind', 'cannon', 'thunder', 'ice', 'bow', 'mountain', 'sword', 'yan', 'lin', 'fen'].map((n) => `js/glyph/${n}.js`),
+  'js/glyph/system.js',
   'js/tower.js', 'js/entities/towers/effects.js',
   'js/entities/towers/misc.js', 'js/entities/towers/rendering-basic.js',
   'js/enemy.js', 'js/entities/enemy/combat.js', 'js/entities/enemy/lifecycle.js', 'js/entities/enemy/misc.js', 'js/entities/enemy/motion.js',
@@ -33,9 +36,9 @@ const src = files.map(read).join('\n;\n')
   + '\nclass Game {}\n' + read('js/core/waves.js')
   + '\n;' + conquestSrc.slice(0, conquestSrc.indexOf('class ConquestGame {'))
   + '\nclass ConquestGame {}\n' + read('js/modes/conquest/waves.js')
-  + '\nglobalThis.__X = { Enemy, Tower, Game, ConquestGame, PathTrack, RuntimeIndexes, CONFIG, GlyphTower, GlyphSystem, GlyphFX, GlyphFire, GlyphWater, GlyphEarth, GlyphWood, Brush };';
+  + '\nglobalThis.__X = { Enemy, Tower, Game, ConquestGame, PathTrack, RuntimeIndexes, CONFIG, GlyphTower, GlyphSystem, GlyphFX, GlyphFire, GlyphWater, GlyphEarth, GlyphWood, GlyphKit, Brush };';
 vm.runInContext(src, ctx);
-const { Enemy, Tower, Game, ConquestGame, RuntimeIndexes, CONFIG, GlyphTower, GlyphSystem, GlyphFX, GlyphFire, GlyphWater, GlyphEarth, GlyphWood, Brush } = ctx.__X;
+const { Enemy, Tower, Game, ConquestGame, RuntimeIndexes, CONFIG, GlyphTower, GlyphSystem, GlyphFX, GlyphFire, GlyphWater, GlyphEarth, GlyphWood, GlyphKit, Brush } = ctx.__X;
 const CELL = CONFIG.CELL_SIZE;
 const S = CONFIG.GLYPH_SCALE;
 
@@ -123,9 +126,9 @@ check('火 4 笔、水 4 笔，笔顺固定', CONFIG.GLYPHS.fire.strokes.length 
   && CONFIG.GLYPHS.water.strokes[0].id === 'shu');
 check('土 3 笔，笔顺为横、竖、横', CONFIG.GLYPHS.earth.strokes.length === 3
   && CONFIG.GLYPHS.earth.strokes.map((s) => s.id).join() === 'hengTop,shu,hengBottom');
-check('土塔招式参数按 GLYPH_SCALE 换算', near(CONFIG.TOWERS.earth.glyph.range, 210 * S)
-  && near(CONFIG.TOWERS.earth.glyph.slabSpeed, 620 * S) && near(CONFIG.TOWERS.earth.glyph.pitRadius, 95 * S)
-  && CONFIG.TOWERS.earth.glyph.slabInterval === 1.05 && CONFIG.TOWERS.earth.glyph.pitDps === 25
+check('土塔招式参数按 GLYPH_SCALE 换算', near(CONFIG.TOWERS.earth.glyph.range, 165 * S)
+  && near(CONFIG.TOWERS.earth.glyph.wallRadius, 95 * S) && near(CONFIG.TOWERS.earth.glyph.wallGlyph, 150 * S)
+  && CONFIG.TOWERS.earth.glyph.poundInterval === 1.15 && CONFIG.TOWERS.earth.glyph.wallSlow === 0.65
   && CONFIG.TOWERS.earth.cost === 150
   && near(CONFIG.TOWERS.earth.range * CELL, CONFIG.TOWERS.earth.glyph.range));
 check('土已进入塔池与图鉴文案', CONFIG.ACTIVE_TOWERS.includes('earth')
@@ -133,8 +136,8 @@ check('土已进入塔池与图鉴文案', CONFIG.ACTIVE_TOWERS.includes('earth'
 check('木 4 笔，笔顺为横、竖、撇、捺', CONFIG.GLYPHS.wood.strokes.length === 4
   && CONFIG.GLYPHS.wood.strokes.map((s) => s.id).join() === 'heng,shu,pie,na');
 check('木塔招式参数按 GLYPH_SCALE 换算', near(CONFIG.TOWERS.wood.glyph.range, 215 * S)
-  && near(CONFIG.TOWERS.wood.glyph.shardSpeed, 640 * S) && near(CONFIG.TOWERS.wood.glyph.burstRadius, 120 * S)
-  && CONFIG.TOWERS.wood.glyph.shardPierce === 3 && CONFIG.TOWERS.wood.cost === 105
+  && near(CONFIG.TOWERS.wood.glyph.vineLength, 170 * S) && near(CONFIG.TOWERS.wood.glyph.sproutRadius, 26 * S)
+  && CONFIG.TOWERS.wood.glyph.sproutMax === 4 && CONFIG.TOWERS.wood.cost === 105
   && near(CONFIG.TOWERS.wood.range * CELL, CONFIG.TOWERS.wood.glyph.range));
 check('木已进入塔池与图鉴文案', CONFIG.ACTIVE_TOWERS.includes('wood')
   && CONFIG.CODEX.towers.wood && CONFIG.CODEX.towers.wood.moves.length === 2);
@@ -260,31 +263,25 @@ function GlyphWorld_inRange(g, t) { return g.runtimeIndexes.enemiesInRange(t.x, 
   check('倒卷不把敌人推出画面（s 不低于下限）', es.every((e) => e.s >= 80 * S - 1), `min s=${Math.min(...es.map((e) => e.s)).toFixed(1)}`);
 }
 
-// ---------- 土：落石 ----------
+// 塔正前方（离塔最近）的路径里程
+const sNear = (g, t) => GlyphKit.nearestTrack(g, t.x, t.y).s;
+
+// ---------- 土：夯土（2026-10-20 重做）----------
 {
   const g = makeGame();
   const t = mk(g, 'earth', 3, 2);
   run(g, 1.5);
-  const e = spawnAt(g, 'giant', 4.2 * CELL, 100000);
-  const hp0 = e.hp;
+  const s0 = sNear(g, t);
+  const a = spawnAt(g, 'corpse', s0, 100000);
+  const b = spawnAt(g, 'corpse', s0 + 20, 100000);
   run(g, 0.05);
-  const slabs = g.glyphShots.filter((s) => s.kind === 'slab');
-  check('上横被消耗并掷出石片', slabs.length === 1 && t.gl.strokes[0].prog < 1);
-  run(g, 0.5);
-  check('石片命中造成伤害并回充蓄力', e.hp < hp0 && t.gl.charge > 0.35);
-}
-{
-  const g = makeGame();
-  const t = mk(g, 'earth', 3, 2);
-  run(g, 1.5);
-  const a = spawnAt(g, 'corpse', 4.2 * CELL, 100000);
-  const b = spawnAt(g, 'corpse', 4.2 * CELL + 16, 100000);
-  g.runtimeIndexes.rebuildEnemies();
-  GlyphEarth.slabHit({ tower: t, game: g, x: a.x, y: a.y }, a);
-  check('碎石溅射伤到附近的第二个敌人', a.hp < a.maxHp && b.hp < b.maxHp, `a=${a.hp.toFixed(1)} b=${b.hp.toFixed(1)}`);
+  check('下横砸地：射程内敌人全部受伤并陷入泥泞', a.hp < a.maxHp && b.hp < b.maxHp && a.slowTime > 0 && b.slowTime > 0);
+  check('夯土不出飞行弹道，只留地波', g.glyphShots.length > 0 && g.glyphShots.every((s) => s.kind === 'pound'));
+  check('下横被消耗', t.gl.strokes[2].prog < 1 && t.gl.strokes[0].prog >= 1);
+  check('泥泞使移速倍率降到 0.65', near(a.glyphSpeedMul(), 1 - CONFIG.TOWERS.earth.glyph.mireSlow));
 }
 
-// ---------- 土：陷 ----------
+// ---------- 土：壁垒 ----------
 {
   const g = makeGame();
   const t = mk(g, 'earth', 3, 2);
@@ -292,53 +289,42 @@ function GlyphWorld_inRange(g, t) { return g.runtimeIndexes.enemiesInRange(t.x, 
   const early = spawnAt(g, 'corpse', 0, 100000);
   check('没有合适落点时 cast 返回 false', GlyphEarth.cast(t, [early]) === false);
   g.enemies.length = 0;
-  for (let i = 0; i < 6; i++) spawnAt(g, 'corpse', 4.5 * CELL + i * 8, 100000);
+  const s0 = sNear(g, t);
+  for (let i = 0; i < 6; i++) spawnAt(g, 'corpse', s0 + i * 8, 100000);
   t.gl.charge = 1;
   run(g, 0.1);
-  const quake = g.glyphShots.find((s) => s.kind === 'quake');
-  check('蓄满且射程内有敌人 → 自动释放陷，蓄力清零', !!quake && t.gl.charge < 0.2, `charge=${t.gl.charge.toFixed(2)}`);
-  check('陷消耗全部 3 笔', t.gl.strokes.every((s) => s.prog < 1));
-  const hpBefore = g.enemies.map((e) => e.hp);
+  check('蓄满且射程内有敌人 → 自动释放壁垒，蓄力清零', g.glyphShots.some((s) => s.kind === 'lob') && t.gl.charge < 0.2, `charge=${t.gl.charge.toFixed(2)}`);
+  check('壁垒消耗全部 3 笔', t.gl.strokes.every((s) => s.prog < 1));
   run(g, 1.0);
-  check('落地震伤范围内敌人', g.enemies.every((e, i) => e.hp < hpBefore[i]));
-  const pit = g.glyphShots.find((s) => s.kind === 'pit');
-  check('留下土字陷坑（地面弹道）', !!pit && pit.ground === true);
-  if (pit) {
-    GlyphEarth.updatePit(pit, CONFIG.TOWERS.earth.glyph.pitTick);
-    check('陷坑每跳把敌人按住', g.enemies.some((e) => e.stun > 0));
-  }
-  run(g, 3);
-  check('陷坑 2.6 秒后消失', !g.glyphShots.some((s) => s.kind === 'pit'));
+  const wall = g.glyphShots.find((s) => s.kind === 'wall');
+  check('落地立起壁垒（地面弹道）', !!wall && wall.ground === true);
+  check('壁垒内敌人被重度减速', g.enemies.every((e) => e.slowTime > 0 && e.glyphSpeedMul() <= 1 - 0.6 + 1e-9));
+  const hpWall = g.enemies.map((e) => e.hp);
+  run(g, 4.5);
+  check('壁垒到时崩塌并消失', !g.glyphShots.some((s) => s.kind === 'wall'));
+  check('崩塌造成伤害', g.enemies.every((e, i) => hpWall[i] - e.hp >= CONFIG.TOWERS.earth.glyph.collapseDamage));
 }
 
-// ---------- 木：木刺 ----------
+// ---------- 木：播种（2026-10-20 重做）----------
 {
   const g = makeGame();
   const t = mk(g, 'wood', 3, 2);
   run(g, 1.5);
-  const e = spawnAt(g, 'giant', 4.2 * CELL, 100000);
-  const hp0 = e.hp;
+  const e = spawnAt(g, 'giant', sNear(g, t), 100000);
   run(g, 0.05);
-  const shards = g.glyphShots.filter((s) => s.kind === 'shard');
-  check('撇笔被消耗并射出木刺', shards.length === 1 && t.gl.strokes[2].prog < 1);
-  run(g, 0.5);
-  check('木刺命中造成伤害并回充蓄力', e.hp < hp0 && t.gl.charge > 0.35);
-}
-{
-  const g = makeGame();
-  const t = mk(g, 'wood', 3, 2);
-  run(g, 1.5);
-  const es = [];
-  for (let i = 0; i < 6; i++) es.push(spawnAt(g, 'corpse', 4.2 * CELL + i * 6, 100000));
-  g.runtimeIndexes.rebuildEnemies();
-  run(g, 0.12);
-  check('木刺沿直线飞出', g.glyphShots.some((s) => s.kind === 'shard'));
-  run(g, 0.5);
-  const hitCount = es.filter((e) => e.hp < e.maxHp).length;
-  check('贯穿至多 3 个目标且同一敌人只结算一次', hitCount >= 2 && hitCount <= 3, `hit=${hitCount}`);
+  check('撇笔被消耗并抛出种子', g.glyphShots.filter((s) => s.kind === 'seed').length === 1 && t.gl.strokes[2].prog < 1);
+  run(g, 0.6);
+  const sprout = g.glyphShots.find((s) => s.kind === 'sprout');
+  check('种子落在目标前方的路上，长成木苗', !!sprout && sprout.ground && near(sprout.s, e.s + CONFIG.TOWERS.wood.glyph.seedLead, 1));
+  e.s = sprout.s; e.syncPosition();
+  run(g, 1.2);
+  check('木苗刺伤并拖慢经过者，回充蓄力', e.hp < e.maxHp && e.slowTime > 0 && t.gl.charge > 0.35);
+  run(g, 5);
+  const mine = g.glyphShots.filter((s) => s.kind === 'sprout' && s.tower === t);
+  check('每塔木苗不超过上限', mine.length >= 1 && mine.length <= CONFIG.TOWERS.wood.glyph.sproutMax, `n=${mine.length}`);
 }
 
-// ---------- 木：森 ----------
+// ---------- 木：蔓生 ----------
 {
   const g = makeGame();
   const t = mk(g, 'wood', 3, 2);
@@ -346,16 +332,18 @@ function GlyphWorld_inRange(g, t) { return g.runtimeIndexes.enemiesInRange(t.x, 
   const early = spawnAt(g, 'corpse', 0, 100000);
   check('没有合适落点时 cast 返回 false', GlyphWood.cast(t, [early]) === false);
   g.enemies.length = 0;
-  for (let i = 0; i < 6; i++) spawnAt(g, 'corpse', 4.5 * CELL + i * 8, 100000);
+  const s0 = sNear(g, t);
+  for (let i = 0; i < 6; i++) spawnAt(g, 'corpse', s0 + i * 12, 100000);
   t.gl.charge = 1;
   run(g, 0.1);
-  const burst = g.glyphShots.find((s) => s.kind === 'burst');
-  check('蓄满且射程内有敌人 → 自动释放森，蓄力清零', !!burst && t.gl.charge < 0.2, `charge=${t.gl.charge.toFixed(2)}`);
-  check('森消耗全部 4 笔', t.gl.strokes.every((s) => s.prog < 1));
-  const hpBefore = g.enemies.map((e) => e.hp);
-  run(g, 1.0);
-  check('落地炸伤范围内敌人', g.enemies.every((e, i) => e.hp < hpBefore[i]));
-  check('落地后不残留弹道', !g.glyphShots.some((s) => s.kind === 'burst'));
+  check('蓄满且射程内有敌人 → 自动释放蔓生，蓄力清零', g.glyphShots.some((s) => s.kind === 'lob') && t.gl.charge < 0.2);
+  check('蔓生消耗全部 4 笔', t.gl.strokes.every((s) => s.prog < 1));
+  run(g, 1.6);
+  const vine = g.glyphShots.find((s) => s.kind === 'vine');
+  check('藤蔓沿路生长', !!vine && vine.len > 0 && vine.len <= CONFIG.TOWERS.wood.glyph.vineLength);
+  check('藤上敌人被缠住（减速并受伤）', g.enemies.every((e) => e.slowTime > 0 && e.hp < e.maxHp));
+  run(g, 4.6);
+  check('藤蔓到时消失', !g.glyphShots.some((s) => s.kind === 'vine'));
 }
 
 // ---------- 全局大招间隔 ----------
@@ -436,7 +424,7 @@ function GlyphWorld_inRange(g, t) { return g.runtimeIndexes.enemiesInRange(t.x, 
     GlyphTower.drawGhost(c, 'earth', 100, 100, 0.5, '#8a6a3f');
     GlyphTower.drawGhost(c, 'wood', 100, 100, 0.5, '#4f6f4a');
   } catch (e) { err = e; }
-  check('塔身、弹道、焦土、浪头、土坑、木刺、特效绘制不抛错（4 秒含大招）', !err, err ? String(err.stack).slice(0, 300) : '');
+  check('塔身、弹道、焦土、浪头、壁垒、藤蔓、特效绘制不抛错（4 秒含大招）', !err, err ? String(err.stack).slice(0, 300) : '');
 }
 
 // ---------- 打击反馈（工单 06）----------

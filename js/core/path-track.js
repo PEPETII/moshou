@@ -73,7 +73,65 @@ class PathTrack {
     }
     if (pts.length > 1) merged.push(pts[pts.length - 1]);
 
-    return new PathTrack(merged, { loop: opts.loop, cellS });
+    const ratio = opts.round === false || typeof CONFIG === 'undefined' ? 0 : (CONFIG.PATH_CORNER_RATIO || 0);
+    if (ratio <= 0 || merged.length < 3) return new PathTrack(merged, { loop: opts.loop, cellS });
+
+    const rounded = PathTrack._roundCorners(merged, cell * ratio);
+    const track = new PathTrack(rounded, { loop: opts.loop });
+    // 圆弧比折线短：格子里程改取格心在新轨迹上的最近点（保持单调）
+    let prev = 0;
+    track.cellS = cells.map((c, i) => {
+      if (i === 0 && !extra) return 0;
+      const p = pts[i + (extra ? 1 : 0)];
+      prev = Math.max(prev, track.nearestS(p.x, p.y));
+      return prev;
+    });
+    return track;
+  }
+
+  /** 供绘制墨廊用：合并共线点后按配置倒圆角，与敌人实际走的轨迹一致 */
+  static smoothPolyline(pts, cell) {
+    const ratio = typeof CONFIG === 'undefined' ? 0 : (CONFIG.PATH_CORNER_RATIO || 0);
+    if (ratio <= 0 || pts.length < 3) return pts;
+    const merged = [pts[0]];
+    for (let i = 1; i < pts.length - 1; i++) {
+      const a = merged[merged.length - 1];
+      const b = pts[i];
+      const c = pts[i + 1];
+      const cross = (b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x);
+      const dot = (b.x - a.x) * (c.x - b.x) + (b.y - a.y) * (c.y - b.y);
+      if (Math.abs(cross) < 1e-6 && dot > 0) continue;
+      merged.push(b);
+    }
+    merged.push(pts[pts.length - 1]);
+    return PathTrack._roundCorners(merged, (cell || CONFIG.CELL_SIZE) * ratio);
+  }
+
+  /** 拐点倒圆角：每个内部拐点用二次贝塞尔（控制点=拐点）替换，切线长不超过相邻线段的一半 */
+  static _roundCorners(pts, maxD) {
+    const out = [pts[0]];
+    for (let i = 1; i < pts.length - 1; i++) {
+      const a = pts[i - 1];
+      const b = pts[i];
+      const c = pts[i + 1];
+      const l1 = Math.hypot(b.x - a.x, b.y - a.y);
+      const l2 = Math.hypot(c.x - b.x, c.y - b.y);
+      const d = Math.min(maxD, l1 / 2, l2 / 2);
+      if (d <= 0.5) { out.push(b); continue; }
+      const p0 = { x: b.x + (a.x - b.x) / l1 * d, y: b.y + (a.y - b.y) / l1 * d };
+      const p2 = { x: b.x + (c.x - b.x) / l2 * d, y: b.y + (c.y - b.y) / l2 * d };
+      const N = 8;
+      for (let k = 0; k <= N; k++) {
+        const t = k / N;
+        const u = 1 - t;
+        out.push({
+          x: u * u * p0.x + 2 * u * t * b.x + t * t * p2.x,
+          y: u * u * p0.y + 2 * u * t * b.y + t * t * p2.y,
+        });
+      }
+    }
+    out.push(pts[pts.length - 1]);
+    return out;
   }
 
   /** 按路径数组缓存（同一关卡路径只建一次）；opts 的 extendEntry/loop 参与缓存键 */
